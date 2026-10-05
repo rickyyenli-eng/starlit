@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>看懂我的盤</title>
+<title>Starlit 星曜</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -185,16 +185,6 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
 <body>
 
 <div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <div class="seal" aria-hidden="true">看<br>盤</div>
-      <div>
-        <h1>看懂我的盤</h1>
-        <p class="muted">西洋星盤 × 紫微斗數，每一格都翻成白話</p>
-      </div>
-    </div>
-    <p class="lede">輸入出生資料，排出你的星盤與紫微命盤。點圖上任何一顆星或一個宮位，右邊就會用一般人聽得懂的話解釋它。</p>
-  </header>
 
   <form class="birth" id="birth" novalidate>
     <div class="field"><label for="f-date">出生日期（國曆）</label><input id="f-date" type="date" required min="1900-01-01" max="2100-12-31"></div>
@@ -207,7 +197,7 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
     </div>
     <div class="field"><label for="f-city">出生地</label><select id="f-city"></select></div>
     <div class="field"><button class="go" type="submit">排盤</button></div>
-    <label class="check"><input type="checkbox" id="f-dst"><span>出生當時有實施夏令（日光節約）時間。台灣在 1945–1961、1974–1975、1979 年的夏季，中國大陸在 1986–1991 年的夏季有實施；不確定的話請查一下出生年份。</span></label>
+    <label class="check"><input type="checkbox" id="f-dst"><span>出生時實施夏令時間</span></label>
     <details class="adv"><summary>進階：自訂經緯度與時區</summary>
       <div class="adv-grid">
         <div class="field"><label for="f-lat">緯度（北為正）</label><input id="f-lat" type="number" step="0.01"></div>
@@ -216,7 +206,7 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
       </div>
     </details>
   </form>
-  <div class="notice" id="sample-note">目前顯示的是<b>範例生日</b>（1995 年 8 月 20 日 14:30，台中）。填入你自己的資料再按「排盤」。</div>
+  <div class="notice" id="sample-note">目前為範例資料</div>
   <div class="err" id="err" hidden></div>
 
   <nav class="tabs" role="tablist">
@@ -236,7 +226,7 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
     <div class="split">
       <div class="stage">
         <svg class="wheel" id="wheel" viewBox="0 0 540 540" role="img" aria-label="星盤圓盤"></svg>
-        <div class="legend"><span><i style="border-color:var(--good)"></i>和諧相位</span><span><i style="border-color:var(--seal)"></i>緊張相位</span><span><i style="border-color:var(--accent)"></i>合相</span><span>左邊水平線是上升點，上方是天頂</span></div>
+        <div class="legend"><span><i style="border-color:var(--good)"></i>和諧相位</span><span><i style="border-color:var(--seal)"></i>緊張相位</span><span><i style="border-color:var(--accent)"></i>合相</span></div>
       </div>
       <aside class="detail" id="w-detail" aria-live="polite"></aside>
     </div>
@@ -259,10 +249,6 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
     </div>
   </section>
 
-  <footer>
-    <p>星盤採回歸黃道與 Placidus 宮位制，行星位置由天文曆法即時計算。紫微斗數依出生地的標準時間定時辰（未換算真太陽時），使用常見的全書派四化。</p>
-    <p>命盤是幫助認識自己的一種語言，不是命運判決。重大決定請以實際狀況與專業意見為準。若要核對數字，可以把同一組生日輸入其他專業排盤網站比對。</p>
-  </footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
@@ -493,7 +479,7 @@ function drawZW(){
       ${minor.length?`<div class="minor">${minor.map(s=>s.name+(s.mutagen?`<span class="mut ${s.mutagen}">${s.mutagen}</span>`:'')).join(' ')}</div>`:''}
       <div class="foot"><div><div class="tags">${p.isBodyPalace?'<span class="tag body">身</span>':''}${i===dec?'<span class="tag dc">大限</span>':''}${i===yr?'<span class="tag yr">流年</span>':''}</div><div class="pname">${pn(p.name)}</div></div><div style="text-align:right"><div class="gz">${p.heavenlyStem}${p.earthlyBranch}</div><div class="age">${p.decadal.range.join('–')}</div></div></div></button>`;});
   const sd=Z._std;
-  h+=`<div class="center"><div class="nm">紫微命盤</div><div>國曆 ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${Z.time}</div><div>農曆 ${Z.lunarDate}</div><div>${Z.chineseDate}</div><div class="kl"><span>${Z.fiveElementsClass}</span><span>命主 ${Z.soul}</span><span>身主 ${Z.body}</span></div><div class="kl"><span><span class="mut 祿">祿</span>順</span><span><span class="mut 權">權</span>掌握</span><span><span class="mut 科">科</span>名聲</span><span><span class="mut 忌">忌</span>功課</span></div><div style="font-size:11px">右上角小字是亮度，右下數字是大限年齡（虛歲）</div></div>`;
+  h+=`<div class="center"><div class="nm">紫微命盤</div><div>國曆 ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${Z.time}</div><div>農曆 ${Z.lunarDate}</div><div>${Z.chineseDate}</div><div class="kl"><span>${Z.fiveElementsClass}</span><span>命主 ${Z.soul}</span><span>身主 ${Z.body}</span></div><div class="kl"><span><span class="mut 祿">祿</span>順</span><span><span class="mut 權">權</span>掌握</span><span><span class="mut 科">科</span>名聲</span><span><span class="mut 忌">忌</span>功課</span></div></div>`;
   g.innerHTML=h;
   g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
 }
@@ -512,8 +498,7 @@ function showPalace(){
   ${dec?`<div class="block"><h4>這十年的重點</h4><p>你 ${p.decadal.range[0]} 到 ${p.decadal.range[1]} 歲（虛歲）走這個宮，這段時間生活的重心會落在「${PALACE[p.name].replace(/。$/,'')}」。${ZH.decadal.mutagen?`這個大限的四化是：${['祿','權','科','忌'].map((m,j)=>`${ZH.decadal.mutagen[j]}化${m}`).join('、')}。`:''}</p></div>`:''}
   ${yr?`<div class="block"><h4>今年（${ZH.yearly.heavenlyStem}${ZH.yearly.earthlyBranch}年）</h4><p>今年的流年命宮落在這裡，今年特別容易碰到和「${PALACE[p.name].replace(/。$/,'')}」有關的事。</p></div>`:''}
   ${(p.majorStars.length?'':`<p class="hint">以下是借來參考的${pn(opp.name)}主星：</p>`)+stars.map(majorBlock).join('')}
-  ${minor.length?`<div class="block"><h4>其他重要的星</h4>${minor.map(s=>`<p><b>${s.name}</b>${s.mutagen?`<span class="mut ${s.mutagen}">化${s.mutagen}</span>`:''}：${MINOR[s.name]}</p>`).join('')}</div>`:''}
-  <p class="hint">進階看法會同時看這一宮、對宮和左右兩個三合宮（合稱三方四正）。</p>`;
+  ${minor.length?`<div class="block"><h4>其他重要的星</h4>${minor.map(s=>`<p><b>${s.name}</b>${s.mutagen?`<span class="mut ${s.mutagen}">化${s.mutagen}</span>`:''}：${MINOR[s.name]}</p>`).join('')}</div>`:''}`;
 }
 function zwSummary(){
   const ming=Z.palaces.find(p=>p.name==='命宮'),body=Z.palaces.find(p=>p.isBodyPalace);
