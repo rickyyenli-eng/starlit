@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>看懂我的盤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column — birth form, then two tabs (星盤 / 紫微); each tab = summary strip → chart + explanation panel side by side → full table */
+:root{
+  --bg:#EDF0F5; --panel:#FFFFFF; --sunk:#F5F7FA; --ink:#1B2136; --muted:#5A6177; --line:#D3D9E3;
+  --accent:#2C47A3; --accent-soft:#E2E8F7; --seal:#B23D2C; --seal-soft:#F6E3DF;
+  --good:#2C7A57; --good-soft:#DFF0E7; --hold:#A0681E; --hold-soft:#F5EAD6;
+  --fire:#C4532F; --earth:#8C6B26; --air:#2F7EA6; --water:#4A4FB0;
+  --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F1220; --panel:#171B2C; --ink:#E5E8F1; --muted:#9BA2B8; --line:#2B3149;
+  --accent:#93A8F2; --accent-soft:#222C52; --seal:#E5735F; --seal-soft:#3A2220;
+  --good:#6CCB9D; --good-soft:#1C3329; --hold:#E0AA5C; --hold-soft:#3A2D19;
+  --fire:#EE8460; --earth:#D1AE63; --air:#6EB8DE; --water:#9EA3F2; color-scheme:dark; --sunk:#131727; }}
+:root[data-theme="dark"]{
+  --bg:#0F1220; --panel:#171B2C; --sunk:#131727; --ink:#E5E8F1; --muted:#9BA2B8; --line:#2B3149;
+  --accent:#93A8F2; --accent-soft:#222C52; --seal:#E5735F; --seal-soft:#3A2220;
+  --good:#6CCB9D; --good-soft:#1C3329; --hold:#E0AA5C; --hold-soft:#3A2D19;
+  --fire:#EE8460; --earth:#D1AE63; --air:#6EB8DE; --water:#9EA3F2; color-scheme:dark; }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;padding:0 16px;}
+.wrap{max-width:1120px;margin:0 auto;padding-block:28px 64px;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:.04em}
+h2{font-size:22px}
+h3{font-size:18px}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--muted);font-weight:500}
+
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+header.top .lede{max-width:46ch;color:var(--muted)}
+.seal{display:inline-grid;place-items:center;width:44px;height:44px;border:2px solid var(--seal);color:var(--seal);border-radius:6px;font-family:var(--f-display);font-weight:700;font-size:15px;line-height:1.05;text-align:center;transform:rotate(-4deg);flex:none}
+.brand{display:flex;gap:14px;align-items:center}
+
+/* form */
+form.birth{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 16px;align-items:end}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.field .lab{font-size:13px;color:var(--muted);font-weight:500}
+input,select{font:inherit;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible,.cell:focus-visible,.pl:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg label{flex:1;text-align:center;padding:8px 0;cursor:pointer;color:var(--ink);font-size:15px;background:var(--sunk)}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg input:checked+span{color:var(--accent);font-weight:700}
+.seg label:has(input:checked){background:var(--accent-soft)}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);grid-column:1/-1}
+.check input{width:auto;margin-top:5px}
+details.adv{grid-column:1/-1;font-size:13px;color:var(--muted)}
+details.adv summary{cursor:pointer;width:max-content}
+.adv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px}
+button.go{font:inherit;font-weight:700;background:var(--accent);color:var(--panel);border:0;border-radius:8px;padding:10px 18px;cursor:pointer;letter-spacing:.1em}
+button.go:hover{filter:brightness(1.08)}
+.notice{font-size:13px;padding:10px 14px;border-radius:8px;background:var(--hold-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--hold) 35%,transparent)}
+.notice[hidden]{display:none}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabs button{font:inherit;font-family:var(--f-display);font-size:18px;font-weight:700;background:none;border:0;color:var(--muted);padding:10px 16px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+section.pane{display:flex;flex-direction:column;gap:20px}
+
+/* primer */
+.primer{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.primer div{padding:12px 14px;border-left:3px solid var(--line);min-width:0}
+.primer b{font-family:var(--f-display);font-size:16px;display:block}
+.primer span{font-size:13.5px;color:var(--muted)}
+
+/* summary */
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card .big{font-family:var(--f-display);font-size:24px;font-weight:700}
+.card .q{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.06em}
+.card p{font-size:14px;color:var(--muted)}
+
+/* main split */
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.split{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px;min-width:0}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);min-width:0}
+@media (max-width:860px){.detail{position:static}}
+.detail .hint{font-size:13px;color:var(--muted)}
+.say{font-size:16px;line-height:1.85}
+.say strong{color:var(--accent)}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 12px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;padding:2px 9px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);white-space:nowrap}
+.chip.good{background:var(--good-soft);color:var(--good);border-color:transparent}
+.chip.bad{background:var(--seal-soft);color:var(--seal);border-color:transparent}
+.chip.acc{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.chip.hold{background:var(--hold-soft);color:var(--hold);border-color:transparent}
+.block{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px dashed var(--line)}
+.block h4{margin:0;font-size:14px;font-family:var(--f-body);font-weight:700}
+.block p{font-size:14.5px}
+.pros{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;font-size:14px}
+.pros .t{font-weight:700}
+.pros .t.g{color:var(--good)} .pros .t.w{color:var(--seal)}
+
+/* wheel */
+svg.wheel{width:100%;height:auto;display:block;max-width:560px;margin:0 auto}
+.wheel text{font-family:var(--f-body)}
+.pl{cursor:pointer}
+.pl circle.bg{fill:var(--panel);stroke:var(--line);stroke-width:1}
+.pl:hover circle.bg,.pl.on circle.bg{stroke:var(--accent);stroke-width:2;fill:var(--accent-soft)}
+.pl text{font-family:var(--f-display);font-weight:700;font-size:15px;fill:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);padding:8px 6px 2px;justify-content:center}
+.legend i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:4px}
+
+/* tables */
+.tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:.06em;background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--sunk)}
+td.p{font-family:var(--f-display);font-weight:700;white-space:nowrap}
+
+/* element bars */
+.elem{display:flex;flex-direction:column;gap:6px}
+.erow{display:grid;grid-template-columns:2.2em 1fr 1.5em;gap:8px;align-items:center;font-size:13.5px}
+.ebar{height:10px;background:var(--sunk);border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+.ebar span{display:block;height:100%}
+
+/* zi wei grid */
+.zw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(118px,auto));gap:4px}
+.cell{background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:6px 7px;display:flex;flex-direction:column;gap:2px;cursor:pointer;text-align:left;font:inherit;color:inherit;min-width:0;position:relative}
+.cell:hover{border-color:var(--accent)}
+.cell.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cell.ming{background:var(--accent-soft)}
+.cell.dec::after{content:"";position:absolute;inset:0;border-radius:6px;border:2px dashed var(--hold);pointer-events:none}
+.cell .stars{display:flex;flex-wrap:wrap;gap:0 6px;font-family:var(--f-display);font-weight:700;font-size:15px;line-height:1.35}
+.cell .stars span{white-space:nowrap}
+.cell sup{font-family:var(--f-body);font-weight:400;font-size:10px;color:var(--muted);margin-left:1px}
+.mut{display:inline-block;font-family:var(--f-body);font-size:10.5px;font-weight:700;padding:0 3px;border-radius:3px;margin-left:2px;vertical-align:2px;line-height:1.4}
+.mut.祿{background:var(--good-soft);color:var(--good)}
+.mut.權{background:var(--accent-soft);color:var(--accent)}
+.mut.科{background:var(--hold-soft);color:var(--hold)}
+.mut.忌{background:var(--seal-soft);color:var(--seal)}
+.cell .minor{font-size:11.5px;color:var(--muted);line-height:1.4}
+.cell .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:4px;padding-top:4px}
+.cell .pname{font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--ink)}
+.cell .gz{font-size:11px;color:var(--muted)}
+.cell .age{font-size:11px;color:var(--muted);font-family:var(--f-data)}
+.cell .tags{display:flex;gap:3px;flex-wrap:wrap}
+.tag{font-size:10.5px;padding:0 4px;border-radius:3px;font-weight:700;line-height:1.5}
+.tag.body{background:var(--ink);color:var(--panel)}
+.tag.yr{background:var(--seal);color:var(--panel)}
+.tag.dc{background:var(--hold);color:var(--panel)}
+.center{grid-column:2/4;grid-row:2/4;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:10px 14px;text-align:center;font-size:13px;color:var(--muted)}
+.center .nm{font-family:var(--f-display);font-size:18px;color:var(--ink);font-weight:700}
+.center .kl{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px}
+@media (max-width:520px){
+  .zw{grid-template-rows:repeat(4,minmax(104px,auto));gap:3px}
+  .cell{padding:4px 4px}
+  .cell .stars{font-size:13px;gap:0 3px}
+  .cell .minor{font-size:10px}
+  .cell .pname{font-size:12.5px}
+  .cell .gz,.cell .age{font-size:9.5px}
+  .center{font-size:11.5px;padding:6px}
+  .center .nm{font-size:15px}
+}
+
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:6px}
+.err{color:var(--seal);font-size:14px}
+@media (prefers-reduced-motion:no-preference){ .detail,.card{transition:border-color .2s} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="seal" aria-hidden="true">看<br>盤</div>
+      <div>
+        <h1>看懂我的盤</h1>
+        <p class="muted">西洋星盤 × 紫微斗數，每一格都翻成白話</p>
+      </div>
+    </div>
+    <p class="lede">輸入出生資料，排出你的星盤與紫微命盤。點圖上任何一顆星或一個宮位，右邊就會用一般人聽得懂的話解釋它。</p>
+  </header>
+
+  <form class="birth" id="birth" novalidate>
+    <div class="field"><label for="f-date">出生日期（國曆）</label><input id="f-date" type="date" required min="1900-01-01" max="2100-12-31"></div>
+    <div class="field"><label for="f-time">出生時間</label><input id="f-time" type="time" required></div>
+    <div class="field"><span class="lab">性別（紫微排大限用）</span>
+      <div class="seg" role="radiogroup" aria-label="性別">
+        <label><input type="radio" name="g" id="f-g-f" value="女" checked><span>女</span></label>
+        <label><input type="radio" name="g" id="f-g-m" value="男"><span>男</span></label>
+      </div>
+    </div>
+    <div class="field"><label for="f-city">出生地</label><select id="f-city"></select></div>
+    <div class="field"><button class="go" type="submit">排盤</button></div>
+    <label class="check"><input type="checkbox" id="f-dst"><span>出生當時有實施夏令（日光節約）時間。台灣在 1945–1961、1974–1975、1979 年的夏季，中國大陸在 1986–1991 年的夏季有實施；不確定的話請查一下出生年份。</span></label>
+    <details class="adv"><summary>進階：自訂經緯度與時區</summary>
+      <div class="adv-grid">
+        <div class="field"><label for="f-lat">緯度（北為正）</label><input id="f-lat" type="number" step="0.01"></div>
+        <div class="field"><label for="f-lon">經度（東為正）</label><input id="f-lon" type="number" step="0.01"></div>
+        <div class="field"><label for="f-tz">時區（UTC＋幾小時）</label><input id="f-tz" type="number" step="0.5"></div>
+      </div>
+    </details>
+  </form>
+  <div class="notice" id="sample-note">目前顯示的是<b>範例生日</b>（1995 年 8 月 20 日 14:30，台中）。填入你自己的資料再按「排盤」。</div>
+  <div class="err" id="err" hidden></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west">西洋星盤</button>
+    <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw">紫微斗數</button>
+  </nav>
+
+  <!-- WEST -->
+  <section class="pane" id="p-west" role="tabpanel" aria-labelledby="t-west">
+    <div class="primer">
+      <div><b>行星＝演員</b><span>代表一種力量，例如月亮是情緒、金星是愛與喜好。</span></div>
+      <div><b>星座＝演法</b><span>這股力量用什麼風格表現，例如牡羊很直接、巨蟹很顧家。</span></div>
+      <div><b>宮位＝舞台</b><span>力量用在人生哪個領域，例如第 10 宮是事業。</span></div>
+      <div><b>相位＝演員之間的關係</b><span>兩顆星是互相幫忙（綠線）還是互相拉扯（紅線）。</span></div>
+    </div>
+    <div class="sum" id="w-sum"></div>
+    <div class="split">
+      <div class="stage">
+        <svg class="wheel" id="wheel" viewBox="0 0 540 540" role="img" aria-label="星盤圓盤"></svg>
+        <div class="legend"><span><i style="border-color:var(--good)"></i>和諧相位</span><span><i style="border-color:var(--seal)"></i>緊張相位</span><span><i style="border-color:var(--accent)"></i>合相</span><span>左邊水平線是上升點，上方是天頂</span></div>
+      </div>
+      <aside class="detail" id="w-detail" aria-live="polite"></aside>
+    </div>
+    <h2>所有行星一覽</h2>
+    <div class="tablewrap"><table><thead><tr><th>行星</th><th>星座</th><th>宮位</th><th>一句話</th></tr></thead><tbody id="w-table"></tbody></table></div>
+  </section>
+
+  <!-- ZI WEI -->
+  <section class="pane" id="p-zw" role="tabpanel" aria-labelledby="t-zw" hidden>
+    <div class="primer">
+      <div><b>十二宮＝人生的十二個房間</b><span>命宮是你自己，夫妻宮是感情，財帛宮是金錢，以此類推。</span></div>
+      <div><b>主星＝房間的主人</b><span>決定這個領域的基本個性。沒有主星的房間就借對面房間來看。</span></div>
+      <div><b>四化＝標記</b><span><span class="mut 祿">祿</span>順利、<span class="mut 權">權</span>掌握、<span class="mut 科">科</span>名聲、<span class="mut 忌">忌</span>卡關與功課。</span></div>
+      <div><b>大限＝每十年換一個房間</b><span>虛線框是你現在這十年的重點宮位，「流年」標的是今年。</span></div>
+    </div>
+    <div class="sum" id="z-sum"></div>
+    <div class="split">
+      <div class="stage"><div class="zw" id="zw"></div></div>
+      <aside class="detail" id="z-detail" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <footer>
+    <p>星盤採回歸黃道與 Placidus 宮位制，行星位置由天文曆法即時計算。紫微斗數依出生地的標準時間定時辰（未換算真太陽時），使用常見的全書派四化。</p>
+    <p>命盤是幫助認識自己的一種語言，不是命運判決。重大決定請以實際狀況與專業意見為準。若要核對數字，可以把同一組生日輸入其他專業排盤網站比對。</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/iztro@2.6.1/dist/iztro.min.js"></script>
+<script>
+/* ===================== 白話資料 ===================== */
+const PLANETS=[
+ {k:'Sun',zh:'太陽',ch:'日',core:'你的核心自我',long:'代表你是誰、想活成什麼樣子，也是你的活力來源。大家常說的「我是什麼座」就是指太陽星座。'},
+ {k:'Moon',zh:'月亮',ch:'月',core:'你的情緒與安全感',long:'代表你需要什麼才覺得安心、心情怎麼起伏，也是你在家或私底下放鬆時的樣子。'},
+ {k:'Mercury',zh:'水星',ch:'水',core:'你的思考和說話方式',long:'代表你怎麼想事情、怎麼學習、怎麼跟人溝通。'},
+ {k:'Venus',zh:'金星',ch:'金',core:'你喜歡什麼、怎麼去愛',long:'代表你的審美、享受方式，以及在感情裡被什麼吸引、怎麼表達好感。'},
+ {k:'Mars',zh:'火星',ch:'火',core:'你的行動力和脾氣',long:'代表你怎麼爭取想要的東西、做事的衝勁，以及生氣時的樣子。'},
+ {k:'Jupiter',zh:'木星',ch:'木',core:'你的好運與成長方向',long:'代表你容易順利、願意相信、會越做越大的地方。'},
+ {k:'Saturn',zh:'土星',ch:'土',core:'你的壓力和人生功課',long:'代表你覺得有責任、會害怕或卡住的地方。需要時間慢慢練，練成了就很穩。'},
+ {k:'Uranus',zh:'天王星',ch:'天',core:'你想突破的地方',long:'代表你想與眾不同、打破常規的部分。它走得很慢，同年紀的人星座都差不多，所以宮位比星座更有個人意義。',gen:true},
+ {k:'Neptune',zh:'海王星',ch:'海',core:'你的夢想與想像',long:'代表理想、靈感，也代表容易看不清、想得太美的地方。它是世代星，宮位比星座更有個人意義。',gen:true},
+ {k:'Pluto',zh:'冥王星',ch:'冥',core:'你深層的執著與蛻變',long:'代表你會非常執著、最後會徹底改變的地方。它是世代星，宮位比星座更有個人意義。',gen:true},
+];
+const SIGNS=[
+ {zh:'牡羊',ch:'羊',el:'fire',mode:'開創',style:'直接、搶第一、說做就做',long:'熱血直接，想到就做，不喜歡等。缺點是急、沒耐性。'},
+ {zh:'金牛',ch:'牛',el:'earth',mode:'固定',style:'穩定、務實、重視實際享受',long:'慢慢來但很穩，重視安全感和舒服的生活。缺點是固執、不愛改變。'},
+ {zh:'雙子',ch:'雙',el:'air',mode:'變動',style:'好奇、靈活、愛聊天交流',long:'反應快、興趣廣，喜歡新鮮資訊。缺點是三分鐘熱度、容易分心。'},
+ {zh:'巨蟹',ch:'蟹',el:'water',mode:'開創',style:'照顧人、重感情、需要安全感',long:'顧家、念舊、很會照顧人。缺點是容易受傷、情緒化。'},
+ {zh:'獅子',ch:'獅',el:'fire',mode:'固定',style:'大方、有自信、希望被看見',long:'熱情慷慨，喜歡當主角、被肯定。缺點是愛面子、怕被忽略。'},
+ {zh:'處女',ch:'處',el:'earth',mode:'變動',style:'細心、講究方法、追求做對',long:'注重細節、做事有條理、願意服務別人。缺點是挑剔、容易焦慮。'},
+ {zh:'天秤',ch:'秤',el:'air',mode:'開創',style:'重和諧、在意公平與美感',long:'有禮貌、懂得協調、品味好。缺點是猶豫不決、太在意別人看法。'},
+ {zh:'天蠍',ch:'蠍',el:'water',mode:'固定',style:'深入、專注、愛恨分明',long:'專注、洞察力強、感情深。缺點是佔有慾、不輕易信任人。'},
+ {zh:'射手',ch:'射',el:'fire',mode:'變動',style:'樂觀、愛自由、追求意義',long:'樂觀開朗、愛冒險和學習。缺點是不耐拘束、說話太直。'},
+ {zh:'摩羯',ch:'摩',el:'earth',mode:'開創',style:'有規劃、能吃苦、看重成就',long:'務實有責任感，願意長期努力。缺點是太嚴肅、壓力大。'},
+ {zh:'水瓶',ch:'瓶',el:'air',mode:'固定',style:'獨立、理性、想法前衛',long:'有自己的想法，重視自由和朋友。缺點是有距離感、不愛被管。'},
+ {zh:'雙魚',ch:'魚',el:'water',mode:'變動',style:'敏感、有同理心、富想像力',long:'溫柔體貼、直覺強、有藝術感。缺點是容易逃避、界線模糊。'},
+];
+const ELEM={fire:{zh:'火',tip:'熱情、行動'},earth:{zh:'土',tip:'務實、穩定'},air:{zh:'風',tip:'思考、交流'},water:{zh:'水',tip:'感受、情感'}};
+const HOUSES=['自我形象與第一印象','金錢、物質與自我價值','溝通、學習、兄弟姊妹','家庭、根源與內心的安全基地','戀愛、玩樂、創作與小孩','日常工作、作息與健康','伴侶、合作與一對一關係','共享資源、親密與深層轉變','遠行、信念與進修','事業、社會地位與公眾形象','朋友、社群與未來願望','潛意識、獨處與看不見的地方'];
+const ASPECTS=[
+ {a:0,zh:'合相',orb:8,tone:'conj',say:'兩股力量綁在一起，互相放大'},
+ {a:60,zh:'六合',orb:5,tone:'good',say:'小幫手，主動一點就能互相成全'},
+ {a:90,zh:'刑相',orb:7,tone:'bad',say:'互相拉扯，會卡住，但也逼你成長'},
+ {a:120,zh:'拱相',orb:7,tone:'good',say:'天生順暢，不太費力就能配合'},
+ {a:180,zh:'沖相',orb:8,tone:'bad',say:'兩邊擺盪，要學會找平衡'},
+];
+
+const PALACE={
+ '命宮':'你是怎樣的人：個性、天賦和整體人生基調。',
+ '兄弟':'和兄弟姊妹、親近同輩的關係。',
+ '夫妻':'你的感情模式，以及你會吸引、適合的伴侶。',
+ '子女':'和孩子、晚輩的緣分，也代表創作和合夥。',
+ '財帛':'你賺錢和用錢的方式、對金錢的態度。',
+ '疾厄':'身體體質，以及壓力容易累積在哪裡。',
+ '遷移':'出外、在外面的表現，和外界互動的運氣。',
+ '僕役':'朋友、同事、下屬與人脈（也叫交友宮）。',
+ '官祿':'工作與事業的型態、做事風格。',
+ '田宅':'家庭環境、住所、不動產和家的氣氛。',
+ '福德':'內心的享受、精神狀態、興趣和福氣。',
+ '父母':'和父母、長輩、上司的關係，也和文書、考試有關。',
+};
+const MAJOR={
+ '紫微':{t:'帝王星',s:'有領導氣質、自尊心強，想掌握全局。',g:'有格局、扛得起責任',w:'好面子、不愛聽人指揮'},
+ '天機':{t:'智慧星',s:'腦筋轉得快、善於規劃，常常想很多。',g:'點子多、反應快',w:'想太多、計畫常變'},
+ '太陽':{t:'發光的星',s:'熱心、大方，喜歡付出和照顧人。',g:'有正義感、願意承擔',w:'太累、付出被當成理所當然'},
+ '武曲':{t:'財星、將星',s:'果斷務實，重視結果和效率。',g:'執行力強、會理財',w:'說話直、給人剛硬的感覺'},
+ '天同':{t:'福星',s:'溫和隨和，懂得享受生活。',g:'人緣好、心態樂觀',w:'容易懶散、少了衝勁'},
+ '廉貞':{t:'次桃花星',s:'有原則、好勝，感情濃烈。',g:'有公關能力、做事有規矩',w:'情緒起伏大、太在意輸贏'},
+ '天府':{t:'財庫星',s:'穩重包容，擅長守成和管理。',g:'穩健、能聚財',w:'偏保守、不愛冒險'},
+ '太陰':{t:'月亮星',s:'細膩溫柔，重視家和內在感受。',g:'心思細、有美感、會存錢',w:'敏感多慮、有事悶在心裡'},
+ '貪狼':{t:'桃花星',s:'多才多藝、愛交際，慾望和好奇心都強。',g:'學得快、人緣佳',w:'興趣太多不專一、容易沉迷'},
+ '巨門':{t:'口才星',s:'觀察細、愛追根究柢，很會說。',g:'分析力強，適合靠專業和口才吃飯',w:'容易多疑，話說太重引起是非'},
+ '天相':{t:'印星',s:'重形象、守規矩，擅長協調。',g:'公正、很會輔佐別人',w:'受環境影響大、不易下決定'},
+ '天梁':{t:'蔭星',s:'成熟穩重、愛照顧人，有長者風範。',g:'能化解困難、常有貴人',w:'愛說教、管太多'},
+ '七殺':{t:'將星',s:'獨立勇敢，敢衝敢拚。',g:'開創力強、不怕困難',w:'衝動、人生起伏較大'},
+ '破軍':{t:'先鋒星',s:'喜歡破舊立新，追求改變。',g:'有改革力，敢做別人不敢做的事',w:'不安定、花費或耗損大'},
+};
+const MINOR={
+ '左輔':'助力星：身邊常有人幫忙，人緣好。','右弼':'助力星：有人暗中支援，懂得配合別人。',
+ '文昌':'文才星：會讀書、考試運好、文字能力強。','文曲':'才藝星：口才和才藝好，有藝術感。',
+ '天魁':'貴人星：容易得到長輩、上司的明面幫助。','天鉞':'貴人星：常有人在背後默默幫忙。',
+ '祿存':'財祿星：收入穩定，花錢偏保守。','天馬':'驛馬星：變動、奔波，也代表外出的機會。',
+ '擎羊':'衝勁很強，但容易衝突、受小傷。','陀羅':'事情容易拖延，心裡比較糾結。',
+ '火星':'脾氣急、爆發力強，來得快去得快。','鈴星':'情緒會悶著累積，久了才爆發。',
+ '地空':'想法天馬行空，不太在乎錢，物質容易落空。','地劫':'容易因大意而破財，起伏較多。',
+};
+const MUT={'祿':'這顆星管的事比較順，有收穫、有人緣。','權':'這顆星管的事你想主導，也比較有實權和能力。','科':'這顆星管的事容易被看見、有好名聲，遇到問題有人幫忙解。','忌':'這顆星管的事你最在意，也最容易卡住，是這輩子的重點功課。'};
+const BRIGHT={'廟':'最亮，優點完全發揮','旺':'很亮，表現很好','得':'不錯，能正常發揮','利':'尚可，有一點力量','平':'普通，好壞參半','不':'力量偏弱','陷':'最弱，優點不易發揮，缺點較明顯'};
+
+const CITIES=[
+ ['台北',25.04,121.56,8],['新北',25.01,121.47,8],['基隆',25.13,121.74,8],['桃園',24.99,121.30,8],['新竹',24.80,120.97,8],['苗栗',24.56,120.82,8],['台中',24.15,120.67,8],['彰化',24.08,120.54,8],['南投',23.91,120.69,8],['雲林',23.71,120.43,8],['嘉義',23.48,120.45,8],['台南',22.99,120.21,8],['高雄',22.63,120.30,8],['屏東',22.67,120.49,8],['宜蘭',24.75,121.75,8],['花蓮',23.99,121.60,8],['台東',22.76,121.14,8],['澎湖',23.57,119.58,8],['金門',24.43,118.32,8],['馬祖',26.16,119.95,8],
+ ['香港',22.32,114.17,8],['澳門',22.20,113.54,8],['北京',39.90,116.40,8],['上海',31.23,121.47,8],['廣州',23.13,113.26,8],['深圳',22.54,114.06,8],['廈門',24.48,118.09,8],['成都',30.66,104.07,8],['新加坡',1.35,103.82,8],['吉隆坡',3.14,101.69,8],['曼谷',13.76,100.50,7],['東京',35.68,139.69,9],['首爾',37.57,126.98,9],['雪梨',-33.87,151.21,10],['倫敦',51.51,-0.13,0],['紐約',40.71,-74.01,-5],['洛杉磯',34.05,-118.24,-8],['溫哥華',49.28,-123.12,-8],['其他（用進階自訂）',null,null,null]
+];
+
+/* ===================== 計算 ===================== */
+const D2R=Math.PI/180,R2D=180/Math.PI,norm=x=>((x%360)+360)%360;
+function westChart(utc,lat,lon){
+  const A=Astronomy,t=A.MakeTime(utc);
+  const L=(b,tt)=>b==='Moon'?A.EclipticGeoMoon(tt).lon:b==='Sun'?A.SunPosition(tt).elon:A.Ecliptic(A.GeoVector(b,tt,true)).elon;
+  const pos={};
+  for(const p of PLANETS){const l=L(p.k,t);let d=norm(l-L(p.k,t.AddDays(-0.5)));if(d>180)d-=360;pos[p.k]={lon:l,retro:d<0};}
+  const ramc=norm(A.SiderealTime(t)*15+lon);
+  const e=(23.4392911-0.0130042*(t.tt/36525))*D2R,ra=ramc*D2R,ph=lat*D2R;
+  const mc=norm(Math.atan2(Math.sin(ra),Math.cos(ra)*Math.cos(e))*R2D);
+  const asc=norm(Math.atan2(Math.cos(ra),-(Math.sin(ra)*Math.cos(e)+Math.tan(ph)*Math.sin(e)))*R2D);
+  function cusp(f,off,above){let r=ramc+off,lam;
+    for(let i=0;i<60;i++){lam=norm(Math.atan2(Math.sin(r*D2R),Math.cos(r*D2R)*Math.cos(e))*R2D);
+      const dec=Math.asin(Math.sin(e)*Math.sin(lam*D2R)),x=Math.tan(ph)*Math.tan(dec);
+      if(Math.abs(x)>1)return null;const ad=Math.asin(x)*R2D;
+      const rn=above?ramc+f*(90+ad):ramc+180-f*(90-ad);
+      if(Math.abs(norm(rn-r+180)-180)<1e-7)break;r=rn;}
+    return lam;}
+  const c11=cusp(1/3,30,true),c12=cusp(2/3,60,true),c2=cusp(2/3,120,false),c3=cusp(1/3,150,false);
+  let houses,hs='Placidus';
+  if([c11,c12,c2,c3].some(v=>v==null)){houses=[...Array(12)].map((_,i)=>norm(asc+30*i));hs='等宮制（高緯度改用）';}
+  else houses=[asc,c2,c3,norm(mc+180),norm(c11+180),norm(c12+180),norm(asc+180),norm(c2+180),norm(c3+180),mc,c11,c12];
+  for(const p of PLANETS)pos[p.k].house=houseOf(pos[p.k].lon,houses);
+  const asp=[];
+  for(let i=0;i<PLANETS.length;i++)for(let j=i+1;j<PLANETS.length;j++){
+    const a=PLANETS[i],b=PLANETS[j];let d=Math.abs(pos[a.k].lon-pos[b.k].lon);if(d>180)d=360-d;
+    const lum=(a.k==='Sun'||a.k==='Moon'||b.k==='Sun'||b.k==='Moon')?2:0;
+    for(const s of ASPECTS){const o=Math.abs(d-s.a);if(o<=s.orb+lum){asp.push({a:a.k,b:b.k,type:s,orb:o});break;}}
+  }
+  asp.sort((x,y)=>x.orb-y.orb);
+  return {pos,asc,mc,houses,asp,hs};
+}
+function houseOf(l,h){for(let i=0;i<12;i++){const a=h[i],b=h[(i+1)%12];const span=norm(b-a);if(norm(l-a)<span)return i+1;}return 1;}
+const signOf=l=>Math.floor(norm(l)/30);
+const fmtDeg=l=>{const x=norm(l)%30;const d=Math.floor(x),m=Math.floor((x-d)*60);return `${d}°${String(m).padStart(2,'0')}′`;};
+const P=k=>PLANETS.find(p=>p.k===k);
+
+/* ===================== 狀態 ===================== */
+const $=s=>document.querySelector(s);
+const SAMPLE={date:'1995-08-20',time:'14:30',g:'女',city:'台中',dst:false};
+let W=null,Z=null,ZH=null,ageNow=0,selW='Sun',selZ=null;
+
+function fillCities(){const s=$('#f-city');CITIES.forEach(c=>{const o=document.createElement('option');o.value=c[0];o.textContent=c[0];s.appendChild(o);});
+  s.addEventListener('change',()=>{const c=CITIES.find(x=>x[0]===s.value);if(c&&c[1]!=null){$('#f-lat').value=c[1];$('#f-lon').value=c[2];$('#f-tz').value=c[3];}else{$('.adv').open=true;}});}
+function setForm(v){$('#f-date').value=v.date;$('#f-time').value=v.time;$(v.g==='男'?'#f-g-m':'#f-g-f').checked=true;$('#f-city').value=v.city;$('#f-city').dispatchEvent(new Event('change'));if(v.lat!=null){$('#f-lat').value=v.lat;$('#f-lon').value=v.lon;$('#f-tz').value=v.tz;}$('#f-dst').checked=!!v.dst;}
+function readForm(){return{date:$('#f-date').value,time:$('#f-time').value,g:document.querySelector('input[name=g]:checked').value,city:$('#f-city').value,dst:$('#f-dst').checked,lat:parseFloat($('#f-lat').value),lon:parseFloat($('#f-lon').value),tz:parseFloat($('#f-tz').value)};}
+
+function compute(v){
+  const err=$('#err');err.hidden=true;
+  if(!v.date||!v.time){err.textContent='請填入出生日期和出生時間。不知道確切時間的話，可以先填大概的時間，但上升星座、宮位和紫微命盤可能會不準。';err.hidden=false;return false;}
+  if([v.lat,v.lon,v.tz].some(isNaN)){err.textContent='請選擇出生地，或在「進階」填入經緯度和時區。';err.hidden=false;return false;}
+  const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
+  const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0);           // 當地標準時間（以 UTC 欄位表示）
+  const utc=new Date(stdMs-v.tz*3600e3);
+  W=westChart(utc,v.lat,v.lon);
+  const sd=new Date(stdMs),sh=sd.getUTCHours();
+  const ti=sh===23?12:Math.floor((sh+1)/2);
+  const ds=`${sd.getUTCFullYear()}-${sd.getUTCMonth()+1}-${sd.getUTCDate()}`;
+  Z=iztro.astro.bySolar(ds,ti,v.g,true,'zh-TW');
+  try{ZH=Z.horoscope(new Date());}catch(e){ZH=null;}
+  ageNow=ZH?ZH.age.nominalAge:0;
+  Z._ti=ti;Z._std=sd;
+  selZ=Z.palaces.findIndex(p=>p.name==='命宮');
+  return true;
+}
+
+/* ===================== 星盤繪製 ===================== */
+const C=270;
+function xy(l,r){const th=(180+(l-W.asc))*D2R;return[C+r*Math.cos(th),C-r*Math.sin(th)];}
+function arc(l1,l2,r1,r2){const[a,b]=xy(l1,r2),[c,d]=xy(l2,r2),[e,f]=xy(l2,r1),[g,h]=xy(l1,r1);
+  return `M${a},${b} A${r2},${r2} 0 0 0 ${c},${d} L${e},${f} A${r1},${r1} 0 0 1 ${g},${h}Z`;}
+function drawWheel(){
+  const svg=$('#wheel');const R0=262,R1=226,R2=112,RP=184;let s='';
+  SIGNS.forEach((sg,i)=>{const l=i*30;s+=`<path d="${arc(l,l+30,R1,R0)}" fill="var(--${sg.el})" fill-opacity="${i%2?0.10:0.17}" stroke="var(--line)"/>`;
+    const[x,y]=xy(l+15,(R0+R1)/2);s+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="700" fill="var(--${sg.el})">${sg.ch}</text>`;});
+  s+=`<circle cx="${C}" cy="${C}" r="${R1}" fill="none" stroke="var(--line)"/><circle cx="${C}" cy="${C}" r="${R2}" fill="var(--sunk)" stroke="var(--line)"/>`;
+  for(let d=0;d<360;d+=5){const[a,b]=xy(d,R1),[c,e]=xy(d,R1-(d%30===0?0:d%10===0?7:4));if(d%30)s+=`<line x1="${a}" y1="${b}" x2="${c}" y2="${e}" stroke="var(--muted)" stroke-opacity=".5"/>`;}
+  W.houses.forEach((h,i)=>{const ang=i===0||i===9;const[a,b]=xy(h,R2),[c,d]=xy(h,ang?R0+4:R1);
+    s+=`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${ang?'var(--ink)':'var(--line)'}" stroke-width="${ang?2:1}"/>`;
+    const mid=h+norm(W.houses[(i+1)%12]-h)/2;const[x,y]=xy(mid,R2+14);s+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--muted)" class="mono">${i+1}</text>`;});
+  {const[x,y]=xy(W.asc,R0-10);s+=`<text x="${x+2}" y="${y-10}" font-size="11" font-weight="700" fill="var(--ink)">上升</text>`;
+   const[mx,my]=xy(W.mc,R0-6);s+=`<text x="${mx+6}" y="${my+4}" font-size="11" font-weight="700" fill="var(--ink)">天頂</text>`;}
+  // aspects
+  for(const a of W.asp){const[x1,y1]=xy(W.pos[a.a].lon,R2-4),[x2,y2]=xy(W.pos[a.b].lon,R2-4);
+    const col=a.type.tone==='good'?'var(--good)':a.type.tone==='bad'?'var(--seal)':'var(--accent)';
+    const on=selW&&(a.a===selW||a.b===selW);
+    if(a.type.a===0){continue;}
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${on?2:1.2}" stroke-opacity="${selW?(on?0.95:0.15):0.6}"/>`;}
+  // planets spread
+  const arr=PLANETS.map(p=>({k:p.k,l:W.pos[p.k].lon,d:W.pos[p.k].lon}));arr.sort((a,b)=>a.l-b.l);
+  for(let it=0;it<40;it++){let moved=false;for(let i=0;i<arr.length;i++){const a=arr[i],b=arr[(i+1)%arr.length];let df=norm(b.d-a.d);if(df<10){a.d-= (10-df)/2;b.d+=(10-df)/2;moved=true;}}if(!moved)break;}
+  for(const o of arr){const p=P(o.k);const[t1,t2]=xy(o.l,R1),[t3,t4]=xy(o.l,R1-10),[cx,cy]=xy(o.d,RP),[l1,l2]=xy(o.l,R1-10),[l3,l4]=xy(o.d,RP+15);
+    s+=`<line x1="${t1}" y1="${t2}" x2="${t3}" y2="${t4}" stroke="var(--ink)" stroke-width="2"/><line x1="${l1}" y1="${l2}" x2="${l3}" y2="${l4}" stroke="var(--muted)" stroke-opacity=".5"/>`;
+    s+=`<g class="pl${selW===o.k?' on':''}" data-k="${o.k}" tabindex="0" role="button" aria-label="${p.zh}"><circle class="bg" cx="${cx}" cy="${cy}" r="15"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central">${p.ch}</text>${W.pos[o.k].retro?`<text x="${cx+13}" y="${cy+12}" font-size="9" style="font-family:var(--f-body);font-weight:700;fill:var(--seal)">R</text>`:''}</g>`;}
+  svg.innerHTML=s;
+  svg.querySelectorAll('.pl').forEach(g=>{const f=()=>{selW=g.dataset.k;drawWheel();showPlanet();};g.addEventListener('click',f);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f();}});});
+}
+function planetLine(k){const p=P(k),q=W.pos[k],sg=SIGNS[signOf(q.lon)];return `${p.core}，用「${sg.style}」的方式表現，主要用在「${HOUSES[q.house-1]}」。`;}
+function showPlanet(){
+  const k=selW,p=P(k),q=W.pos[k],sg=SIGNS[signOf(q.lon)];
+  const asp=W.asp.filter(a=>a.a===k||a.b===k);
+  const el=$('#w-detail');
+  el.innerHTML=`<div><div class="eyebrow">你點的是</div><h2>${p.zh}在${sg.zh}座・第 ${q.house} 宮</h2></div>
+  <p class="say"><strong>${p.zh}</strong>是${p.core}。它落在<strong>${sg.zh}座</strong>，所以表現得${sg.style}；在<strong>第 ${q.house} 宮</strong>，代表這股力量主要用在${HOUSES[q.house-1]}。</p>
+  <div class="chips"><span class="chip mono">${sg.zh} ${fmtDeg(q.lon)}</span><span class="chip">${ELEM[sg.el].zh}象・${sg.mode}</span>${q.retro?'<span class="chip bad">逆行</span>':''}${p.gen?'<span class="chip hold">世代星</span>':''}</div>
+  <div class="block"><h4>${p.zh}代表什麼</h4><p>${p.long}</p></div>
+  <div class="block"><h4>${sg.zh}座的風格</h4><p>${sg.long}</p></div>
+  ${q.retro?`<div class="block"><h4>逆行是什麼意思</h4><p>從地球看，這顆星當時像在倒退走。一般解讀是這股力量比較內化，你會習慣先在心裡反覆想過，再表現出來。它不代表壞事。</p></div>`:''}
+  <div class="block"><h4>和其他行星的關係</h4>${asp.length?`<div class="chips" style="flex-direction:column;align-items:flex-start;gap:8px">${asp.map(a=>{const o=P(a.a===k?a.b:a.a);return `<div style="font-size:14px"><span class="chip ${a.type.tone==='good'?'good':a.type.tone==='bad'?'bad':'acc'}">${a.type.zh}</span> ${o.zh}：${a.type.say}（${p.core.replace('你的','')}和${o.core.replace('你的','').replace('你','')}）</div>`;}).join('')}</div>`:'<p class="muted">這顆星沒有和其他行星形成主要相位，表現比較獨立。</p>'}</div>`;
+}
+function westSummary(){
+  const sun=SIGNS[signOf(W.pos.Sun.lon)],moon=SIGNS[signOf(W.pos.Moon.lon)],asc=SIGNS[signOf(W.asc)];
+  const cnt={fire:0,earth:0,air:0,water:0};['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'].forEach(k=>cnt[SIGNS[signOf(W.pos[k].lon)].el]++);cnt[asc.el]++;
+  const mx=Math.max(...Object.values(cnt));const top=Object.keys(cnt).filter(k=>cnt[k]===mx).map(k=>ELEM[k].zh).join('、');
+  $('#w-sum').innerHTML=`
+  <div class="card"><span class="q">你是誰</span><span class="big">太陽 ${sun.zh}座</span><p>核心性格${sun.style}。</p></div>
+  <div class="card"><span class="q">你需要什麼</span><span class="big">月亮 ${moon.zh}座</span><p>情緒上${moon.style}，這樣才覺得安心。</p></div>
+  <div class="card"><span class="q">別人第一眼看到的你</span><span class="big">上升 ${asc.zh}座</span><p>給人的印象是${asc.style}。</p></div>
+  <div class="card"><span class="q">四元素比例</span><div class="elem">${Object.keys(cnt).map(k=>`<div class="erow"><span>${ELEM[k].zh}</span><div class="ebar"><span style="width:${cnt[k]/8*100}%;background:var(--${k})"></span></div><span class="mono">${cnt[k]}</span></div>`).join('')}</div><p>${top}元素最多，偏向${Object.keys(cnt).filter(k=>cnt[k]===mx).map(k=>ELEM[k].tip).join('、')}。</p></div>`;
+}
+function westTable(){
+  const rows=PLANETS.map(p=>{const q=W.pos[p.k],sg=SIGNS[signOf(q.lon)];return `<tr data-k="${p.k}"><td class="p">${p.zh}${q.retro?' <span class="chip bad">逆行</span>':''}</td><td>${sg.zh}座 <span class="mono muted">${fmtDeg(q.lon)}</span></td><td class="mono">${q.house}</td><td>${planetLine(p.k)}</td></tr>`;});
+  rows.push(`<tr><td class="p">上升點</td><td>${SIGNS[signOf(W.asc)].zh}座 <span class="mono muted">${fmtDeg(W.asc)}</span></td><td class="mono">1</td><td>別人第一眼看到的你，也是第 1 宮的起點。</td></tr>`);
+  rows.push(`<tr><td class="p">天頂</td><td>${SIGNS[signOf(W.mc)].zh}座 <span class="mono muted">${fmtDeg(W.mc)}</span></td><td class="mono">10</td><td>你在社會上想被認識的樣子，也是事業方向的指標。</td></tr>`);
+  $('#w-table').innerHTML=rows.join('');
+  $('#w-table').querySelectorAll('tr[data-k]').forEach(r=>r.addEventListener('click',()=>{selW=r.dataset.k;drawWheel();showPlanet();$('#w-detail').scrollIntoView({behavior:'smooth',block:'nearest'});}));
+}
+
+/* ===================== 紫微繪製 ===================== */
+const POS={3:[1,1],4:[1,2],5:[1,3],6:[1,4],2:[2,1],7:[2,4],1:[3,1],8:[3,4],0:[4,1],11:[4,2],10:[4,3],9:[4,4]};
+const pn=n=>n==='命宮'?'命宮':n+'宮';
+function starHTML(s){return `<span>${s.name}${s.brightness?`<sup>${s.brightness}</sup>`:''}${s.mutagen?`<span class="mut ${s.mutagen}">${s.mutagen}</span>`:''}</span>`;}
+function drawZW(){
+  const g=$('#zw');let h='';
+  const dec=ZH?ZH.decadal.index:-1,yr=ZH?ZH.yearly.index:-1;
+  Z.palaces.forEach((p,i)=>{const[r,c]=POS[i];const minor=p.minorStars.filter(s=>MINOR[s.name]);
+    h+=`<button type="button" class="cell${p.name==='命宮'?' ming':''}${i===dec?' dec':''}${i===selZ?' on':''}" style="grid-row:${r};grid-column:${c}" data-i="${i}" aria-label="${pn(p.name)}">
+      <div class="stars">${p.majorStars.length?p.majorStars.map(starHTML).join(''):'<span class="muted" style="font-weight:400;font-size:12px">空宮</span>'}</div>
+      ${minor.length?`<div class="minor">${minor.map(s=>s.name+(s.mutagen?`<span class="mut ${s.mutagen}">${s.mutagen}</span>`:'')).join(' ')}</div>`:''}
+      <div class="foot"><div><div class="tags">${p.isBodyPalace?'<span class="tag body">身</span>':''}${i===dec?'<span class="tag dc">大限</span>':''}${i===yr?'<span class="tag yr">流年</span>':''}</div><div class="pname">${pn(p.name)}</div></div><div style="text-align:right"><div class="gz">${p.heavenlyStem}${p.earthlyBranch}</div><div class="age">${p.decadal.range.join('–')}</div></div></div></button>`;});
+  const sd=Z._std;
+  h+=`<div class="center"><div class="nm">紫微命盤</div><div>國曆 ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${Z.time}</div><div>農曆 ${Z.lunarDate}</div><div>${Z.chineseDate}</div><div class="kl"><span>${Z.fiveElementsClass}</span><span>命主 ${Z.soul}</span><span>身主 ${Z.body}</span></div><div class="kl"><span><span class="mut 祿">祿</span>順</span><span><span class="mut 權">權</span>掌握</span><span><span class="mut 科">科</span>名聲</span><span><span class="mut 忌">忌</span>功課</span></div><div style="font-size:11px">右上角小字是亮度，右下數字是大限年齡（虛歲）</div></div>`;
+  g.innerHTML=h;
+  g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
+}
+function majorBlock(s){const m=MAJOR[s.name];return `<div class="block"><h4>${s.name}・${m.t}${s.brightness?` <span class="chip">${s.brightness}：${BRIGHT[s.brightness]}</span>`:''}${s.mutagen?` <span class="mut ${s.mutagen}">化${s.mutagen}</span>`:''}</h4><p>${m.s}</p><div class="pros"><span class="t g">優點</span><span>${m.g}</span><span class="t w">要注意</span><span>${m.w}</span></div>${s.mutagen?`<p class="muted" style="font-size:13.5px">化${s.mutagen}：${MUT[s.mutagen]}</p>`:''}</div>`;}
+function showPalace(){
+  const i=selZ,p=Z.palaces[i],opp=Z.palaces[(i+6)%12];
+  const dec=ZH&&ZH.decadal.index===i,yr=ZH&&ZH.yearly.index===i;
+  const minor=p.minorStars.filter(s=>MINOR[s.name]);
+  const stars=p.majorStars.length?p.majorStars:opp.majorStars;
+  const sumLine=p.majorStars.length?`這裡住的是<strong>${p.majorStars.map(s=>s.name).join('、')}</strong>，所以在這方面你${p.majorStars.map(s=>MAJOR[s.name].s.replace(/。$/,'')).join('；同時也')}。`
+    :`這是<strong>空宮</strong>，沒有主星。看法是借對面的${pn(opp.name)}（${opp.majorStars.map(s=>s.name).join('、')||'也是空宮'}）來參考，代表這方面比較受環境和身邊的人影響，彈性也比較大。`;
+  $('#z-detail').innerHTML=`<div><div class="eyebrow">你點的是</div><h2>${pn(p.name)}<span class="muted" style="font-size:15px;font-weight:400">　${p.heavenlyStem}${p.earthlyBranch}</span></h2></div>
+  <p class="say">${pn(p.name)}管的是<strong>${PALACE[p.name].replace(/。$/,'')}</strong>。${sumLine}</p>
+  <div class="chips">${p.isBodyPalace?'<span class="chip acc">身宮在這</span>':''}${dec?'<span class="chip hold">你現在的大限</span>':''}${yr?'<span class="chip bad">今年流年</span>':''}<span class="chip mono">大限 ${p.decadal.range.join('–')} 歲</span></div>
+  ${p.isBodyPalace?`<div class="block"><h4>身宮是什麼</h4><p>命宮看先天的個性，身宮看後天的重心。中年以後，你會越來越在意${PALACE[p.name].replace(/。$/,'').replace(/^你/,'')}這一塊。</p></div>`:''}
+  ${dec?`<div class="block"><h4>這十年的重點</h4><p>你 ${p.decadal.range[0]} 到 ${p.decadal.range[1]} 歲（虛歲）走這個宮，這段時間生活的重心會落在「${PALACE[p.name].replace(/。$/,'')}」。${ZH.decadal.mutagen?`這個大限的四化是：${['祿','權','科','忌'].map((m,j)=>`${ZH.decadal.mutagen[j]}化${m}`).join('、')}。`:''}</p></div>`:''}
+  ${yr?`<div class="block"><h4>今年（${ZH.yearly.heavenlyStem}${ZH.yearly.earthlyBranch}年）</h4><p>今年的流年命宮落在這裡，今年特別容易碰到和「${PALACE[p.name].replace(/。$/,'')}」有關的事。</p></div>`:''}
+  ${(p.majorStars.length?'':`<p class="hint">以下是借來參考的${pn(opp.name)}主星：</p>`)+stars.map(majorBlock).join('')}
+  ${minor.length?`<div class="block"><h4>其他重要的星</h4>${minor.map(s=>`<p><b>${s.name}</b>${s.mutagen?`<span class="mut ${s.mutagen}">化${s.mutagen}</span>`:''}：${MINOR[s.name]}</p>`).join('')}</div>`:''}
+  <p class="hint">進階看法會同時看這一宮、對宮和左右兩個三合宮（合稱三方四正）。</p>`;
+}
+function zwSummary(){
+  const ming=Z.palaces.find(p=>p.name==='命宮'),body=Z.palaces.find(p=>p.isBodyPalace);
+  const mi=Z.palaces.indexOf(ming),opp=Z.palaces[(mi+6)%12];
+  const ms=ming.majorStars.length?ming.majorStars.map(s=>s.name).join('・'):`空宮（借${opp.majorStars.map(s=>s.name).join('・')||'—'}）`;
+  const msDesc=(ming.majorStars.length?ming.majorStars:opp.majorStars).map(s=>MAJOR[s.name]?.s.replace(/。$/,'')).filter(Boolean).join('；');
+  const dec=ZH?Z.palaces[ZH.decadal.index]:null,yr=ZH?Z.palaces[ZH.yearly.index]:null;
+  const ji=[];Z.palaces.forEach(p=>[...p.majorStars,...p.minorStars].forEach(s=>{if(s.mutagen)ji.push({m:s.mutagen,s:s.name,p:pn(p.name)});}));
+  const order=['祿','權','科','忌'];ji.sort((a,b)=>order.indexOf(a.m)-order.indexOf(b.m));
+  $('#z-sum').innerHTML=`
+  <div class="card"><span class="q">你是怎樣的人（命宮）</span><span class="big">${ms}</span><p>${msDesc}。</p></div>
+  <div class="card"><span class="q">後天的重心（身宮）</span><span class="big">${body.name==='命宮'?'命身同宮':pn(body.name)}</span><p>${body.name==='命宮'?'先天和後天一致，做自己就是你的重心。':`中年以後會越來越在意：${PALACE[body.name].replace(/。$/,'')}`}。</p></div>
+  ${dec?`<div class="card"><span class="q">現在這十年（${dec.decadal.range.join('–')} 歲）</span><span class="big">${pn(dec.name)}</span><p>重心落在${PALACE[dec.name].replace(/。$/,'').replace(/^你/,'')}。今年流年在${pn(yr.name)}。</p></div>`:''}
+  <div class="card"><span class="q">生年四化（一生最明顯的標記）</span><div style="display:flex;flex-direction:column;gap:3px;font-size:14px">${ji.map(x=>`<div><span class="mut ${x.m}">${x.m}</span> ${x.s}，在${x.p}</div>`).join('')}</div></div>`;
+}
+
+/* ===================== 啟動 ===================== */
+function renderAll(){drawWheel();showPlanet();westSummary();westTable();drawZW();showPalace();zwSummary();}
+function store(v){try{localStorage.setItem('kdwp-birth',JSON.stringify(v));}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem('kdwp-birth')||'null');}catch(e){return null;}}
+function tab(which){const w=which==='west';$('#t-west').setAttribute('aria-selected',w);$('#t-zw').setAttribute('aria-selected',!w);$('#p-west').hidden=!w;$('#p-zw').hidden=w;try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
+
+function boot(){
+  if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){$('#err').textContent='排盤程式沒有載入成功，請檢查網路後重新整理頁面。';$('#err').hidden=false;return;}
+  fillCities();
+  const saved=load();setForm(saved||SAMPLE);$('#sample-note').hidden=!!saved;
+  if(compute(readForm()))renderAll();
+  $('#birth').addEventListener('submit',e=>{e.preventDefault();const v=readForm();if(compute(v)){store(v);$('#sample-note').hidden=true;selW='Sun';renderAll();}});
+  $('#t-west').addEventListener('click',()=>tab('west'));$('#t-zw').addEventListener('click',()=>tab('zw'));
+  let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(t==='zw')tab('zw');
+}
+boot();
+</script>
+</body>
+</html>
