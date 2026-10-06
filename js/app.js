@@ -235,17 +235,17 @@ function boot(){
 /* ===================== 詳解 ===================== */
 /* ===================== 詳解彈出視窗 ===================== */
 const DLG={tab:null,i:0,secs:[]};const ADV={};
-function splitSections(html){const parts=html.split('<h3>').filter(x=>x.trim());return parts.map(x=>{const k=x.indexOf('</h3>');const full=x.slice(0,k).replace(/<[^>]+>/g,'');return{title:full.split(/[（：(]/)[0].trim()||full,full,html:x.slice(k+5)};});}
+function splitSections(html){return html.split('<h3').filter(x=>x.trim()).map(x=>{const gt=x.indexOf('>'),end=x.indexOf('</h3>');const km=x.slice(0,gt).match(/data-k="([^"]+)"/);const full=x.slice(gt+1,end).replace(/<[^>]+>/g,'');return{key:km?km[1]:'',full,html:x.slice(end+5)};});}
 /* 分類：同一類的段落放在同一頁（依中文詳解的標題比對） */
 const GROUPS={
- west:[['catW1',['更多星座面向']],['catW2',['行星落宮','@table','命主星與宮主星']],['catW3',['行星的力量狀態','元素、模式與半球']],['catW4',['主要相位','相位圖形與星群']],['catW5',['人生方向','目前的行運']]],
- zw:[['catZ1',['紫微斗數命盤分析','命盤格局','核心命格與性格']],['catZ2',['生年四化','宮干飛化']],['catZ3',['十二宮速覽']],['catZ4',['現階段大限分析','近期運勢核心','明年預覽','避險建議','@tool']],['catZ5',['桃花篇']]],
- hd:[['catH1',['人生角色的兩條爻']],['catH2',['九大能量中心','通道','@gates']],['catH3',['輪迴交叉']],['catH4',['更多生活建議']]]};
+ west:[['catW1',['w-more']],['catW2',['w-houses','@table','w-rulers']],['catW3',['w-dignity','w-balance']],['catW4',['w-aspects','w-patterns']],['catW5',['w-node','w-transits']]],
+ zw:[['catZ1',['z-info','z-patterns','z-core']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palaces']],['catZ4',['z-decade','z-year','z-next','z-advice','@tool']],['catZ5',['z-love']]],
+ hd:[['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]]};
 function openDetail(tab,i){
   const U=L.ui;DLG.tab=tab;const raw=splitSections(ADV[tab]||'');
   const special={'@table':{full:U.wTable,html:westTable()},'@tool':{full:U.toolZw,html:'<div class="zbar" id="dz-bar"></div><div class="zw" id="dz-grid"></div>',after:()=>zToolbar($('#dz-bar'),$('#dz-grid')),tool:1},'@gates':{full:U.toolHd,html:'<div class="hdcols">'+hdCols()+'</div>',tool:1}};
   const used=new Set();
-  const secs=GROUPS[tab].map(([key,keys])=>{const parts=[];keys.forEach(k=>{if(special[k]){parts.push(special[k]);return;}raw.forEach((x,j)=>{if(!used.has(j)&&x.full.startsWith(k)){used.add(j);parts.push(x);}});});return{title:U[key],parts};}).filter(g=>g.parts.length);
+  const secs=GROUPS[tab].map(([key,keys])=>{const parts=[];keys.forEach(k=>{if(special[k]){parts.push(special[k]);return;}raw.forEach((x,j)=>{if(!used.has(j)&&x.key===k){used.add(j);parts.push(x);}});});return{title:U[key],parts};}).filter(g=>g.parts.length);
   const rest=raw.filter((x,j)=>!used.has(j));if(rest.length)secs[secs.length-1].parts.push(...rest);
   DLG.secs=secs;
   $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]} ${U.dlgSuffix}`;
@@ -257,7 +257,7 @@ function openDetail(tab,i){
 }
 function showSection(k){
   if(k<0||k>=DLG.secs.length)return;DLG.i=k;const x=DLG.secs[k];
-  const note=L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
+  const note=!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   $('#dlg-body').innerHTML=`<article class="reading plain"><div class="body">${note}${x.parts.map(pt=>`<section class="dsec"><h3>${pt.full}</h3>${pt.html}</section>`).join('')}</div></article>`;
   x.parts.forEach(pt=>pt.after&&pt.after());
   $('#dlg-body').scrollTop=0;
@@ -265,20 +265,25 @@ function showSection(k){
   $('#dlg-prev').disabled=k===0;$('#dlg-next').disabled=k===DLG.secs.length-1;$('#dlg-count').textContent=`${k+1} / ${DLG.secs.length}`;
 }
 function closeDetail(){$('#dlg').close();document.body.classList.remove('dlg-open');}
+const RD=()=>(window.Readings&&Readings[LG])||Readings.zh;
+const HDL=()=>(window.HDS&&HDS[LG])||HDZ;
+const hasTr=()=>!!(window.Readings&&Readings[LG]);
 function readingCtx(){
-  const zh=I18N.zh,major={},minor={},bright={};
+  const zh=hasTr()?I18N[LG]:I18N.zh,major={},minor={},bright={};
   MAJOR_KEYS.forEach((k,i)=>major[k]=zh.major[i]);MINOR_KEYS.forEach((k,i)=>minor[k]=zh.minor[i][1]);BRIGHT_KEYS.forEach((k,i)=>bright[k]=zh.bright[i][1]);
   const horo=d=>{try{return Z.horoscope(d);}catch(e){return null;}};
-  return{major,minor,bright,palDesc:n=>zh.palaces[PALACE_KEYS.indexOf(n)][1],horoscope:horo,
+  return{lang:hasTr()?LG:'zh',major,minor,bright,palDesc:n=>zh.palaces[PALACE_KEYS.indexOf(n)][1],palName:n=>zh.palaces[PALACE_KEYS.indexOf(n)][0],
+    star:n=>{let i=MAJOR_KEYS.indexOf(n);if(i>=0)return zh.major[i][0];i=MINOR_KEYS.indexOf(n);return i>=0?zh.minor[i][0]:n;},
+    brightLabel:n=>{const i=BRIGHT_KEYS.indexOf(n);return i>=0?zh.bright[i][0]:n;},mutLabel:k=>zh.mut[MUT_KEYS.indexOf(k)][1],horoscope:horo,
     yearMid:y=>new Date(Date.UTC(y,6,1)),
     yearRange:y=>{const ny=yy=>{let lo=Date.UTC(yy,0,15),hi=Date.UTC(yy,1,25);const br=d=>{const h=horo(new Date(d));return h?h.yearly.earthlyBranch:'';};const b0=br(lo);
         while(hi-lo>86400000){const mid=lo+Math.floor((hi-lo)/86400000/2)*86400000;if(br(mid)===b0)lo=mid;else hi=mid;}return new Date(hi);};
       const a=ny(y),b=new Date(ny(y+1).getTime()-86400000);const f=d=>`${d.getUTCFullYear()}/${d.getUTCMonth()+1}/${d.getUTCDate()}`;return `${f(a)} － ${f(b)}`;}};
 }
 function renderReadings(){
-  const note=L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
+  const note=!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   const put=(id,tab,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;ADV[tab]=r.adv;};
-  put('#w-read','west',()=>Reading.west(W,Engine));put('#z-read','zw',()=>Reading.zw(Z,readingCtx()));put('#h-read','hd',()=>Reading.hd(HD,HDZ));
+  put('#w-read','west',()=>RD().west(W,Engine));put('#z-read','zw',()=>RD().zw(Z,readingCtx()));put('#h-read','hd',()=>RD().hd(HD,HDL()));
   document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
 }
 function copyReading(btn){
@@ -303,9 +308,9 @@ const SHAPE={head:'200,18 238,80 162,80',ajna:'162,98 238,98 200,160',throat:'16
 const CFILL={head:'var(--hd-yellow)',ajna:'var(--hd-green)',throat:'var(--hd-brown)',g:'var(--hd-yellow)',heart:'var(--hd-red)',spleen:'var(--hd-brown)',sp:'var(--hd-brown)',sacral:'var(--hd-red)',root:'var(--hd-brown)'};
 function hdBodyName(b){if(L.hd.bodies[b])return L.hd.bodies[b];return pl(b).name;}
 function hdSummary(){
-  const U=L.ui,X=L.hd,cr=Reading.crossName(HD,HDZ);
+  const U=L.ui,X=L.hd,cr=RD().crossName(HD,HDL());
   const num=(HDZ.crossTable[(HD.cross.angle==='right'?'R':HD.cross.angle==='left'?'L':'J')+HD.cross.gates[0]]||[])[1];
-  const crTxt=LG==='zh'?cr.full:`${X.angles[HD.cross.angle]}${cr.en?` · ${cr.en}${num?' '+num:''}`:''}`;
+  const crTxt=(LG==='zh'||hasTr())?cr.full:`${X.angles[HD.cross.angle]}${cr.en?` · ${cr.en}${num?' '+num:''}`:''}`;
   $('#h-sum').innerHTML=[[U.hdType,X.types[HD.type],'accent'],[U.hdProfile,HD.profile.join('/')],[U.hdAuth,X.auth[HD.authority]],[U.hdStrategy,X.strategy[HD.type]],]
     .map(([q,v,c])=>`<div class="card hd"><span class="q">${q}</span><span class="big${c?' '+c:''}">${v}</span></div>`).join('');
 }
@@ -332,14 +337,15 @@ function hdCols(){
 }
 function showHD(){
   const U=L.ui,X=L.hd,el=$('#h-detail');
-  if(!selH){const T=HDZ.types[HD.type];
-    el.innerHTML=`<div><div class="eyebrow">${U.hdType}</div><h2>${X.types[HD.type]}</h2></div><p class="say">${LG==='zh'?T.txt:X.strategy[HD.type]}</p><p class="hint">${U.hdClick}</p>`;return;}
-  if(selH.startsWith('ch')){const [a,b]=selH.slice(2).split('-').map(Number);const c=HDZ.channels[`${a}-${b}`];const on=HD.channels.some(x=>x[0]===a&&x[1]===b);
-    el.innerHTML=`<div><div class="eyebrow">${a}-${b}</div><h2>${c[0]}</h2></div>${U.readNote?`<p class="readnote">${U.readNote}</p>`:''}<div class="chips"><span class="chip ${on?'acc':''}">${on?U.hdDefined:U.hdOpen}</span></div><p class="say">${c[1]}：${c[2]}</p>
-    <div class="block"><p><b>${a}</b> ${HDZ.gates[a]}　<b>${b}</b> ${HDZ.gates[b]}</p></div>`;return;}
-  const c=selH,C=HDZ.centers[c],def=HD.defined.includes(c);
+  const HZ=HDL(),tr=HZ!==HDZ||LG==='zh',nt=!tr&&U.readNote?`<p class="readnote">${U.readNote}</p>`:'';
+  if(!selH){const T=HZ.types[HD.type];
+    el.innerHTML=`<div><div class="eyebrow">${U.hdType}</div><h2>${X.types[HD.type]}</h2></div><p class="say">${tr?T.txt:X.strategy[HD.type]}</p><p class="hint">${U.hdClick}</p>`;return;}
+  if(selH.startsWith('ch')){const [a,b]=selH.slice(2).split('-').map(Number);const c=HZ.channels[`${a}-${b}`];const on=HD.channels.some(x=>x[0]===a&&x[1]===b);
+    el.innerHTML=`<div><div class="eyebrow">${a}-${b}</div><h2>${c[0]}</h2></div>${nt}<div class="chips"><span class="chip ${on?'acc':''}">${on?U.hdDefined:U.hdOpen}</span></div><p class="say">${c[1]}${LG==='zh'||LG==='ja'?'：':' — '}${c[2]}</p>
+    <div class="block"><p><b>${a}</b> ${HZ.gates[a]}　<b>${b}</b> ${HZ.gates[b]}</p></div>`;return;}
+  const c=selH,C=HZ.centers[c],def=HD.defined.includes(c);
   const gs=Engine.CENTER_GATES[c].filter(g=>HD.gates[g]);
-  el.innerHTML=`<div><div class="eyebrow">${def?U.hdDefined:U.hdOpen}</div><h2>${X.centers[c]}</h2></div>${U.readNote?`<p class="readnote">${U.readNote}</p>`:''}<p class="say">${C.k}</p><p>${def?C.d:C.u}</p>
-   ${gs.length?`<div class="block"><h4>${U.hdGatesOn}</h4>${gs.map(g=>`<p><b>${g}</b> ${HDZ.gates[g]} <span class="chip ${HD.gates[g].p&&HD.gates[g].d?'acc':HD.gates[g].p?'':'bad'}">${HD.gates[g].p&&HD.gates[g].d?U.personality+' + '+U.design:HD.gates[g].p?U.personality:U.design}</span></p>`).join('')}</div>`:''}`;
+  el.innerHTML=`<div><div class="eyebrow">${def?U.hdDefined:U.hdOpen}</div><h2>${X.centers[c]}</h2></div>${nt}<p class="say">${C.k}</p><p>${def?C.d:C.u}</p>
+   ${gs.length?`<div class="block"><h4>${U.hdGatesOn}</h4>${gs.map(g=>`<p><b>${g}</b> ${HZ.gates[g]} <span class="chip ${HD.gates[g].p&&HD.gates[g].d?'acc':HD.gates[g].p?'':'bad'}">${HD.gates[g].p&&HD.gates[g].d?U.personality+' + '+U.design:HD.gates[g].p?U.personality:U.design}</span></p>`).join('')}</div>`:''}`;
 }
 boot();
