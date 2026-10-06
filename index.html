@@ -182,7 +182,7 @@ td.p{font-family:var(--f-display);font-weight:700;white-space:nowrap}
   .center .nm{font-size:15px}
 }
 
-footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:6px}
+
 .err{color:var(--seal);font-size:14px}
 @media (prefers-reduced-motion:no-preference){ .detail,.card{transition:border-color .2s} }
 
@@ -218,15 +218,34 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
 .reading small.br{color:var(--muted);font-size:.78em;margin:0 1px}
 .primerbox summary{cursor:pointer;font-size:14px;color:var(--accent);font-weight:700;width:max-content;max-width:100%}
 .primerbox[open] summary{margin-bottom:10px}
-.result.basic .adv-only{display:none!important}
-.result:not(.basic) .basic-only{display:none!important}
-.result.basic .hdstage{grid-template-columns:1fr}
+.hdstage{grid-template-columns:1fr!important}
 .tabrow{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
 .tabrow .tabs{border-bottom:0}
 .modesw{margin-bottom:8px}
 button.more{font:inherit;font-weight:700;align-self:flex-start;background:var(--accent-soft);color:var(--accent);border:1px solid transparent;border-radius:999px;padding:8px 18px;cursor:pointer}
 button.more:hover{border-color:var(--accent)}
-.advbody{border-top:1px solid var(--line);padding-top:6px}
+/* dialog */
+dialog.dlg{border:0;padding:0;background:transparent;max-width:none;max-height:none;width:min(900px,94vw);height:min(90vh,980px);color:var(--ink)}
+dialog.dlg::backdrop{background:rgba(10,14,30,.55)}
+.dlg-in{background:var(--panel);border:1px solid var(--line);border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden}
+.dlg-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 20px 10px}
+.dlg-head h2{font-size:21px}
+.dlg-act{display:flex;gap:8px;align-items:center}
+.dlg-x{font:inherit;font-size:24px;line-height:1;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);cursor:pointer}
+.dlg-nav{display:flex;gap:6px;overflow-x:auto;padding:4px 20px 12px;border-bottom:1px solid var(--line);scrollbar-width:thin}
+.dlg-nav button{font:inherit;font-size:13px;white-space:nowrap;border:1px solid var(--line);background:var(--sunk);color:var(--muted);border-radius:999px;padding:4px 12px;cursor:pointer}
+.dlg-nav button[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel);font-weight:700}
+.dlg-body{flex:1;overflow:auto;padding:18px 20px;min-height:0}
+.dlg-foot{display:flex;flex-direction:row;font-size:14px;justify-content:space-between;align-items:center;gap:8px;padding:10px 20px;border-top:1px solid var(--line)}
+.dlg-step{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer}
+.dlg-step:disabled{opacity:.35;cursor:default}
+.reading.plain{border:0;padding:0;background:none}
+.dsec{display:flex;flex-direction:column;gap:10px}
+.dsec+.dsec{margin-top:8px}
+.hdcols{display:flex;gap:16px;flex-wrap:wrap}
+.reading.plain .body h3:first-child{margin-top:0;padding-top:0;border-top:0}
+@media (max-width:600px){dialog.dlg{width:100vw;height:100%;max-height:100%;margin:0}.dlg-in{border-radius:0;border:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.dlg-head,.dlg-body,.dlg-foot{padding-left:16px;padding-right:16px}.dlg-nav{padding-left:16px;padding-right:16px}}
+body.dlg-open{overflow:hidden}
 .readnote{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:8px 12px}
 button.copyread{font:inherit;font-size:13px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer}
 button.copyread:hover{border-color:var(--accent)}
@@ -294,13 +313,12 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
   </form>
   <div class="err" id="err" hidden></div>
 
-  <div id="result" class="result basic" hidden>
+  <div id="result" class="result" hidden>
   <div class="tabrow"><nav class="tabs" role="tablist">
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
     <button role="tab" id="t-hd" aria-selected="false" aria-controls="p-hd" data-t="tabH"></button>
-  </nav>
-  <div class="seg mini modesw" role="radiogroup"><label><input type="radio" name="mode" value="basic" checked><span data-t="modeBasic"></span></label><label><input type="radio" name="mode" value="adv"><span data-t="modeAdv"></span></label></div></div>
+  </nav></div>
 
   <section class="pane" id="p-west" role="tabpanel" aria-labelledby="t-west">
     <details class="primerbox"><summary data-t="howto"></summary><div class="primer" id="w-primer"></div></details>
@@ -312,33 +330,42 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
       </div>
       <aside class="detail" id="w-detail" aria-live="polite"></aside>
     </div>
-    <h2 data-t="wTable" class="adv-only"></h2>
-    <div class="tablewrap adv-only"><table><thead><tr><th data-t="thP"></th><th data-t="thS"></th><th data-t="thH"></th><th data-t="thL"></th></tr></thead><tbody id="w-table"></tbody></table></div>
-    <article class="reading" id="w-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more basic-only" data-t="moreBtn"></button><div class="body advbody adv-only"></div></article>
+    
+    <article class="reading" id="w-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="fullBtn"></button></article>
   </section>
 
   <section class="pane" id="p-zw" role="tabpanel" aria-labelledby="t-zw" hidden>
     <details class="primerbox"><summary data-t="howto"></summary><div class="primer" id="z-primer"></div></details>
     <div class="sum" id="z-sum"></div>
     <div class="split">
-      <div class="stage"><div class="zbar adv-only" id="z-bar"></div><div class="zw" id="zw"></div></div>
+      <div class="stage"><div class="zw" id="zw"></div></div>
       <aside class="detail" id="z-detail" aria-live="polite"></aside>
     </div>
   
-    <article class="reading" id="z-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more basic-only" data-t="moreBtn"></button><div class="body advbody adv-only"></div></article>
+    <article class="reading" id="z-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="fullBtn"></button></article>
   </section>
 
   <section class="pane" id="p-hd" role="tabpanel" aria-labelledby="t-hd" hidden>
     <details class="primerbox"><summary data-t="howto"></summary><div class="primer" id="h-primer"></div></details>
     <div class="sum" id="h-sum"></div>
     <div class="split">
-      <div class="stage"><div class="hdstage"><div id="h-design" class="adv-only"></div><div class="bodywrap"><svg class="body" id="body" viewBox="20 8 360 540" role="img" aria-label="Bodygraph"></svg></div><div id="h-pers" class="adv-only"></div></div></div>
+      <div class="stage"><div class="hdstage"><div class="bodywrap"><svg class="body" id="body" viewBox="20 8 360 540" role="img" aria-label="Bodygraph"></svg></div></div></div>
       <aside class="detail" id="h-detail" aria-live="polite"></aside>
     </div>
-    <article class="reading" id="h-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more basic-only" data-t="moreBtn"></button><div class="body advbody adv-only"></div></article>
+    <article class="reading" id="h-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="fullBtn"></button></article>
   </section>
   </div>
 </div>
+
+<dialog id="dlg" class="dlg" aria-labelledby="dlg-title">
+  <div class="dlg-in">
+    <header class="dlg-head"><div class="dlg-t"><div class="eyebrow" id="dlg-eyebrow"></div><h2 id="dlg-title"></h2></div>
+      <div class="dlg-act"><button type="button" class="copyread" id="dlg-copy"></button><button type="button" class="dlg-x" id="dlg-x" aria-label="close">×</button></div></header>
+    <nav class="dlg-nav" id="dlg-nav"></nav>
+    <div class="dlg-body" id="dlg-body"></div>
+    <footer class="dlg-foot"><button type="button" class="dlg-step" id="dlg-prev"></button><span class="mono muted" id="dlg-count"></span><button type="button" class="dlg-step" id="dlg-next"></button></footer>
+  </div>
+</dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/iztro@2.6.1/dist/iztro.min.js"></script>

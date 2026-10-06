@@ -28,7 +28,7 @@ const fmtDeg=l=>{const x=norm(l)%30;const d=Math.floor(x),m=Math.floor((x-d)*60)
 
 /* ===================== 狀態 ===================== */
 const $=s=>document.querySelector(s);
-let W=null,Z=null,ZH=null,HD=null,selW='Sun',selZ=null,selH=null,zMode='natal',zYear=new Date().getFullYear();
+let W=null,Z=null,ZH=null,HD=null,selW='Sun',selZ=null,selH=null,zMode='yr',zYear=new Date().getFullYear();
 
 function fillCities(){const s=$('#f-city');s.innerHTML=`<option value="">${L.ui.pick}</option>`;const li={zh:0,en:1,ja:2,fr:3}[LG];
   CITIES.forEach(c=>{const o=document.createElement('option');o.value=c[0];o.textContent=c[li];s.appendChild(o);});}
@@ -106,25 +106,24 @@ function westSummary(){
   <div class="card"><span class="q">${U.cardEl}</span><div class="elem">${EL.map(k=>`<div class="erow"><span>${L.elems[k][0]}</span><div class="ebar"><span style="width:${cnt[k]/8*100}%;background:var(--${k})"></span></div><span class="mono">${cnt[k]}</span></div>`).join('')}</div><p>${F.elTop(F.list(tops.map(k=>L.elems[k][0])),F.list(tops.map(k=>L.elems[k][1])))}</p></div>`;
 }
 function westTable(){
-  const U=L.ui,F=L.fn;
+  const U=L.ui,F=L.fn;const out={};
   const rows=PK.map(k=>{const p=pl(k),q=W.pos[k],g=sg(signOf(q.lon));return `<tr data-k="${k}"><td class="p">${p.name}${q.retro?` <span class="chip bad">${U.retro}</span>`:''}</td><td>${g.name} <span class="mono muted">${fmtDeg(q.lon)}</span></td><td class="mono">${q.house}</td><td>${F.line(p.core,g.style,L.houses[q.house-1])}</td></tr>`;});
   rows.push(`<tr><td class="p">${U.ascName}</td><td>${sg(signOf(W.asc)).name} <span class="mono muted">${fmtDeg(W.asc)}</span></td><td class="mono">1</td><td>${U.ascTxt}</td></tr>`);
   rows.push(`<tr><td class="p">${U.mcName}</td><td>${sg(signOf(W.mc)).name} <span class="mono muted">${fmtDeg(W.mc)}</span></td><td class="mono">10</td><td>${U.mcTxt}</td></tr>`);
-  $('#w-table').innerHTML=rows.join('');
-  $('#w-table').querySelectorAll('tr[data-k]').forEach(r=>r.addEventListener('click',()=>{selW=r.dataset.k;drawWheel();showPlanet();$('#w-detail').scrollIntoView({behavior:'smooth',block:'nearest'});}));
+  return `<div class="tablewrap"><table><thead><tr><th>${U.thP}</th><th>${U.thS}</th><th>${U.thH}</th><th>${U.thL}</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 }
 
 /* ===================== 紫微 ===================== */
 const POS={3:[1,1],4:[1,2],5:[1,3],6:[1,4],2:[2,1],7:[2,4],1:[3,1],8:[3,4],0:[4,1],11:[4,2],10:[4,3],9:[4,4]};
 const mutBadge=z=>`<span class="mut ${z}">${mutOf(z)[0]}</span>`;
 function starHTML(s){return `<span>${starName(s.name)}${L.showBright&&s.brightness?`<sup>${brOf(s.brightness)[0]}</sup>`:''}${s.mutagen?mutBadge(s.mutagen):''}</span>`;}
-function drawZW(){
-  const U=L.ui,F=L.fn,g=$('#zw');let h='';
-  const HH=zMode==='natal'?ZH:zHoro();
+function drawZW(g=$('#zw'),mode='natal'){
+  const U=L.ui,F=L.fn,main=g.id==='zw';let h='';
+  const HH=mode==='natal'?ZH:zHoro(mode);
   const dec=HH&&HH.decadal.name!=='童限'?HH.decadal.index:-1,yr=HH?HH.yearly.index:-1;
-  const lay=zLayer();
+  const lay=zLayer(mode);
   Z.palaces.forEach((p,i)=>{const[r,c]=POS[i];const minor=p.minorStars.filter(s=>isMinor(s.name));const ly=lay&&lay.cells[i];
-    h+=`<button type="button" class="cell${p.name==='命宮'?' ming':''}${i===dec?' dec':''}${i===selZ?' on':''}" style="grid-row:${r};grid-column:${c}" data-i="${i}" aria-label="${palName(p.name)}">
+    h+=`<button type="button" class="cell${p.name==='命宮'?' ming':''}${i===dec?' dec':''}${main&&i===selZ?' on':''}" style="grid-row:${r};grid-column:${c}" data-i="${i}" aria-label="${palName(p.name)}">
       <div class="stars">${p.majorStars.length?p.majorStars.map(starHTML).join(''):`<span class="muted" style="font-weight:400;font-size:12px">${U.empty}</span>`}</div>
       ${minor.length?`<div class="minor">${minor.map(s=>starName(s.name)+(s.mutagen?mutBadge(s.mutagen):'')).join(' ')}</div>`:''}
       ${ly?`<div class="layer">${ly.muts.map(m=>`<span>${starName(m.s)}<span class="mut ${m.k} lay">${lay.pre}${mutOf(m.k)[0]}</span></span>`).join(' ')}</div><div class="lname${ly.name==='命宮'?' on':''}">${lay.pre}${palName(ly.name)}</div>`:''}
@@ -140,17 +139,17 @@ function drawZW(){
    <div class="kl"><span>${feTxt}</span><span>${U.soul} ${starName(Z.soul)}</span><span>${U.body} ${starName(Z.body)}</span></div>
    <div class="kl">${MUT_KEYS.map((m,j)=>`<span>${mutBadge(m)}${LG==='zh'||LG==='ja'?L.mut[j][3]:''}</span>`).join('')}</div></div>`;
   g.innerHTML=h;
-  g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
+  if(main)g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
 }
-function zHoro(){if(zMode==='natal')return null;try{return Z.horoscope(new Date(Date.UTC(zYear,6,1)));}catch(e){return null;}}
-function zLayer(){const H=zHoro();if(!H)return null;if(zMode==='dec'&&H.decadal.name==='童限')return null;const src=zMode==='dec'?H.decadal:H.yearly;const cells=Z.palaces.map((p,i)=>({name:src.palaceNames[i],muts:[]}));
+function zHoro(mode){if(mode==='natal')return null;try{return Z.horoscope(new Date(Date.UTC(zYear,6,1)));}catch(e){return null;}}
+function zLayer(mode){const H=zHoro(mode);if(!H)return null;if(mode==='dec'&&H.decadal.name==='童限')return null;const src=mode==='dec'?H.decadal:H.yearly;const cells=Z.palaces.map((p,i)=>({name:src.palaceNames[i],muts:[]}));
   src.mutagen.forEach((s,j)=>{const t=Z.palaces.findIndex(p=>[...p.majorStars,...p.minorStars].some(x=>x.name===s));if(t>=0)cells[t].muts.push({s,k:MUT_KEYS[j]});});
-  return{cells,pre:zMode==='dec'?L.ui.layerDec:L.ui.layerYr,label:`${src.heavenlyStem}${src.earthlyBranch}`};}
-function zToolbar(){const U=L.ui;const bar=$('#z-bar');
+  return{cells,pre:mode==='dec'?L.ui.layerDec:L.ui.layerYr,label:`${src.heavenlyStem}${src.earthlyBranch}`};}
+function zToolbar(bar,grid){const U=L.ui;const redraw=()=>drawZW(grid,zMode);
   bar.innerHTML=`<div class="seg mini" role="radiogroup">${[['natal',U.zModeNatal],['dec',U.zModeDec],['yr',U.zModeYr]].map(([k,t])=>`<label><input type="radio" name="zm" value="${k}" ${zMode===k?'checked':''}><span>${t}</span></label>`).join('')}</div>
   <label class="yr">${U.zYear} <input id="z-year" type="number" min="1900" max="2100" value="${zYear}"></label>`;
-  bar.querySelectorAll('input[name=zm]').forEach(r=>r.addEventListener('change',()=>{zMode=r.value;drawZW();}));
-  $('#z-year').addEventListener('change',e=>{const v=parseInt(e.target.value);if(v>1900&&v<2101){zYear=v;drawZW();}});}
+  bar.querySelectorAll('input[name=zm]').forEach(r=>r.addEventListener('change',()=>{zMode=r.value;redraw();}));
+  bar.querySelector('#z-year').addEventListener('change',e=>{const v=parseInt(e.target.value);if(v>1900&&v<2101){zYear=v;redraw();}});redraw();}
 function majorBlock(s){const U=L.ui,m=L.major[MAJOR_KEYS.indexOf(s.name)];const b=s.brightness&&brOf(s.brightness);
   return `<div class="block"><h4>${m[0]}・${m[1]}${b?` <span class="chip">${b[0]}：${b[1]}</span>`:''}${s.mutagen?` <span class="mut ${s.mutagen}">${mutOf(s.mutagen)[1]}</span>`:''}</h4><p>${m[2]}</p><div class="pros"><span class="t g">${U.strengths}</span><span>${m[3]}</span><span class="t w">${U.watch}</span><span>${m[4]}</span></div>${s.mutagen?`<p class="muted" style="font-size:13.5px">${mutOf(s.mutagen)[1]}：${mutOf(s.mutagen)[2]}</p>`:''}</div>`;}
 function decMuts(){if(!ZH||!ZH.decadal.mutagen)return '';return L.fn.list(ZH.decadal.mutagen.map((s,j)=>L.fn.mutPair(starName(s),L.mut[j][1])));}
@@ -202,7 +201,7 @@ function applyLang(lg){
 }
 
 /* ===================== 啟動 ===================== */
-function renderAll(){drawWheel();showPlanet();westSummary();westTable();zToolbar();drawZW();showPalace();zwSummary();hdSummary();drawBody();hdLists();showHD();renderReadings();}
+function renderAll(){drawWheel();showPlanet();westSummary();drawZW();showPalace();zwSummary();hdSummary();drawBody();showHD();renderReadings();if(DLG.tab&&$('#dlg').open)openDetail(DLG.tab,DLG.i);}
 const TABS=['west','zw','hd'];
 function tab(which){TABS.forEach(t=>{$('#t-'+t).setAttribute('aria-selected',t===which);$('#p-'+t).hidden=t!==which;});try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
 
@@ -225,14 +224,47 @@ function boot(){
     const v=readForm();if(compute(v)){selW='Sun';renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
   document.querySelectorAll('.copyread').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
-  let md='basic';try{md=localStorage.getItem('starlit-mode')||'basic';}catch(e){}setMode(md);
-  document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>setMode(r.value)));
-  document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>{setMode('adv');const a=b.parentElement.querySelector('.advbody');a&&a.scrollIntoView({behavior:'smooth',block:'start'});}));
+  document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>openDetail(b.closest('.pane').id.slice(2),0)));
+  $('#dlg-x').addEventListener('click',closeDetail);$('#dlg').addEventListener('close',()=>document.body.classList.remove('dlg-open'));
+  $('#dlg').addEventListener('click',e=>{if(e.target===$('#dlg'))closeDetail();});
+  $('#dlg-prev').addEventListener('click',()=>showSection(DLG.i-1));$('#dlg-next').addEventListener('click',()=>showSection(DLG.i+1));
+  $('#dlg-copy').addEventListener('click',()=>{const txt=DLG.secs.map(x=>x.parts.filter(p=>!p.tool).map(p=>{const d=document.createElement('div');d.innerHTML=p.html;return p.full+'\n'+d.innerText;}).join('\n\n')).join('\n\n');const b=$('#dlg-copy');const done=()=>{b.textContent=L.ui.copied;setTimeout(()=>b.textContent=L.ui.copyAll,1600);};if(navigator.clipboard)navigator.clipboard.writeText(txt).then(done,()=>{});});
   let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(TABS.includes(t))tab(t);
 }
 
 /* ===================== 詳解 ===================== */
-function setMode(m){m=m==='adv'?'adv':'basic';$('#result').classList.toggle('basic',m==='basic');document.querySelectorAll('input[name=mode]').forEach(r=>r.checked=r.value===m);try{localStorage.setItem('starlit-mode',m);}catch(e){}}
+/* ===================== 詳解彈出視窗 ===================== */
+const DLG={tab:null,i:0,secs:[]};const ADV={};
+function splitSections(html){const parts=html.split('<h3>').filter(x=>x.trim());return parts.map(x=>{const k=x.indexOf('</h3>');const full=x.slice(0,k).replace(/<[^>]+>/g,'');return{title:full.split(/[（：(]/)[0].trim()||full,full,html:x.slice(k+5)};});}
+/* 分類：同一類的段落放在同一頁（依中文詳解的標題比對） */
+const GROUPS={
+ west:[['catW1',['更多星座面向']],['catW2',['行星落宮','@table','命主星與宮主星']],['catW3',['行星的力量狀態','元素、模式與半球']],['catW4',['主要相位','相位圖形與星群']],['catW5',['人生方向','目前的行運']]],
+ zw:[['catZ1',['紫微斗數命盤分析','命盤格局','核心命格與性格']],['catZ2',['生年四化','宮干飛化']],['catZ3',['十二宮速覽']],['catZ4',['現階段大限分析','近期運勢核心','明年預覽','避險建議','@tool']],['catZ5',['桃花篇']]],
+ hd:[['catH1',['人生角色的兩條爻']],['catH2',['九大能量中心','通道','@gates']],['catH3',['輪迴交叉']],['catH4',['更多生活建議']]]};
+function openDetail(tab,i){
+  const U=L.ui;DLG.tab=tab;const raw=splitSections(ADV[tab]||'');
+  const special={'@table':{full:U.wTable,html:westTable()},'@tool':{full:U.toolZw,html:'<div class="zbar" id="dz-bar"></div><div class="zw" id="dz-grid"></div>',after:()=>zToolbar($('#dz-bar'),$('#dz-grid')),tool:1},'@gates':{full:U.toolHd,html:'<div class="hdcols">'+hdCols()+'</div>',tool:1}};
+  const used=new Set();
+  const secs=GROUPS[tab].map(([key,keys])=>{const parts=[];keys.forEach(k=>{if(special[k]){parts.push(special[k]);return;}raw.forEach((x,j)=>{if(!used.has(j)&&x.full.startsWith(k)){used.add(j);parts.push(x);}});});return{title:U[key],parts};}).filter(g=>g.parts.length);
+  const rest=raw.filter((x,j)=>!used.has(j));if(rest.length)secs[secs.length-1].parts.push(...rest);
+  DLG.secs=secs;
+  $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]} ${U.dlgSuffix}`;
+  $('#dlg-copy').textContent=U.copyAll;$('#dlg-prev').textContent=U.dlgPrev;$('#dlg-next').textContent=U.dlgNext;
+  $('#dlg-nav').innerHTML=secs.map((x,k)=>`<button type="button" data-k="${k}">${x.title}</button>`).join('');
+  $('#dlg-nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>showSection(+b.dataset.k)));
+  if(!$('#dlg').open){$('#dlg').showModal();document.body.classList.add('dlg-open');}
+  showSection(Math.min(i||0,secs.length-1));
+}
+function showSection(k){
+  if(k<0||k>=DLG.secs.length)return;DLG.i=k;const x=DLG.secs[k];
+  const note=L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
+  $('#dlg-body').innerHTML=`<article class="reading plain"><div class="body">${note}${x.parts.map(pt=>`<section class="dsec"><h3>${pt.full}</h3>${pt.html}</section>`).join('')}</div></article>`;
+  x.parts.forEach(pt=>pt.after&&pt.after());
+  $('#dlg-body').scrollTop=0;
+  $('#dlg-nav').querySelectorAll('button').forEach(b=>{const on=+b.dataset.k===k;b.setAttribute('aria-current',on);if(on)b.scrollIntoView({block:'nearest',inline:'center'});});
+  $('#dlg-prev').disabled=k===0;$('#dlg-next').disabled=k===DLG.secs.length-1;$('#dlg-count').textContent=`${k+1} / ${DLG.secs.length}`;
+}
+function closeDetail(){$('#dlg').close();document.body.classList.remove('dlg-open');}
 function readingCtx(){
   const zh=I18N.zh,major={},minor={},bright={};
   MAJOR_KEYS.forEach((k,i)=>major[k]=zh.major[i]);MINOR_KEYS.forEach((k,i)=>minor[k]=zh.minor[i][1]);BRIGHT_KEYS.forEach((k,i)=>bright[k]=zh.bright[i][1]);
@@ -245,12 +277,12 @@ function readingCtx(){
 }
 function renderReadings(){
   const note=L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
-  const put=(id,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;$(id+' .advbody').innerHTML=r.adv;};
-  put('#w-read',()=>Reading.west(W,Engine));put('#z-read',()=>Reading.zw(Z,readingCtx()));put('#h-read',()=>Reading.hd(HD,HDZ));
+  const put=(id,tab,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;ADV[tab]=r.adv;};
+  put('#w-read','west',()=>Reading.west(W,Engine));put('#z-read','zw',()=>Reading.zw(Z,readingCtx()));put('#h-read','hd',()=>Reading.hd(HD,HDZ));
   document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
 }
 function copyReading(btn){
-  const art=btn.closest('.reading');const el=art.querySelector('.body');const txt=[...art.querySelectorAll('.body')].filter(b=>b.offsetParent!==null).map(b=>b.innerText).join('\n\n');
+  const art=btn.closest('.reading');const el=art.querySelector('.body');const txt=el.innerText;
   const done=()=>{btn.textContent=L.ui.copied;setTimeout(()=>btn.textContent=L.ui.copy,1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,()=>{selectText(el);});else selectText(el);
 }
@@ -274,9 +306,8 @@ function hdSummary(){
   const U=L.ui,X=L.hd,cr=Reading.crossName(HD,HDZ);
   const num=(HDZ.crossTable[(HD.cross.angle==='right'?'R':HD.cross.angle==='left'?'L':'J')+HD.cross.gates[0]]||[])[1];
   const crTxt=LG==='zh'?cr.full:`${X.angles[HD.cross.angle]}${cr.en?` · ${cr.en}${num?' '+num:''}`:''}`;
-  $('#h-sum').innerHTML=[[U.hdType,X.types[HD.type],'accent'],[U.hdProfile,HD.profile.join('/')],[U.hdAuth,X.auth[HD.authority]],[U.hdStrategy,X.strategy[HD.type]],[U.hdDef,X.def[HD.definition],'',1],[U.hdSig,X.sig[HD.type],'',1],[U.hdNs,X.ns[HD.type],'seal',1]]
-    .map(([q,v,c,a])=>`<div class="card hd${a?' adv-only':''}"><span class="q">${q}</span><span class="big${c?' '+c:''}">${v}</span></div>`).join('')+
-    `<div class="card hd wide adv-only"><span class="q">${U.hdCross}</span><span class="big sm">${crTxt}</span><span class="mono muted">${HD.cross.gates[0]}/${HD.cross.gates[1]} | ${HD.cross.gates[2]}/${HD.cross.gates[3]}</span></div>`;
+  $('#h-sum').innerHTML=[[U.hdType,X.types[HD.type],'accent'],[U.hdProfile,HD.profile.join('/')],[U.hdAuth,X.auth[HD.authority]],[U.hdStrategy,X.strategy[HD.type]],]
+    .map(([q,v,c])=>`<div class="card hd"><span class="q">${q}</span><span class="big${c?' '+c:''}">${v}</span></div>`).join('');
 }
 function drawBody(){
   const svg=$('#body');let s='';const G=HD.gates;
@@ -295,9 +326,9 @@ function drawBody(){
   svg.querySelectorAll('.ctr').forEach(el=>{const f=()=>{selH=el.dataset.c;drawBody();showHD();};el.addEventListener('click',f);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f();}});});
   svg.querySelectorAll('.ch').forEach(el=>el.addEventListener('click',()=>{selH='ch'+el.dataset.ch;drawBody();showHD();}));
 }
-function hdLists(){
+function hdCols(){
   const col=(src,cls,title)=>`<div class="act-col ${cls}"><div class="act-h">${title}</div>${Engine.HD_BODIES.map(b=>`<div class="act-r"><span class="gl">${HDZ.bodies[b][1]}</span><span class="mono">${src[b].gate}.${src[b].line}</span></div>`).join('')}</div>`;
-  $('#h-design').innerHTML=col(HD.D,'d',L.ui.design);$('#h-pers').innerHTML=col(HD.P,'p',L.ui.personality);
+  return col(HD.D,'d',L.ui.design)+col(HD.P,'p',L.ui.personality);
 }
 function showHD(){
   const U=L.ui,X=L.hd,el=$('#h-detail');

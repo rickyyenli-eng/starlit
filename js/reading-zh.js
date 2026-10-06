@@ -494,7 +494,7 @@ function readHD(H,Z){
     o.push(p(`<b>${ln} 爻（${label}）：${L.n}</b>，${L.k}。${L.d}`));
     o.push(ul([pt('生活例子',L.e)]));}
   const cr=crossName(H,Z);
-  o.push(h4('輪迴交叉'));
+  o.push(h3('輪迴交叉'));
   o.push(p(`${cr.full}，閘門 ${H.cross.gates[0]}/${H.cross.gates[1]} | ${H.cross.gates[2]}/${H.cross.gates[3]}。${Z.angles[H.cross.angle][1]}`));
   o.push(ul([['意識太陽',0],['意識地球',1],['設計太陽',2],['設計地球',3]].map(([n,i])=>pt(`${n} ${H.cross.gates[i]}號閘門`,Z.gates[H.cross.gates[i]]))));
   const defd=['head','ajna','throat','g','heart','sacral','spleen','sp','root'];
