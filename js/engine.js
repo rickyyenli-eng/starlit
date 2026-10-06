@@ -4,14 +4,33 @@ const A=root.Astronomy||(typeof require!=='undefined'?require('astronomy-engine'
 const D2R=Math.PI/180,R2D=180/Math.PI,norm=x=>((x%360)+360)%360;
 const PK=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
 
+/* 主要星曆：Swiss Ephemeris（WASM）；載入失敗時退回 astronomy-engine */
+let SW=null;
+const SWID={Sun:0,Moon:1,Mercury:2,Venus:3,Mars:4,Jupiter:5,Saturn:6,Uranus:7,Neptune:8,Pluto:9,Node:11};
+const jdOf=t=>t.ut+2451545.0;
+function swCalc(b,t){const r=SW.calc_ut(jdOf(t),SWID[b],2|256);return{lon:r[0],speed:r[3]};}
 function lonOf(b,t){
+  if(SW)return swCalc(b,t).lon;
   if(b==='Moon')return A.EclipticGeoMoon(t).lon;
   if(b==='Sun')return A.SunPosition(t).elon;
   if(b==='Node')return trueNode(t);
   return A.Ecliptic(A.GeoVector(b,t,true)).elon;
 }
-/* Meeus 第 47 章：真月交點 */
+function speedOf(b,t){
+  if(SW)return swCalc(b,t).speed;
+  let d=norm(lonOf(b,t)-lonOf(b,t.AddDays(-0.5)));if(d>180)d-=360;return d*2;
+}
+/* 真月交點（密切軌道）：由月球位置與速度的角動量方向求升交點 */
 function trueNode(t){
+  try{
+    const st=A.GeoMoonState(t),rot=A.Rotation_EQJ_ECT(t);
+    const r=A.RotateVector(rot,new A.Vector(st.x,st.y,st.z,t)),v=A.RotateVector(rot,new A.Vector(st.vx,st.vy,st.vz,t));
+    const hx=r.y*v.z-r.z*v.y,hy=r.z*v.x-r.x*v.z;
+    return norm(Math.atan2(hx,-hy)*R2D);
+  }catch(e){return meeusNode(t);}
+}
+/* Meeus 第 47 章：真月交點近似 */
+function meeusNode(t){
   const T=t.tt/36525;
   const Om=125.0445479-1934.1362891*T+0.0020754*T*T+T*T*T/467441-T*T*T*T/60616000;
   const D=297.8501921+445267.1114034*T-0.0018819*T*T;
@@ -28,11 +47,13 @@ const ASPECTS=[{a:0,orb:8,tone:'conj'},{a:60,orb:5,tone:'good'},{a:90,orb:7,tone
 function westChart(utc,lat,lon){
   const t=A.MakeTime(utc);
   const pos={};
-  for(const k of [...PK,'Node']){const l=lonOf(k,t);let d=norm(l-lonOf(k,t.AddDays(-0.5)));if(d>180)d-=360;pos[k]={lon:l,retro:k==='Node'?false:d<0,speed:d*2};}
+  for(const k of [...PK,'Node']){const l=lonOf(k,t);const sp=speedOf(k,t);pos[k]={lon:l,retro:k==='Node'?false:sp<0,speed:sp};}
   const ramc=norm(A.SiderealTime(t)*15+lon);
-  const e=(23.4392911-0.0130042*(t.tt/36525))*D2R,ra=ramc*D2R,ph=lat*D2R;
-  const mc=norm(Math.atan2(Math.sin(ra),Math.cos(ra)*Math.cos(e))*R2D);
-  const asc=norm(Math.atan2(Math.cos(ra),-(Math.sin(ra)*Math.cos(e)+Math.tan(ph)*Math.sin(e)))*R2D);
+  let tobl;try{tobl=A.e_tilt(t).tobl;}catch(err){tobl=23.4392911-0.0130042*(t.tt/36525);}
+  const e=tobl*D2R,ra=ramc*D2R,ph=lat*D2R;
+  let mc=norm(Math.atan2(Math.sin(ra),Math.cos(ra)*Math.cos(e))*R2D);
+  let asc=norm(Math.atan2(Math.cos(ra),-(Math.sin(ra)*Math.cos(e)+Math.tan(ph)*Math.sin(e)))*R2D);
+  if(norm(asc-mc)>180)asc=norm(asc+180);
   function cusp(f,off,above){let r=ramc+off,lam;
     for(let i=0;i<60;i++){lam=norm(Math.atan2(Math.sin(r*D2R),Math.cos(r*D2R)*Math.cos(e))*R2D);
       const dec=Math.asin(Math.sin(e)*Math.sin(lam*D2R)),x=Math.tan(ph)*Math.tan(dec);
@@ -43,7 +64,9 @@ function westChart(utc,lat,lon){
   const c11=cusp(1/3,30,true),c12=cusp(2/3,60,true),c2=cusp(2/3,120,false),c3=cusp(1/3,150,false);
   let houses,equal=false;
   if([c11,c12,c2,c3].some(v=>v==null)){houses=[...Array(12)].map((_,i)=>norm(asc+30*i));equal=true;}
+  else if(SW){const h=SW.houses(jdOf(t),lat,lon,'P');houses=Array.from(h.cusps).slice(1,13);asc=h.ascmc[0];mc=h.ascmc[1];}
   else houses=[asc,c2,c3,norm(mc+180),norm(c11+180),norm(c12+180),norm(asc+180),norm(c2+180),norm(c3+180),mc,c11,c12];
+  if(equal&&SW){const h=SW.houses(jdOf(t),lat,lon,'E');asc=h.ascmc[0];mc=h.ascmc[1];houses=[...Array(12)].map((_,i)=>norm(asc+30*i));}
   for(const k in pos)pos[k].house=houseOf(pos[k].lon,houses);
   const asp=aspectsBetween(pos,PK);
   return {pos,asc,mc,houses,asp,equal,utc,lat,lon};
@@ -87,7 +110,7 @@ const HD_BODIES=['Sun','Earth','Moon','Node','SNode','Mercury','Venus','Mars','J
 function activations(t){
   const out={};
   for(const b of HD_BODIES){let l;
-    if(b==='Earth')l=norm(lonOf('Sun',t)+180);else if(b==='SNode')l=norm(trueNode(t)+180);else l=lonOf(b,t);
+    if(b==='Earth')l=norm(lonOf('Sun',t)+180);else if(b==='SNode')l=norm(lonOf('Node',t)+180);else l=lonOf(b,t);
     out[b]=gateOf(l);}
   return out;
 }
@@ -119,7 +142,7 @@ function humanDesign(utc){
   else if(defined.has('sp'))authority='emotional';
   else if(defined.has('sacral'))authority='sacral';
   else if(defined.has('spleen'))authority='splenic';
-  else if(defined.has('heart'))authority=(adj.heart&&adj.heart.has('throat'))?'ego-m':'ego-p';
+  else if(defined.has('heart'))authority=(defined.has('throat')&&compOf('heart')===compOf('throat'))?'ego-m':'ego-p';
   else if(defined.has('g')&&adj.g&&adj.g.has('throat'))authority='self';
   else authority='mental';
   const def=['none','single','split','triple','quad'][Math.min(comps.length,4)];
@@ -130,6 +153,8 @@ function humanDesign(utc){
   return {P,D,designUtc:dt.date,gates,channels,defined:[...defined],comps,type,authority,definition:def,profile,cross};
 }
 
-const api={norm,PK,westChart,transits,aspectsBetween,trueNode,lonOf,houseOf,ASPECTS,gateOf,humanDesign,CENTER_GATES,GATE_CENTER,CHANNELS,HD_BODIES,sep};
+function setSwiss(s){SW=s;}
+function usingSwiss(){return !!SW;}
+const api={setSwiss,usingSwiss,norm,PK,westChart,transits,aspectsBetween,trueNode,lonOf,houseOf,ASPECTS,gateOf,humanDesign,CENTER_GATES,GATE_CENTER,CHANNELS,HD_BODIES,sep};
 if(typeof module!=='undefined')module.exports=api;else root.Engine=api;
 })(typeof window!=='undefined'?window:globalThis);

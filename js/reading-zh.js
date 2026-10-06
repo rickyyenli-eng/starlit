@@ -102,7 +102,7 @@ const PN={Sun:'太陽',Moon:'月亮',Mercury:'水星',Venus:'金星',Mars:'火�
 const THEME={Sun:'自我',Moon:'情緒',Mercury:'思考',Venus:'感情',Mars:'行動力',Jupiter:'成長',Saturn:'責任',Uranus:'突破',Neptune:'夢想',Pluto:'蛻變',ASC:'外在形象',MC:'事業方向'};
 const ASP=[['合相','兩股力量綁在一起，互相放大'],['六合','小幫手，主動一點就能互相成全'],['刑相','互相拉扯，會卡住，但也逼你成長'],['拱相','天生順暢，不太費力就能配合'],['沖相','兩邊擺盪，要學會找平衡']];
 const DIG={Sun:{d:[4],e:[0],x:[10],f:[6]},Moon:{d:[3],e:[1],x:[9],f:[7]},Mercury:{d:[2,5],e:[5],x:[8,11],f:[11]},Venus:{d:[1,6],e:[11],x:[7,0],f:[5]},Mars:{d:[0,7],e:[9],x:[6,1],f:[3]},Jupiter:{d:[8,11],e:[3],x:[2,5],f:[9]},Saturn:{d:[9,10],e:[6],x:[3,4],f:[0]},Uranus:{d:[10],e:[],x:[4],f:[]},Neptune:{d:[11],e:[],x:[5],f:[]},Pluto:{d:[7],e:[],x:[1],f:[]}};
-const DIG_TXT={d:['入廟','在自己的主場，能量純粹、發揮自然。'],e:['入旺','像貴賓被款待，優點被放大。'],x:['失勢','在不熟悉的環境，需要用比較費力或不尋常的方式表現。'],f:['落陷','能量受到壓抑，需要後天練習才能發揮。']};
+const DIG_TXT={d:['入廟','在自己的主場，能量純粹、發揮自然。'],e:['入旺','像貴賓被款待，優點被放大。'],x:['落陷','在不熟悉的環境，需要用比較費力或不尋常的方式表現。'],f:['入弱','能量受到壓抑，需要後天練習才能發揮。']};
 const RULER=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
 const MODERN={7:'Pluto',10:'Uranus',11:'Neptune'};
 const TRANSIT={Jupiter:'未來一年在這個領域容易遇到機會、貴人與成長。',Saturn:'這兩三年在這個領域要面對現實、建立規則，過程辛苦但會留下扎實成果。',Uranus:'這幾年這個領域會出現意想不到的改變，也帶來新的自由。',Neptune:'這個領域的界線變得模糊，靈感變多，也要防範混亂與不切實際。',Pluto:'這個領域正經歷深層而長期的蛻變，舊的模式會被徹底翻新。'};
@@ -117,7 +117,7 @@ function readWest(W,E){
   const els=[...new Set([sun,moon,asc].map(i=>EL[i%4]))];
   const opp=(els.includes('fire')&&els.includes('water'))||(els.includes('earth')&&els.includes('air'));
   let mix;
-  if(els.length===1)mix=`內外一致、${ELQ[els[0]]}特質非常鮮明`;
+  if(els.length===1)mix=`內外一致、${ELQ[els[0]]}特質非常鮮明的人`;
   else mix=`同時兼具${els.map(e=>ELQ[e]).join(els.length===2?'與':'、')}的${opp?'獨特矛盾體':'多面性格'}`;
   o.push(h3('星座解析'));
   o.push(p(`這個星盤組合（太陽${SG[sun]}、上升${SG[asc]}、月亮${SG[moon]}、金星${SG[ven]}）是一個外在${OUTER[asc]}、內心${INNER[moon]}，${mix}。`));
@@ -140,7 +140,8 @@ function readWest(W,E){
   const ruleLine=k=>`${PN[k]}在${SG[s(k)]}第 ${P[k].house} 宮`;
   o.push(h3('命主星與宮主星'));
   o.push(p(`上升${SG[asc]}的命主星是<b>${PN[ar]}</b>（${ruleLine(ar)}）${mr?`，現代占星另以<b>${PN[mr]}</b>為共同守護（${ruleLine(mr)}）`:''}。命主星落在哪裡，人生的重心就常被拉到那裡：你的能量會自然流向「${HOUSE[P[ar].house-1]}」。`));
-  const rows=W.houses.map((c,i)=>{const sg=signOf(c),r=RULER[sg];return `<tr><td class="mono">${i+1}</td><td>${SG[sg]} ${fmt(c)}</td><td>${PN[r]}${MODERN[sg]?`／${PN[MODERN[sg]]}`:''}</td><td class="mono">${P[r].house}</td><td>${HOUSE[i]}的課題，會透過「${HOUSE[P[r].house-1]}」來實現。</td></tr>`;});
+  const rows=W.houses.map((c,i)=>{const sg=signOf(c),r=RULER[sg];const own=P[r].house===i+1;return `<tr><td class="mono">${i+1}</td><td>${SG[sg]} ${fmt(c)}</td><td>${PN[r]}${MODERN[sg]?`／${PN[MODERN[sg]]}`:''}</td><td class="mono">${P[r].house}</td><td>${own?`宮主星回到本宮：「${HOUSE[i]}」的事由你自己主導，能量集中而直接。`:`「${HOUSE[i]}」的課題，會透過「${HOUSE[P[r].house-1]}」來實現。`}</td></tr>`;});
+  if(W.equal)o.push(p('出生地緯度很高，Placidus 宮位制在這裡無法成立，因此改用等宮制（從上升點起每 30° 一宮）。'));
   o.push(`<div class="tablewrap"><table><thead><tr><th>宮</th><th>宮頭</th><th>宮主星</th><th>落宮</th><th>解讀</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`);
   /* 主要相位 */
   const personal=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];
@@ -156,8 +157,8 @@ function readWest(W,E){
   for(const k of E.PK){const i=s(k);cnt[EL[i%4]]++;md[i%3]++;}
   const MISS={fire:'缺火：行動前容易猶豫，需要刻意為自己點火、設定截止日。',earth:'缺土：落實與理財需要多下工夫，把計畫寫下來會很有幫助。',air:'缺風：比較少抽離思考，多和人討論、多閱讀能幫你看清全局。',water:'缺水：情緒表達比較少，練習說出感受會讓關係更親近。'};
   const MD=[['開創','喜歡開始新事物，擅長起頭'],['固定','有毅力、能堅持，但不易改變'],['變動','適應力強、彈性大，但容易分散']];
-  const mx=Math.max(...md),mi=md.indexOf(mx);
-  const el=[`十大行星的元素分布：${EL.map(e=>`${ELN[e]} ${cnt[e]}`).join('、')}；模式分布：${MD.map((m,i)=>`${m[0]} ${md[i]}`).join('、')}。`,`${MD[mi][0]}宮最多：${MD[mi][1]}。`];
+  const mx=Math.max(...md),tops=[0,1,2].filter(i=>md[i]===mx);
+  const el=[`十大行星的元素分布：${EL.map(e=>`${ELN[e]} ${cnt[e]}`).join('、')}；模式分布：${MD.map((m,i)=>`${m[0]} ${md[i]}`).join('、')}。`,tops.length===1?`${MD[tops[0]][0]}星座最多：${MD[tops[0]][1]}。`:`${tops.map(i=>MD[i][0]).join('與')}星座一樣多，兼具${tops.map(i=>MD[i][1].split('，')[0]).join('與')}的特質。`];
   EL.filter(e=>cnt[e]===0).forEach(e=>el.push(MISS[e]));
   EL.filter(e=>cnt[e]>=5).forEach(e=>el.push(`${ELN[e]}元素特別多（${cnt[e]} 顆）：${ELQ[e]}是你最鮮明的底色。`));
   const up=E.PK.filter(k=>P[k].house>=7).length,east=E.PK.filter(k=>[10,11,12,1,2,3].includes(P[k].house)).length;
@@ -201,7 +202,7 @@ function patterns(W,E){
    =================================================================== */
 const STEM_MUT={'甲':['廉貞','破軍','武曲','太陽'],'乙':['天機','天梁','紫微','太陰'],'丙':['天同','天機','文昌','廉貞'],'丁':['太陰','天同','天機','巨門'],'戊':['貪狼','太陰','右弼','天機'],'己':['武曲','貪狼','天梁','文曲'],'庚':['太陽','武曲','太陰','天同'],'辛':['巨門','太陽','文曲','文昌'],'壬':['天梁','紫微','左輔','武曲'],'癸':['破軍','巨門','太陰','貪狼']};
 const MK=['祿','權','科','忌'];
-const DOM={'命宮':'自己','兄弟':'兄弟朋友','夫妻':'感情與伴侶','子女':'子女、投資與合夥','財帛':'金錢','疾厄':'健康','遷移':'外出與外地發展','僕役':'人際與部屬','官祿':'事業','田宅':'家庭與房產','福德':'心靈與享受','父母':'長輩、上司與文書'};
+const DOM={'命宮':'自我與整體運勢','兄弟':'兄弟朋友','夫妻':'感情與伴侶','子女':'子女、投資與合夥','財帛':'金錢','疾厄':'健康','遷移':'外出與外地發展','僕役':'人際與部屬','官祿':'事業','田宅':'家庭與房產','福德':'心靈與享受','父母':'長輩、上司與文書'};
 const LU={'命宮':'人緣好、福氣厚，容易得到別人的好感與資源。','兄弟':'兄弟朋友對你有幫助，合夥容易得利。','夫妻':'伴侶是你的福星，感情生活甜美，也能因伴侶得利。','子女':'與子女緣分好，也利於投資、合夥與桃花。','財帛':'賺錢機會多、財源順，懂得享受金錢帶來的好處。','疾厄':'體質不錯、心寬體胖，也容易注重飲食享受。','遷移':'出外有貴人，在外地發展比在家鄉順利。','僕役':'朋友、同事、部屬帶來助力，人脈就是財脈。','官祿':'工作順手，有升遷與發展機會。','田宅':'家運好、有置產運，家庭帶來安定感。','福德':'懂得享受生活、心情開朗，精神上很富足。','父母':'與父母長輩緣分好，得到庇蔭，也利於文書考試。'};
 const JI={'命宮':'對自己要求高，容易鑽牛角尖、操心勞碌。','兄弟':'和兄弟朋友之間容易有心結，合夥與借貸要小心。','夫妻':'感情路比較波折，容易因溝通誤會而爭吵，對伴侶很在意。','子女':'為子女操心，投資與合夥要謹慎。','財帛':'為錢操心，收支起伏大，不宜高風險投機。','疾厄':'要注意健康與過勞，身體容易累積壓力。','遷移':'出外較辛苦，在外容易遇到阻礙或是非。','僕役':'交友要謹慎，容易因朋友、同事或部屬受累。','官祿':'工作壓力大、對事業很執著，職涯常有波折。','田宅':'家庭與房產容易有煩惱，存錢需要紀律。','福德':'想很多、不容易放鬆，精神壓力大。','父母':'與父母長輩或上司溝通不易，文書合約要小心。'};
 const JI_ADV={'命宮':'少鑽牛角尖，給自己留餘裕。','兄弟':'避免與親友有金錢往來或作保。','夫妻':'管住嘴巴，多傾聽、少翻舊帳。','子女':'投資保守，避免衝動合夥。','財帛':'收支保守，不做高風險投機。','疾厄':'規律作息、定期健檢，避免過勞。','遷移':'出門注意交通安全，在外保持低調。','僕役':'慎選合作對象，不幫人作保。','官祿':'工作按部就班，重大決定多請教。','田宅':'房產買賣與裝修三思，看清合約。','福德':'安排放鬆時間，避免情緒內耗。','父母':'看清文書合約，與上司溝通留紀錄。'};
@@ -223,8 +224,8 @@ function readZW(Z,ctx){
   const sfz=i=>[i,(i+4)%12,(i+8)%12,(i+6)%12];
   const hasIn=(set,n)=>set.some(i=>has(i,n));
   const ming=idx('命宮'),body=pal.findIndex(x=>x.isBodyPalace);
-  const stLine=i=>{const p=pal[i];const m=p.majorStars.map(s=>s.name+(s.brightness?`<small class="br">${s.brightness}</small>`:'')+(s.mutagen?'化'+s.mutagen:''));return m.length?m.join('、'):'無主星';};
-  const minorLine=i=>pal[i].minorStars.map(s=>s.name+(s.brightness?`<small class="br">${s.brightness}</small>`:'')+(s.mutagen?'化'+s.mutagen:'')).join('、');
+  const stLine=i=>{const p=pal[i];const m=p.majorStars.map(s=>s.name+(s.brightness?`<small class="br">〔${s.brightness}〕</small>`:'')+(s.mutagen?'化'+s.mutagen:''));return m.length?m.join('、'):'無主星';};
+  const minorLine=i=>pal[i].minorStars.map(s=>s.name+(s.brightness?`<small class="br">〔${s.brightness}〕</small>`:'')+(s.mutagen?'化'+s.mutagen:'')).join('、');
   const birthMut={};pal.forEach((p,i)=>[...p.majorStars,...p.minorStars].forEach(s=>{if(s.mutagen)birthMut[s.mutagen]={star:s.name,i};}));
   const sd=Z._std,rd=Z.rawDates.lunarDate;
   const yinyang=('甲丙戊庚壬'.includes(Z.rawDates.chineseDate.yearly[0])?'陽':'陰')+Z.gender;
@@ -249,9 +250,10 @@ function readZW(Z,ctx){
     if(s.brightness)t+=`亮度「${s.brightness}」：${BR[s.brightness]}。`;
     if(s.name==='太陽')t+=`太陽在${(mp.majorStars.length?mp:opp).earthlyBranch}宮，${SUN_POS[(mp.majorStars.length?mp:opp).earthlyBranch]}。`;
     if(s.name==='太陰')t+=`太陰在${(mp.majorStars.length?mp:opp).earthlyBranch}宮，${MOON_POS[(mp.majorStars.length?mp:opp).earthlyBranch]}。`;
-    if(s.mutagen)t+=`生年化${s.mutagen}在命：${({'祿':'一生福氣厚、人緣好。','權':'主觀強、有主導力。','科':'有好名聲，遇事有貴人化解。','忌':'對自己特別嚴苛，人生課題集中在自我。'})[s.mutagen]}`;
+    if(s.mutagen&&mp.majorStars.length)t+=`生年化${s.mutagen}在命：${({'祿':'一生福氣厚、人緣好。','權':'主觀強、有主導力。','科':'有好名聲，遇事有貴人化解。','忌':'對自己特別嚴苛，人生課題集中在自我。'})[s.mutagen]}`;
+    else if(s.mutagen)t+=`這顆星在遷移宮生年化${s.mutagen}，借入命宮時也會帶到這股力量，但影響比坐命時間接。`;
     items.push(pt(`${s.name}（${m[1]}）`,t));}
-  for(const s of mp.minorStars)if(MINOR[s.name])items.push(pt(s.name,MINOR[s.name]+(s.mutagen?`化${s.mutagen}在命，${s.mutagen==='忌'?'相關事務要特別留意。':'相關能力被放大。'}`:'')));
+  for(const s of mp.minorStars)if(MINOR[s.name])items.push(pt(s.name,MINOR[s.name].replace(/^(.{2,4}星)：/,'$1，')+(s.mutagen?`化${s.mutagen}在命，${s.mutagen==='忌'?'相關事務要特別留意。':'相關能力被放大。'}`:'')));
   for(const s of mp.adjectiveStars)if(ADJ[s.name])items.push(pt(s.name,ADJ[s.name]));
   o.push(p(`命宮在${mp.earthlyBranch}（${stLine(ming)}${minorLine(ming)?'，'+minorLine(ming):''}）：`));
   o.push(ul(items));
@@ -262,7 +264,7 @@ function readZW(Z,ctx){
   const bp=pal[body];
   o.push(h4(`身宮在${bp.earthlyBranch}（${pn(bp.name)}：${stLine(body)}${minorLine(body)?'，'+minorLine(body):''}）`));
   const bl=[pt('人生重心',`身宮代表三十歲之後的行為傾向。你的身宮${bp.name==='命宮'?'與命宮同宮，先天個性就是後天重心，做自己最重要':`在${pn(bp.name)}，代表你人生中後期會非常看重「${DOM[bp.name]}」`}。`)];
-  if(has(body,'天馬')&&(has(body,'祿存')||bp.majorStars.concat(bp.minorStars).some(s=>s.mutagen==='祿')))bl.push(pt('祿馬交馳','祿與天馬同宮，是典型的動中生財。你不適合死守一份固定工作，透過奔波、出差、外地業務或遠距合作，愈動愈有財。'));
+  if(has(body,'天馬')&&(has(body,'祿存')||bp.majorStars.concat(bp.minorStars).some(s=>s.mutagen==='祿')))bl.push(pt('祿馬交馳在身宮','見上方格局說明；這股動中生財的力量正好落在你後半生的重心上。'));
   if(has(body,'陀羅'))bl.push(pt('暗藏糾結','宮內有陀羅，在這個領域容易想太多、猶豫不決，事情也容易被拖延。'));
   if(has(body,'擎羊'))bl.push(pt('衝勁與衝突','宮內有擎羊，行動力強，但也容易與人起衝突。'));
   for(const s of bp.majorStars.concat(bp.minorStars))if(s.mutagen)bl.push(pt(`${s.name}化${s.mutagen}`,(s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})[bp.name]||`${s.name}化${s.mutagen}使這個領域更加突出。`));
@@ -281,7 +283,7 @@ function readZW(Z,ctx){
   const flyRows=pal.map((p,i)=>{const mm=STEM_MUT[p.heavenlyStem];return `<tr><td class="p">${pn(p.name)}</td><td>${p.heavenlyStem}${p.earthlyBranch}</td>${mm.map((star,j)=>{const t=findStar(star);const self=t===i;const chong=t===(i+6)%12;return `<td class="${j===3&&(self||t===ming||chong)?'warn':''}">${star}→${t<0?'—':pn(pal[t].name)}${self?'（自化）':''}</td>`;}).join('')}</tr>`;});
   o.push(`<div class="tablewrap"><table><thead><tr><th>宮位</th><th>宮干</th><th>化祿</th><th>化權</th><th>化科</th><th>化忌</th></tr></thead><tbody>${flyRows.join('')}</tbody></table></div>`);
   const notes=[];
-  pal.forEach((p,i)=>{const mm=STEM_MUT[p.heavenlyStem];mm.forEach((star,j)=>{const t=findStar(star);if(t===i)notes.push(pt(`${pn(p.name)}自化${MK[j]}`,j===3?`這個宮位的事務容易自己製造麻煩、有始無終。`:j===0?`這個宮位的好處來得快也去得快，留不住。`:`這個宮位的能量向外散，表現起伏。`));});
+  pal.forEach((p,i)=>{const mm=STEM_MUT[p.heavenlyStem];mm.forEach((star,j)=>{const t=findStar(star);if(t===i)notes.push(pt(`${pn(p.name)}自化${MK[j]}`,[`這個宮位的好處來得快也去得快，留不住。`,`這個宮位的事情容易自作主張，強勢但不持久。`,`這個宮位的名聲與好處容易外露，也要小心虛有其表。`,`這個宮位的事務容易自己製造麻煩、有始無終。`][j]));});
     const jt=findStar(mm[3]);if(jt===ming&&i!==ming)notes.push(pt(`${pn(p.name)}化忌入命`,`「${DOM[p.name]}」是你一生最牽掛的事。`));
     if(jt===(ming+6)%12&&i!==ming)notes.push(pt(`${pn(p.name)}化忌沖命`,`「${DOM[p.name]}」容易對你造成直接的壓力。`));});
   if(notes.length)o.push(ul(notes));
@@ -292,7 +294,9 @@ function readZW(Z,ctx){
   o.push(`<div class="tablewrap"><table><thead><tr><th>宮位</th><th>干支</th><th>主星</th><th>輔星</th><th>大限</th><th>管什麼</th></tr></thead><tbody>${order.map(i=>`<tr><td class="p">${pn(pal[i].name)}${pal[i].isBodyPalace?'（身）':''}</td><td>${pal[i].heavenlyStem}${pal[i].earthlyBranch}</td><td>${stLine(i)}</td><td>${minorLine(i)||'—'}</td><td class="mono">${pal[i].decadal.range.join('–')}</td><td>${PAL(pal[i].name)}</td></tr>`).join('')}</tbody></table></div>`);
 
   /* 七、大限 */
-  const H=ctx.horoscope(new Date());
+  const H0=ctx.horoscope(new Date());
+  const H=H0&&H0.decadal.name!=='童限'&&pal[H0.decadal.index]?H0:null;
+  if(!H)o.push(h3('現階段大限分析'),p(`目前還在童限（第一個大限從 ${pal[ming].decadal.range[0]} 歲開始），或已超過十二個大限，暫不做大限分析。`));
   if(H){
     const d=H.decadal,di=d.index,dp=pal[di];
     o.push(h3(`現階段大限分析（${dp.decadal.range.join('–')} 歲，${d.heavenlyStem}${d.earthlyBranch}大限）`));
@@ -307,16 +311,17 @@ function readZW(Z,ctx){
   }
 
   /* 八、流年 */
-  const yNow=new Date().getFullYear();
+  let yNow=new Date().getFullYear();
+  {const hn=ctx.horoscope(new Date()),hm=ctx.horoscope(ctx.yearMid(yNow));if(hn&&hm&&hn.yearly.earthlyBranch!==hm.yearly.earthlyBranch)yNow--;}
   for(const [yr,full] of [[yNow,true],[yNow+1,false]]){
-    const ref=ctx.yearMid(yr);const Hy=ctx.horoscope(ref);if(!Hy)continue;
+    const ref=ctx.yearMid(yr);const Hy=ctx.horoscope(ref);if(!Hy||!pal[Hy.yearly.index])continue;
     const y=Hy.yearly,yi=y.index,yp=pal[yi],dec=Hy.decadal;
     const range=ctx.yearRange(yr);
     o.push(h3(`${full?'近期運勢核心':'明年預覽'}：${yr} ${y.heavenlyStem}${y.earthlyBranch}年`));
     o.push(p(`${range?`（國曆 ${range}）`:''}流年命宮在「${yp.earthlyBranch}宮」（本命${pn(yp.name)}），流年主星為 ${stLine(yi)}。流年天干「${y.heavenlyStem}」引動：${y.mutagen.map((s,j)=>`${s}化${MK[j]}`).join('、')}。`));
     const yl=[];
-    if(yi===dec.index)yl.push(pt('歲限重逢',`流年命宮與目前的大限命宮（${dp0(pal,dec.index,pn)}）重疊，今年發生的好壞事情，力量都會加倍放大。`));
-    yl.push(...mutLayer(y.mutagen,'流年',y.palaceNames,{pal,findStar,pn,birthMut,ming:yi,ctxName:'今年',decMut:dec.mutagen}));
+    if(dec.name!=='童限'&&pal[dec.index]&&yi===dec.index)yl.push(pt('歲限重逢',`流年命宮與目前的大限命宮（${dp0(pal,dec.index,pn)}）重疊，今年發生的好壞事情，力量都會加倍放大。`));
+    yl.push(...mutLayer(y.mutagen,'流年',y.palaceNames,{pal,findStar,pn,birthMut,ming:yi,ctxName:full?'今年':'明年',decMut:dec.name!=='童限'?dec.mutagen:null}));
     o.push(ul(yl));
     if(full){
       o.push(h4('關鍵宮位'));
@@ -353,12 +358,12 @@ function readZW(Z,ctx){
     let verdict;
     const ji=luck.find(x=>x.j===3),lu=luck.find(x=>x.j===0);
     const jiHit=ji&&(ji.t===fi2||ji.t===fi),luHit=lu&&(lu.t===fi2||lu.t===fi);
-    if(jiHit&&luHit)verdict=`祿忌交集：${lu.s}化祿帶來好緣分${lu.t===fi2?'（落在流年夫妻宮）':''}，但${ji.s}化忌容易讓溝通起誤會${ji.t===fi?'（衝動本命夫妻宮）':''}。把握對象，管住嘴巴。`;
+    if(jiHit&&luHit)verdict=`祿忌交集：${lu.s}化祿帶來好緣分${lu.t===fi2?'（落在流年夫妻宮）':''}，但${ji.s}化忌容易讓溝通起誤會${ji.t===fi?'（落在本命夫妻宮）':''}。把握對象，管住嘴巴。`;
     else if(jiHit)verdict='感情容易有誤會與波折，宜放慢腳步、多溝通，不急著定下來。';
     else if(luHit)verdict='好桃花之年，適合穩定關係或認識正緣。';
     else if(flowerInMing)verdict='異性緣旺、社交多，但要分辨真心與曖昧。';
     else verdict='感情運平穩，順其自然。';
-    cmp.push(`<tr><td class="mono">${yr}</td><td>${y.heavenlyStem}${y.earthlyBranch}</td><td>${f2.earthlyBranch}宮（本命${pn(f2.name)}）：${stLine(fi2)}</td><td>${hitF.join('、')||'—'}</td><td>${luan?`流鸞在${luan}`:''}${xi?`、流喜在${xi}`:''}</td><td>${verdict}</td></tr>`);}
+    cmp.push(`<tr><td class="mono">${yr}</td><td>${y.heavenlyStem}${y.earthlyBranch}</td><td>${f2.earthlyBranch}宮（本命${pn(f2.name)}）：${stLine(fi2)}</td><td>${hitF.join('、')||'—'}</td><td>${[luan?`流鸞在流年${pn(luan)}`:'',xi?`流喜在流年${pn(xi)}`:''].filter(Boolean).join('、')||'—'}</td><td>${verdict}</td></tr>`);}
   o.push(`<div class="tablewrap"><table><thead><tr><th>年</th><th>干支</th><th>流年夫妻宮</th><th>四化影響夫妻</th><th>紅鸞天喜</th><th>重點</th></tr></thead><tbody>${cmp.join('')}</tbody></table></div>`);
 
   /* 十、避險建議 */
@@ -366,10 +371,10 @@ function readZW(Z,ctx){
   if(H){
     const y=H.yearly,d=H.decadal;
     const yj=findStar(y.mutagen[3]),dj=findStar(d.mutagen[3]);
-    if(yj>=0)adv.push(pt(`今年${y.mutagen[3]}化忌在本命${pn(pal[yj].name)}（流年${y.palaceNames[yj]}）`,`${JI_ADV[y.palaceNames[yj]]}${STAR_JI[y.mutagen[3]]||''}`));
-    if(dj>=0&&dj!==yj)adv.push(pt(`大限${d.mutagen[3]}化忌在本命${pn(pal[dj].name)}（大限${d.palaceNames[dj]}）`,`${JI_ADV[d.palaceNames[dj]]}${STAR_JI[d.mutagen[3]]||''}`));
+    if(yj>=0)adv.push(pt(`今年${y.mutagen[3]}化忌在本命${pn(pal[yj].name)}（流年${pn(y.palaceNames[yj])}）`,`${JI_ADV[y.palaceNames[yj]]}${STAR_JI[y.mutagen[3]]||''}`));
+    if(dj>=0&&dj!==yj)adv.push(pt(`大限${d.mutagen[3]}化忌在本命${pn(pal[dj].name)}（大限${pn(d.palaceNames[dj])}）`,`${JI_ADV[d.palaceNames[dj]]}${STAR_JI[d.mutagen[3]]||''}`));
     if(birthMut['忌']&&(birthMut['忌'].i===yj||birthMut['忌'].i===dj))adv.push(pt('忌星疊加',`${pn(pal[birthMut['忌'].i].name)}同時受到生年忌與${birthMut['忌'].i===yj?'流年':'大限'}忌影響，是這段時間最需要小心的地方。`));
-    const yl=findStar(y.mutagen[0]);if(yl>=0)adv.push(pt(`今年的機會在本命${pn(pal[yl].name)}（流年${y.palaceNames[yl]}）`,STAR_LU[y.mutagen[0]]||'這個領域今年比較順。'));
+    const yl=findStar(y.mutagen[0]);if(yl>=0)adv.push(pt(`今年的機會在本命${pn(pal[yl].name)}（流年${pn(y.palaceNames[yl])}）`,STAR_LU[y.mutagen[0]]||'這個領域今年比較順。'));
   }
   if(adv.length){o.push(h3('避險建議'));o.push(ul(adv));}
   return o.join('');
@@ -413,7 +418,7 @@ function zwPatterns(Z,{ming,has,hasIn,sfz,findStar,birthMut,pal,pn}){
   if(['天機','太陰','天同','天梁'].every(n=>hasIn(S,n)))add('機月同梁格','天機、太陰、天同、天梁會於三方四正，心思細膩、適合在穩定的組織或公職中發揮。');
   if(hasIn(S,'太陽')&&hasIn(S,'天梁')){
     if(hasIn(S,'文昌')&&luIn(S))add('陽梁昌祿','太陽、天梁、文昌與祿星會於命宮三方四正，聰明有才華，利於考試、公職、學術或大機構，容易在專業領域獲得聲名。');
-    else{const wc=findStar('文昌'),lc=findStar('祿存');add('陽梁昌祿（未完整）',`命宮三方四正有太陽、天梁，但文昌（在${wc>=0?pn(pal[wc].name):'—'}）或祿星（祿存在${lc>=0?pn(pal[lc].name):'—'}）不在三方四正，嚴格來說未完整成格。仍帶有重名聲、利專業與公職的傾向。`);}
+    else{const wc=findStar('文昌'),lc=findStar('祿存');const miss=[];if(!hasIn(S,'文昌'))miss.push(`文昌（在${wc>=0?pn(pal[wc].name):'—'}）`);if(!luIn(S))miss.push(`祿星（祿存在${lc>=0?pn(pal[lc].name):'—'}，生年化祿也不在三方四正）`);add('陽梁昌祿（未完整）',`命宮三方四正有太陽、天梁${luIn(S)&&!miss.some(m=>m.startsWith('祿'))?'與祿星':''}，但${miss.join('、')}不在三方四正，嚴格來說未完整成格。仍帶有重名聲、利專業與公職的傾向。`);}
   }
   if(['祿','權','科'].every(k=>birthMut[k]&&S.includes(birthMut[k].i)))add('三奇嘉會','生年祿、權、科都在命宮三方四正，一生機會多、名利雙收的條件好。');
   const hasLuCun=S.find(i=>has(i,'祿存')),hasHuaLu=birthMut['祿']&&S.includes(birthMut['祿'].i);
@@ -430,11 +435,12 @@ function zwPatterns(Z,{ming,has,hasIn,sfz,findStar,birthMut,pal,pn}){
   if((has(ming,'天魁')&&has(opp,'天鉞'))||(has(ming,'天鉞')&&has(opp,'天魁')))add('坐貴向貴','天魁天鉞分坐命宮與遷移宮，一生常有貴人提攜。');
   pal.forEach((p,i)=>{if(majorIn(i,'貪狼')&&has(i,'火星'))add(`火貪格（在${pn(p.name)}）`,'貪狼遇火星，主突發的機運與橫財，來得快也去得快。');if(majorIn(i,'貪狼')&&has(i,'鈴星'))add(`鈴貪格（在${pn(p.name)}）`,'貪狼遇鈴星，主意外的機會與偏財。');});
   const sun=pal.find(p=>p.majorStars.some(s=>s.name==='太陽')),moon=pal.find(p=>p.majorStars.some(s=>s.name==='太陰'));
-  if(sun&&moon){const sb=sun.majorStars.find(s=>s.name==='太陽').brightness,mb=moon.majorStars.find(s=>s.name==='太陰').brightness;
-    if(['廟','旺'].includes(sb)&&['廟','旺'].includes(mb))add('日月並明','太陽太陰都在明亮的位置，內外兼顧，貴人與財運俱佳。');
-    else if(['陷','不','平'].includes(sb)&&['陷','不','平'].includes(mb))add('日月反背',`太陽在${pn(sun.name)}（${sb}）、太陰在${pn(moon.name)}（${mb}），日月都不夠明亮，付出容易不被看見，宜早起努力、靠專業累積。`);}
+  if(sun&&moon){const sbr=sun.earthlyBranch,mbr=moon.earthlyBranch;
+    if('卯辰巳午'.includes(sbr)&&'酉戌亥子'.includes(mbr))add('日月並明',`太陽在${sbr}（白晝）、太陰在${mbr}（夜晚），日月各得其位，內外兼顧，貴人與財運俱佳。`);
+    else if('酉戌亥子丑'.includes(sbr)&&'卯辰巳午未'.includes(mbr))add('日月反背',`太陽在${sbr}（${pn(sun.name)}，日落之後）、太陰在${mbr}（${pn(moon.name)}，白晝之月），日月都失去光輝，付出容易不被看見，宜早起努力、靠專業累積。`);}
   if(majorIn(ming,'巨門')&&['子','午'].includes(br)&&mp.majorStars.some(s=>s.name==='巨門'&&s.mutagen&&s.mutagen!=='忌'))add('石中隱玉','巨門在子午坐命並化吉，才華內斂，越磨越亮。');
   if(majorIn(ming,'七殺')&&['寅','申'].includes(br))add('七殺朝斗','七殺坐寅申，對宮紫府，有魄力、能成大事。');
+  if(majorIn(ming,'七殺')&&['子','午'].includes(br))add('七殺仰斗','七殺坐子午，對宮紫府，獨立有決斷，能在逆境中開創局面。');
   if(majorIn(ming,'破軍')&&['子','午'].includes(br))add('英星入廟','破軍坐子午，開創力強，適合在變局中建功。');
   if(majorIn(ming,'太陰')&&br==='亥')add('月朗天門','太陰在亥坐命，清秀聰明，財運細水長流。');
   if(majorIn(ming,'太陽')&&br==='卯')add('日照雷門','太陽在卯坐命，朝氣蓬勃，名聲遠播。');
@@ -477,7 +483,7 @@ function readHD(H,Z){
   o.push(h3('通道'));
   o.push(H.channels.length?ul(H.channels.map(([a,b])=>{const c=Z.channels[`${a}-${b}`];return pt(`${a}-${b} ${c[0]}（${c[1]}）`,c[2]);})):p('沒有完整的通道。'));
   o.push(h3('生活指引'));
-  o.push(ul([...T.tips,`${A.n}：${H.authority==='emotional'?'衝動前先踩煞車，重要決定至少睡一晚。':H.authority==='sacral'?'相信身體當下的反應，不用替它找理由。':H.authority==='splenic'?'第一時間的直覺最準，別等想清楚。':'給自己時間，在對的環境中說出來。'}`,`${l1} 爻：${({1:'先把功課做足，安全感來自知識。',2:'保留獨處時間，讓天賦自然長出來。',3:'允許自己踩坑，把每一次錯誤當成實戰數據。',4:'經營好身邊的人際網絡，機會就在其中。',5:'對外在的期待保持覺察，不需要拯救每一個人。',6:'耐心走過人生的三個階段，活出真實的樣子。'})[l1]}`,...(l2!==l1?[`${l2} 爻：${({1:'重要的事先打好基礎再出手。',2:'別人看見你的天賦時，不必推辭。',3:'失敗只是數據，不是定論。',4:'機會常來自熟人，好好維繫關係。',5:'被期待時先確認自己真的想幫，再答應，並說清楚底線。',6:'給自己時間沉澱，從旁觀中找到智慧。'})[l2]}`]:[])]));
+  o.push(ul([...T.tips,`${A.n}：${({emotional:'衝動前先踩煞車，重要決定至少睡一晚。',sacral:'相信身體當下的反應，不用替它找理由。',splenic:'第一時間的直覺最準，別等想清楚。','ego-m':'說出「我想要」之前，先確認自己真的想要，再告知會受影響的人。','ego-p':'被邀請之後，問自己「這對我有什麼好處」，值得才投入。',self:'找信任的人聊，聽自己說了什麼，方向就在話裡。',mental:'找幾位信任的人當共鳴板，在對的環境中把想法說出來。',lunar:'重大決定等一個月亮週期（約 28 天），期間多和不同的人聊。'})[H.authority]}`,`${l1} 爻：${({1:'先把功課做足，安全感來自知識。',2:'保留獨處時間，讓天賦自然長出來。',3:'允許自己踩坑，把每一次錯誤當成實戰數據。',4:'經營好身邊的人際網絡，機會就在其中。',5:'對外在的期待保持覺察，不需要拯救每一個人。',6:'耐心走過人生的三個階段，活出真實的樣子。'})[l1]}`,...(l2!==l1?[`${l2} 爻：${({1:'重要的事先打好基礎再出手。',2:'別人看見你的天賦時，不必推辭。',3:'失敗只是數據，不是定論。',4:'機會常來自熟人，好好維繫關係。',5:'被期待時先確認自己真的想幫，再答應，並說清楚底線。',6:'給自己時間沉澱，從旁觀中找到智慧。'})[l2]}`]:[])]));
   return o.join('');
 }
 function crossName(H,Z){

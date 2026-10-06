@@ -50,7 +50,7 @@ function compute(v){
   const sd=new Date(stdMs),sh=sd.getUTCHours();
   const ti=sh===23?12:Math.floor((sh+1)/2);
   Z=iztro.astro.bySolar(`${sd.getUTCFullYear()}-${sd.getUTCMonth()+1}-${sd.getUTCDate()}`,ti,v.g,true,'zh-TW');
-  try{ZH=Z.horoscope(new Date());}catch(e){ZH=null;}
+  try{ZH=Z.horoscope(new Date());if(ZH&&ZH.decadal.name==='童限')ZH={...ZH,decadal:{...ZH.decadal,index:-1}};}catch(e){ZH=null;}
   Z._ti=ti;Z._std=sd;
   selZ=Z.palaces.findIndex(p=>p.name==='命宮');
   return true;
@@ -81,6 +81,7 @@ function drawWheel(){
     s+=`<line x1="${t1}" y1="${t2}" x2="${t3}" y2="${t4}" stroke="var(--ink)" stroke-width="2"/><line x1="${t3}" y1="${t4}" x2="${l3}" y2="${l4}" stroke="var(--muted)" stroke-opacity=".5"/>`;
     s+=`<g class="pl${selW===o.k?' on':''}" data-k="${o.k}" tabindex="0" role="button" aria-label="${p.name}"><circle class="bg" cx="${cx}" cy="${cy}" r="15"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central">${p.glyph}</text>${W.pos[o.k].retro?`<text x="${cx+13}" y="${cy+12}" font-size="9" style="font-family:var(--f-body);font-weight:700;fill:var(--seal)">R</text>`:''}</g>`;}
   svg.innerHTML=s;
+  const eq=$('#eq-note');eq.hidden=!W.equal;eq.textContent=L.ui.eqHouse;
   svg.querySelectorAll('.pl').forEach(g=>{const f=()=>{selW=g.dataset.k;drawWheel();showPlanet();};g.addEventListener('click',f);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f();}});});
 }
 function showPlanet(){
@@ -119,7 +120,8 @@ const mutBadge=z=>`<span class="mut ${z}">${mutOf(z)[0]}</span>`;
 function starHTML(s){return `<span>${starName(s.name)}${L.showBright&&s.brightness?`<sup>${brOf(s.brightness)[0]}</sup>`:''}${s.mutagen?mutBadge(s.mutagen):''}</span>`;}
 function drawZW(){
   const U=L.ui,F=L.fn,g=$('#zw');let h='';
-  const dec=ZH?ZH.decadal.index:-1,yr=ZH?ZH.yearly.index:-1;
+  const HH=zMode==='natal'?ZH:zHoro();
+  const dec=HH&&HH.decadal.name!=='童限'?HH.decadal.index:-1,yr=HH?HH.yearly.index:-1;
   const lay=zLayer();
   Z.palaces.forEach((p,i)=>{const[r,c]=POS[i];const minor=p.minorStars.filter(s=>isMinor(s.name));const ly=lay&&lay.cells[i];
     h+=`<button type="button" class="cell${p.name==='命宮'?' ming':''}${i===dec?' dec':''}${i===selZ?' on':''}" style="grid-row:${r};grid-column:${c}" data-i="${i}" aria-label="${palName(p.name)}">
@@ -128,12 +130,12 @@ function drawZW(){
       ${ly?`<div class="layer">${ly.muts.map(m=>`<span>${starName(m.s)}<span class="mut ${m.k} lay">${lay.pre}${mutOf(m.k)[0]}</span></span>`).join(' ')}</div><div class="lname${ly.name==='命宮'?' on':''}">${lay.pre}${palName(ly.name)}</div>`:''}
       <div class="foot"><div><div class="tags">${p.isBodyPalace?`<span class="tag body">${U.tagBody}</span>`:''}${i===dec?`<span class="tag dc">${U.tagDec}</span>`:''}${i===yr?`<span class="tag yr">${U.tagYr}</span>`:''}</div><div class="pname">${palName(p.name)}</div></div><div style="text-align:right"><div class="gz">${p.heavenlyStem}${p.earthlyBranch}</div><div class="age">${p.decadal.range.join('–')}</div></div></div></button>`;});
   const sd=Z._std,ti=Z._ti,rd=Z.rawDates.lunarDate,cd=Z.rawDates.chineseDate;
-  const rng=ti===0?'23:00–01:00':ti===12?'23:00–24:00':`${String(ti*2-1).padStart(2,'0')}:00–${String(ti*2+1).padStart(2,'0')}:00`;
+  const rng=ti===0?'00:00–01:00':ti===12?'23:00–24:00':`${String(ti*2-1).padStart(2,'0')}:00–${String(ti*2+1).padStart(2,'0')}:00`;
   const fe=Z.fiveElementsClass,feTxt=L.fiveElNames?F.fiveEl(L.fiveElNames[fe[0]],NUM[fe[1]],fe):F.fiveEl(null,null,fe);
   const pillars=[cd.yearly,cd.monthly,cd.daily,cd.hourly].map(x=>x.join('')).join(' ');
   h+=`<div class="center"><div class="nm">${U.zwTitle}</div>
    <div>${U.solar} ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${F.timeLbl(Z.time,BRANCH[ti],rng)}</div>
-   <div>${U.lunar} ${F.lunarLbl(Z.lunarDate,rd.lunarYear,rd.lunarMonth,rd.lunarDay,rd.isLeap)}</div>
+   <div>${U.lunar} ${F.lunarLbl(Z.lunarDate.replace(/腊/g,'臘').replace(/闰/g,'閏'),rd.lunarYear,rd.lunarMonth,rd.lunarDay,rd.isLeap)}</div>
    <div>${U.pillars?U.pillars+' ':''}${pillars}</div>
    <div class="kl"><span>${feTxt}</span><span>${U.soul} ${starName(Z.soul)}</span><span>${U.body} ${starName(Z.body)}</span></div>
    <div class="kl">${MUT_KEYS.map((m,j)=>`<span>${mutBadge(m)}${LG==='zh'||LG==='ja'?L.mut[j][3]:''}</span>`).join('')}</div></div>`;
@@ -141,7 +143,7 @@ function drawZW(){
   g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
 }
 function zHoro(){if(zMode==='natal')return null;try{return Z.horoscope(new Date(Date.UTC(zYear,6,1)));}catch(e){return null;}}
-function zLayer(){const H=zHoro();if(!H)return null;const src=zMode==='dec'?H.decadal:H.yearly;const cells=Z.palaces.map((p,i)=>({name:src.palaceNames[i],muts:[]}));
+function zLayer(){const H=zHoro();if(!H)return null;if(zMode==='dec'&&H.decadal.name==='童限')return null;const src=zMode==='dec'?H.decadal:H.yearly;const cells=Z.palaces.map((p,i)=>({name:src.palaceNames[i],muts:[]}));
   src.mutagen.forEach((s,j)=>{const t=Z.palaces.findIndex(p=>[...p.majorStars,...p.minorStars].some(x=>x.name===s));if(t>=0)cells[t].muts.push({s,k:MUT_KEYS[j]});});
   return{cells,pre:zMode==='dec'?L.ui.layerDec:L.ui.layerYr,label:`${src.heavenlyStem}${src.earthlyBranch}`};}
 function zToolbar(){const U=L.ui;const bar=$('#z-bar');
@@ -204,6 +206,8 @@ function renderAll(){drawWheel();showPlanet();westSummary();westTable();zToolbar
 const TABS=['west','zw','hd'];
 function tab(which){TABS.forEach(t=>{$('#t-'+t).setAttribute('aria-selected',t===which);$('#p-'+t).hidden=t!==which;});try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
 
+/* Swiss Ephemeris：高精度星曆，載入失敗時自動改用 astronomy-engine */
+const sweReady=(async()=>{try{const m=await import(new URL('vendor/swisseph/src/swisseph.js',document.baseURI).href);const sw=new m.default();await sw.initSwissEph();Engine.setSwiss(sw);return true;}catch(e){console.warn('Swiss Ephemeris unavailable, using fallback',e);return false;}})();
 function boot(){
   const names={zh:'中文',en:'English',ja:'日本語',fr:'Français'};
   $('#langs').innerHTML=Object.keys(names).map(k=>`<button type="button" data-l="${k}" lang="${I18N[k].htmlLang}">${names[k]}</button>`).join('');
@@ -215,7 +219,10 @@ function boot(){
   $('#f-city').addEventListener('change',onCity);
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
   applyLang(LG);
-  $('#birth').addEventListener('submit',e=>{e.preventDefault();const v=readForm();if(compute(v)){selW='Sun';renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
+  $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
+    try{await Promise.race([sweReady,new Promise(r=>setTimeout(r,15000))]);}catch(err){}
+    btn.disabled=false;
+    const v=readForm();if(compute(v)){selW='Sun';renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
   document.querySelectorAll('.copyread').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
   let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(TABS.includes(t))tab(t);
@@ -263,7 +270,8 @@ const CFILL={head:'var(--hd-yellow)',ajna:'var(--hd-green)',throat:'var(--hd-bro
 function hdBodyName(b){if(L.hd.bodies[b])return L.hd.bodies[b];return pl(b).name;}
 function hdSummary(){
   const U=L.ui,X=L.hd,cr=Reading.crossName(HD,HDZ);
-  const crTxt=LG==='zh'?cr.full:`${X.angles[HD.cross.angle]}${cr.en?` · ${cr.en}`:''}`;
+  const num=(HDZ.crossTable[(HD.cross.angle==='right'?'R':HD.cross.angle==='left'?'L':'J')+HD.cross.gates[0]]||[])[1];
+  const crTxt=LG==='zh'?cr.full:`${X.angles[HD.cross.angle]}${cr.en?` · ${cr.en}${num?' '+num:''}`:''}`;
   $('#h-sum').innerHTML=[[U.hdType,X.types[HD.type],'accent'],[U.hdProfile,HD.profile.join('/')],[U.hdDef,X.def[HD.definition]],[U.hdAuth,X.auth[HD.authority]],[U.hdStrategy,X.strategy[HD.type]],[U.hdSig,X.sig[HD.type]],[U.hdNs,X.ns[HD.type],'seal']]
     .map(([q,v,c])=>`<div class="card hd"><span class="q">${q}</span><span class="big${c?' '+c:''}">${v}</span></div>`).join('')+
     `<div class="card hd wide"><span class="q">${U.hdCross}</span><span class="big sm">${crTxt}</span><span class="mono muted">${HD.cross.gates[0]}/${HD.cross.gates[1]} | ${HD.cross.gates[2]}/${HD.cross.gates[3]}</span></div>`;
@@ -294,11 +302,11 @@ function showHD(){
   if(!selH){const T=HDZ.types[HD.type];
     el.innerHTML=`<div><div class="eyebrow">${U.hdType}</div><h2>${X.types[HD.type]}</h2></div><p class="say">${LG==='zh'?T.txt:X.strategy[HD.type]}</p><p class="hint">${U.hdClick}</p>`;return;}
   if(selH.startsWith('ch')){const [a,b]=selH.slice(2).split('-').map(Number);const c=HDZ.channels[`${a}-${b}`];const on=HD.channels.some(x=>x[0]===a&&x[1]===b);
-    el.innerHTML=`<div><div class="eyebrow">${a}-${b}</div><h2>${c[0]}</h2></div><div class="chips"><span class="chip ${on?'acc':''}">${on?U.hdDefined:U.hdOpen}</span></div><p class="say">${c[1]}：${c[2]}</p>
+    el.innerHTML=`<div><div class="eyebrow">${a}-${b}</div><h2>${c[0]}</h2></div>${U.readNote?`<p class="readnote">${U.readNote}</p>`:''}<div class="chips"><span class="chip ${on?'acc':''}">${on?U.hdDefined:U.hdOpen}</span></div><p class="say">${c[1]}：${c[2]}</p>
     <div class="block"><p><b>${a}</b> ${HDZ.gates[a]}　<b>${b}</b> ${HDZ.gates[b]}</p></div>`;return;}
   const c=selH,C=HDZ.centers[c],def=HD.defined.includes(c);
   const gs=Engine.CENTER_GATES[c].filter(g=>HD.gates[g]);
-  el.innerHTML=`<div><div class="eyebrow">${def?U.hdDefined:U.hdOpen}</div><h2>${X.centers[c]}</h2></div><p class="say">${C.k}</p><p>${def?C.d:C.u}</p>
+  el.innerHTML=`<div><div class="eyebrow">${def?U.hdDefined:U.hdOpen}</div><h2>${X.centers[c]}</h2></div>${U.readNote?`<p class="readnote">${U.readNote}</p>`:''}<p class="say">${C.k}</p><p>${def?C.d:C.u}</p>
    ${gs.length?`<div class="block"><h4>${U.hdGatesOn}</h4>${gs.map(g=>`<p><b>${g}</b> ${HDZ.gates[g]} <span class="chip ${HD.gates[g].p&&HD.gates[g].d?'acc':HD.gates[g].p?'':'bad'}">${HD.gates[g].p&&HD.gates[g].d?U.personality+' + '+U.design:HD.gates[g].p?U.personality:U.design}</span></p>`).join('')}</div>`:''}`;
 }
 boot();
