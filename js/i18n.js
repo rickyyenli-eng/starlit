@@ -352,22 +352,22 @@ const CITIES=[
 
 
 /* ===================== 人類圖與詳解（各語言介面） ===================== */
-Object.assign(I18N.zh.ui,{eqHouse:'高緯度：改用等宮制',tabH:'人類圖',readTitle:'詳解',copy:'複製詳解',copied:'已複製',readNote:'',
+Object.assign(I18N.zh.ui,{howto:'怎麼看這張盤？',modeBasic:'基本',modeAdv:'進階',moreBtn:'看進階細節',eqHouse:'高緯度：改用等宮制',tabH:'人類圖',readTitle:'詳解',copy:'複製詳解',copied:'已複製',readNote:'',
  hdType:'類型',hdStrategy:'策略',hdAuth:'內在權威',hdProfile:'人生角色',hdDef:'定義',hdNs:'非自己主題',hdSig:'簽名',hdCross:'輪迴交叉',design:'設計（潛意識）',personality:'個性（意識）',
  hPrimer:[['類型＝能量運作方式','決定你最自然的做事節奏，以及與世界互動的策略。'],['內在權威＝做決定的依據','不是頭腦，而是身體裡最可靠的那個聲音。'],['人生角色＝扮演的角色','由意識與潛意識的太陽爻數組成，例如 3/5。'],['中心與通道＝能量地圖','有顏色的中心是穩定的你，空白的中心是你學習與放大別人的地方。']],
  hdDefined:'有定義',hdOpen:'空白',hdGatesOn:'啟動的閘門',hdClick:'點身體圖上的中心或通道，這裡會說明它。',
  zModeNatal:'本命',zModeDec:'大限',zModeYr:'流年',zYear:'年份',layerDec:'大',layerYr:'流'});
-Object.assign(I18N.en.ui,{eqHouse:'High latitude: equal houses used',tabH:'Human Design',readTitle:'Full reading',copy:'Copy reading',copied:'Copied',readNote:'The full reading is currently available in Chinese only.',
+Object.assign(I18N.en.ui,{howto:'How to read this chart',modeBasic:'Basic',modeAdv:'Advanced',moreBtn:'Show advanced details',eqHouse:'High latitude: equal houses used',tabH:'Human Design',readTitle:'Full reading',copy:'Copy reading',copied:'Copied',readNote:'The full reading is currently available in Chinese only.',
  hdType:'Type',hdStrategy:'Strategy',hdAuth:'Authority',hdProfile:'Profile',hdDef:'Definition',hdNs:'Not-self theme',hdSig:'Signature',hdCross:'Incarnation cross',design:'Design (unconscious)',personality:'Personality (conscious)',
  hPrimer:[['Type = how your energy works','Your natural rhythm and strategy for engaging with the world.'],['Authority = how you decide','Not the mind, but the most reliable voice in your body.'],['Profile = the role you play','Built from your conscious and unconscious Sun lines, such as 3/5.'],['Centers and channels = your energy map','Colored centers are your consistent self; white ones are where you learn and amplify others.']],
  hdDefined:'Defined',hdOpen:'Open',hdGatesOn:'Active gates',hdClick:'Tap a center or channel on the bodygraph to see what it means.',
  zModeNatal:'Natal',zModeDec:'Decade',zModeYr:'Year',zYear:'Year',layerDec:'D·',layerYr:'Y·'});
-Object.assign(I18N.ja.ui,{eqHouse:'高緯度のためイコールハウスを使用',tabH:'ヒューマンデザイン',readTitle:'詳しい解説',copy:'解説をコピー',copied:'コピーしました',readNote:'詳しい解説は現在中国語のみです。',
+Object.assign(I18N.ja.ui,{howto:'この図の見方',modeBasic:'基本',modeAdv:'詳細',moreBtn:'詳細を見る',eqHouse:'高緯度のためイコールハウスを使用',tabH:'ヒューマンデザイン',readTitle:'詳しい解説',copy:'解説をコピー',copied:'コピーしました',readNote:'詳しい解説は現在中国語のみです。',
  hdType:'タイプ',hdStrategy:'ストラテジー',hdAuth:'内なる権威',hdProfile:'プロファイル',hdDef:'デフィニション',hdNs:'非自己のテーマ',hdSig:'シグネチャー',hdCross:'インカネーション・クロス',design:'デザイン（無意識）',personality:'パーソナリティ（意識）',
  hPrimer:[['タイプ＝エネルギーの使い方','あなたに自然なリズムと、世界と関わる戦略です。'],['権威＝決め方','頭ではなく、体の中でいちばん信頼できる声です。'],['プロファイル＝演じる役割','意識と無意識の太陽のラインの組み合わせ（例：3/5）。'],['センターとチャネル＝エネルギーの地図','色のついたセンターは安定したあなた、白いセンターは学びと増幅の場所です。']],
  hdDefined:'定義あり',hdOpen:'未定義',hdGatesOn:'アクティブなゲート',hdClick:'ボディグラフのセンターやチャネルを押すと、ここに説明が出ます。',
  zModeNatal:'本命',zModeDec:'大限',zModeYr:'流年',zYear:'年',layerDec:'大',layerYr:'流'});
-Object.assign(I18N.fr.ui,{eqHouse:'Latitude élevée : maisons égales',tabH:'Human Design',readTitle:'Lecture complète',copy:'Copier la lecture',copied:'Copié',readNote:'La lecture complète n’est disponible qu’en chinois pour le moment.',
+Object.assign(I18N.fr.ui,{howto:'Comment lire ce thème',modeBasic:'Essentiel',modeAdv:'Avancé',moreBtn:'Voir les détails avancés',eqHouse:'Latitude élevée : maisons égales',tabH:'Human Design',readTitle:'Lecture complète',copy:'Copier la lecture',copied:'Copié',readNote:'La lecture complète n’est disponible qu’en chinois pour le moment.',
  hdType:'Type',hdStrategy:'Stratégie',hdAuth:'Autorité',hdProfile:'Profil',hdDef:'Définition',hdNs:'Thème du non-soi',hdSig:'Signature',hdCross:'Croix d’incarnation',design:'Design (inconscient)',personality:'Personnalité (conscient)',
  hPrimer:[['Le type = votre façon d’utiliser l’énergie','Votre rythme naturel et votre stratégie face au monde.'],['L’autorité = votre façon de décider','Pas le mental, mais la voix la plus fiable de votre corps.'],['Le profil = le rôle que vous jouez','Formé des lignes du Soleil conscient et inconscient, par exemple 3/5.'],['Centres et canaux = votre carte d’énergie','Les centres colorés sont votre part stable ; les blancs, là où vous apprenez et amplifiez les autres.']],
  hdDefined:'Défini',hdOpen:'Ouvert',hdGatesOn:'Portes activées',hdClick:'Touchez un centre ou un canal du bodygraph pour voir sa signification.',

@@ -225,10 +225,14 @@ function boot(){
     const v=readForm();if(compute(v)){selW='Sun';renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
   document.querySelectorAll('.copyread').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
+  let md='basic';try{md=localStorage.getItem('starlit-mode')||'basic';}catch(e){}setMode(md);
+  document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>setMode(r.value)));
+  document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>{setMode('adv');const a=b.parentElement.querySelector('.advbody');a&&a.scrollIntoView({behavior:'smooth',block:'start'});}));
   let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(TABS.includes(t))tab(t);
 }
 
 /* ===================== 詳解 ===================== */
+function setMode(m){m=m==='adv'?'adv':'basic';$('#result').classList.toggle('basic',m==='basic');document.querySelectorAll('input[name=mode]').forEach(r=>r.checked=r.value===m);try{localStorage.setItem('starlit-mode',m);}catch(e){}}
 function readingCtx(){
   const zh=I18N.zh,major={},minor={},bright={};
   MAJOR_KEYS.forEach((k,i)=>major[k]=zh.major[i]);MINOR_KEYS.forEach((k,i)=>minor[k]=zh.minor[i][1]);BRIGHT_KEYS.forEach((k,i)=>bright[k]=zh.bright[i][1]);
@@ -241,14 +245,12 @@ function readingCtx(){
 }
 function renderReadings(){
   const note=L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
-  const safe=(f)=>{try{return f();}catch(e){console.error(e);return '<p class="err">—</p>';}};
-  $('#w-read .body').innerHTML=note+safe(()=>Reading.west(W,Engine));
-  $('#z-read .body').innerHTML=note+safe(()=>Reading.zw(Z,readingCtx()));
-  $('#h-read .body').innerHTML=note+safe(()=>Reading.hd(HD,HDZ));
+  const put=(id,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;$(id+' .advbody').innerHTML=r.adv;};
+  put('#w-read',()=>Reading.west(W,Engine));put('#z-read',()=>Reading.zw(Z,readingCtx()));put('#h-read',()=>Reading.hd(HD,HDZ));
   document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
 }
 function copyReading(btn){
-  const el=btn.closest('.reading').querySelector('.body');const txt=el.innerText;
+  const art=btn.closest('.reading');const el=art.querySelector('.body');const txt=[...art.querySelectorAll('.body')].filter(b=>b.offsetParent!==null).map(b=>b.innerText).join('\n\n');
   const done=()=>{btn.textContent=L.ui.copied;setTimeout(()=>btn.textContent=L.ui.copy,1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,()=>{selectText(el);});else selectText(el);
 }
@@ -272,9 +274,9 @@ function hdSummary(){
   const U=L.ui,X=L.hd,cr=Reading.crossName(HD,HDZ);
   const num=(HDZ.crossTable[(HD.cross.angle==='right'?'R':HD.cross.angle==='left'?'L':'J')+HD.cross.gates[0]]||[])[1];
   const crTxt=LG==='zh'?cr.full:`${X.angles[HD.cross.angle]}${cr.en?` · ${cr.en}${num?' '+num:''}`:''}`;
-  $('#h-sum').innerHTML=[[U.hdType,X.types[HD.type],'accent'],[U.hdProfile,HD.profile.join('/')],[U.hdDef,X.def[HD.definition]],[U.hdAuth,X.auth[HD.authority]],[U.hdStrategy,X.strategy[HD.type]],[U.hdSig,X.sig[HD.type]],[U.hdNs,X.ns[HD.type],'seal']]
-    .map(([q,v,c])=>`<div class="card hd"><span class="q">${q}</span><span class="big${c?' '+c:''}">${v}</span></div>`).join('')+
-    `<div class="card hd wide"><span class="q">${U.hdCross}</span><span class="big sm">${crTxt}</span><span class="mono muted">${HD.cross.gates[0]}/${HD.cross.gates[1]} | ${HD.cross.gates[2]}/${HD.cross.gates[3]}</span></div>`;
+  $('#h-sum').innerHTML=[[U.hdType,X.types[HD.type],'accent'],[U.hdProfile,HD.profile.join('/')],[U.hdAuth,X.auth[HD.authority]],[U.hdStrategy,X.strategy[HD.type]],[U.hdDef,X.def[HD.definition],'',1],[U.hdSig,X.sig[HD.type],'',1],[U.hdNs,X.ns[HD.type],'seal',1]]
+    .map(([q,v,c,a])=>`<div class="card hd${a?' adv-only':''}"><span class="q">${q}</span><span class="big${c?' '+c:''}">${v}</span></div>`).join('')+
+    `<div class="card hd wide adv-only"><span class="q">${U.hdCross}</span><span class="big sm">${crTxt}</span><span class="mono muted">${HD.cross.gates[0]}/${HD.cross.gates[1]} | ${HD.cross.gates[2]}/${HD.cross.gates[3]}</span></div>`;
 }
 function drawBody(){
   const svg=$('#body');let s='';const G=HD.gates;

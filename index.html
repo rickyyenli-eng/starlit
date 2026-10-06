@@ -33,6 +33,10 @@
   --fire:#EE8460; --earth:#D1AE63; --air:#6EB8DE; --water:#9EA3F2; color-scheme:dark;
   --hd-yellow:#8F7A35; --hd-green:#4E7A47; --hd-brown:#7A5C3E; --hd-red:#8E4337; --hd-p:#E5E8F1; --hd-d:#F0705C; }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;padding:0 16px;}
 .wrap{max-width:1120px;margin:0 auto;padding-block:28px 64px;display:flex;flex-direction:column;gap:24px}
 h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
@@ -212,6 +216,17 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
 .reading .body table{min-width:640px;font-size:13.5px}
 .reading td.warn{color:var(--seal);font-weight:700}
 .reading small.br{color:var(--muted);font-size:.78em;margin:0 1px}
+.primerbox summary{cursor:pointer;font-size:14px;color:var(--accent);font-weight:700;width:max-content;max-width:100%}
+.primerbox[open] summary{margin-bottom:10px}
+.result.basic .adv-only{display:none!important}
+.result:not(.basic) .basic-only{display:none!important}
+.result.basic .hdstage{grid-template-columns:1fr}
+.tabrow{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabrow .tabs{border-bottom:0}
+.modesw{margin-bottom:8px}
+button.more{font:inherit;font-weight:700;align-self:flex-start;background:var(--accent-soft);color:var(--accent);border:1px solid transparent;border-radius:999px;padding:8px 18px;cursor:pointer}
+button.more:hover{border-color:var(--accent)}
+.advbody{border-top:1px solid var(--line);padding-top:6px}
 .readnote{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:8px 12px}
 button.copyread{font:inherit;font-size:13px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer}
 button.copyread:hover{border-color:var(--accent)}
@@ -226,6 +241,8 @@ button.copyread:hover{border-color:var(--accent)}
 .cell .lname.on{background:var(--hold);color:var(--panel)}
 /* human design */
 .card.hd .big{font-size:20px}
+#h-sum{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+@media (max-width:520px){.card.hd .big{font-size:17px}.card.hd{padding:12px}}
 .card.hd .big.sm{font-size:16px;line-height:1.5}
 .card .big.accent{color:var(--accent)} .card .big.seal{color:var(--seal)}
 .card.wide{grid-column:1/-1}
@@ -277,15 +294,16 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
   </form>
   <div class="err" id="err" hidden></div>
 
-  <div id="result" class="result" hidden>
-  <nav class="tabs" role="tablist">
+  <div id="result" class="result basic" hidden>
+  <div class="tabrow"><nav class="tabs" role="tablist">
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
     <button role="tab" id="t-hd" aria-selected="false" aria-controls="p-hd" data-t="tabH"></button>
   </nav>
+  <div class="seg mini modesw" role="radiogroup"><label><input type="radio" name="mode" value="basic" checked><span data-t="modeBasic"></span></label><label><input type="radio" name="mode" value="adv"><span data-t="modeAdv"></span></label></div></div>
 
   <section class="pane" id="p-west" role="tabpanel" aria-labelledby="t-west">
-    <div class="primer" id="w-primer"></div>
+    <details class="primerbox"><summary data-t="howto"></summary><div class="primer" id="w-primer"></div></details>
     <div class="sum" id="w-sum"></div>
     <div class="split">
       <div class="stage">
@@ -294,30 +312,30 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
       </div>
       <aside class="detail" id="w-detail" aria-live="polite"></aside>
     </div>
-    <h2 data-t="wTable"></h2>
-    <div class="tablewrap"><table><thead><tr><th data-t="thP"></th><th data-t="thS"></th><th data-t="thH"></th><th data-t="thL"></th></tr></thead><tbody id="w-table"></tbody></table></div>
-    <article class="reading" id="w-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div></article>
+    <h2 data-t="wTable" class="adv-only"></h2>
+    <div class="tablewrap adv-only"><table><thead><tr><th data-t="thP"></th><th data-t="thS"></th><th data-t="thH"></th><th data-t="thL"></th></tr></thead><tbody id="w-table"></tbody></table></div>
+    <article class="reading" id="w-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more basic-only" data-t="moreBtn"></button><div class="body advbody adv-only"></div></article>
   </section>
 
   <section class="pane" id="p-zw" role="tabpanel" aria-labelledby="t-zw" hidden>
-    <div class="primer" id="z-primer"></div>
+    <details class="primerbox"><summary data-t="howto"></summary><div class="primer" id="z-primer"></div></details>
     <div class="sum" id="z-sum"></div>
     <div class="split">
-      <div class="stage"><div class="zbar" id="z-bar"></div><div class="zw" id="zw"></div></div>
+      <div class="stage"><div class="zbar adv-only" id="z-bar"></div><div class="zw" id="zw"></div></div>
       <aside class="detail" id="z-detail" aria-live="polite"></aside>
     </div>
   
-    <article class="reading" id="z-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div></article>
+    <article class="reading" id="z-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more basic-only" data-t="moreBtn"></button><div class="body advbody adv-only"></div></article>
   </section>
 
   <section class="pane" id="p-hd" role="tabpanel" aria-labelledby="t-hd" hidden>
-    <div class="primer" id="h-primer"></div>
+    <details class="primerbox"><summary data-t="howto"></summary><div class="primer" id="h-primer"></div></details>
     <div class="sum" id="h-sum"></div>
     <div class="split">
-      <div class="stage"><div class="hdstage"><div id="h-design"></div><div class="bodywrap"><svg class="body" id="body" viewBox="20 8 360 540" role="img" aria-label="Bodygraph"></svg></div><div id="h-pers"></div></div></div>
+      <div class="stage"><div class="hdstage"><div id="h-design" class="adv-only"></div><div class="bodywrap"><svg class="body" id="body" viewBox="20 8 360 540" role="img" aria-label="Bodygraph"></svg></div><div id="h-pers" class="adv-only"></div></div></div>
       <aside class="detail" id="h-detail" aria-live="polite"></aside>
     </div>
-    <article class="reading" id="h-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div></article>
+    <article class="reading" id="h-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more basic-only" data-t="moreBtn"></button><div class="body advbody adv-only"></div></article>
   </section>
   </div>
 </div>
