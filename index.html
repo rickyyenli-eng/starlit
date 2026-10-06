@@ -201,7 +201,7 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
     <div class="field"><label for="f-time" data-t="time"></label><input id="f-time" type="time" required></div>
     <div class="field"><span class="lab" data-t="gender"></span>
       <div class="seg" role="radiogroup">
-        <label><input type="radio" name="g" id="f-g-f" value="女" checked><span data-t="female"></span></label>
+        <label><input type="radio" name="g" id="f-g-f" value="女"><span data-t="female"></span></label>
         <label><input type="radio" name="g" id="f-g-m" value="男"><span data-t="male"></span></label>
       </div>
     </div>
@@ -216,9 +216,9 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
       </div>
     </details>
   </form>
-  <div class="notice" id="sample-note" data-t="sample"></div>
   <div class="err" id="err" hidden></div>
 
+  <div id="result" class="result" hidden>
   <nav class="tabs" role="tablist">
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
@@ -246,6 +246,7 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
       <aside class="detail" id="z-detail" aria-live="polite"></aside>
     </div>
   </section>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
@@ -312,7 +313,7 @@ zh:{
  mut:[['祿','化祿','這顆星管的事比較順，有收穫、有人緣。','順利'],['權','化權','這顆星管的事你想主導，也比較有實權和能力。','掌握'],['科','化科','這顆星管的事容易被看見、有好名聲，遇到問題有人幫忙解。','名聲'],['忌','化忌','這顆星管的事你最在意，也最容易卡住，是這輩子的重點功課。','卡關與功課']],
  bright:[['廟','最亮，優點完全發揮'],['旺','很亮，表現很好'],['得','不錯，能正常發揮'],['利','尚可，有一點力量'],['平','普通，好壞參半'],['不','力量偏弱'],['陷','最弱，優點不易發揮，缺點較明顯']],
  showBright:true,
- ui:{date:'出生日期（國曆）',time:'出生時間',gender:'性別（紫微排大限用）',female:'女',male:'男',city:'出生地',go:'排盤',dst:'出生時實施夏令時間',adv:'進階：自訂經緯度與時區',lat:'緯度（北為正）',lon:'經度（東為正）',tz:'時區（UTC＋幾小時）',sample:'目前為範例資料',
+ ui:{date:'出生日期（國曆）',time:'出生時間',gender:'性別（紫微排大限用）',female:'女',male:'男',city:'出生地',go:'排盤',dst:'出生時實施夏令時間',adv:'進階：自訂經緯度與時區',lat:'緯度（北為正）',lon:'經度（東為正）',tz:'時區（UTC＋幾小時）',pick:'請選擇',errGender:'請選擇性別。',
   errTime:'請填入出生日期和出生時間。不知道確切時間的話，可以先填大概的時間，但上升星座、宮位和紫微命盤可能會不準。',errPlace:'請選擇出生地，或在「進階」填入經緯度和時區。',errLib:'排盤程式沒有載入成功，請檢查網路後重新整理頁面。',
   tabW:'西洋星盤',tabZ:'紫微斗數',
   wPrimer:[['行星＝演員','代表一種力量，例如月亮是情緒、金星是愛與喜好。'],['星座＝演法','這股力量用什麼風格表現，例如牡羊很直接、巨蟹很顧家。'],['宮位＝舞台','力量用在人生哪個領域，例如第 10 宮是事業。'],['相位＝演員之間的關係','兩顆星是互相幫忙（綠線）還是互相拉扯（紅線）。']],
@@ -395,7 +396,7 @@ en:{
  mut:[['Gain','Gain','Things ruled by this star flow well, bringing rewards and goodwill.','things flow'],['Power','Power','You want to take charge of what this star rules, and you have real ability there.','you take charge'],['Fame','Fame','What this star rules gets noticed and earns a good name; help appears when problems arise.','recognition'],['Snag','Snag','What this star rules matters most to you and is where you get stuck most: a key life lesson.','a sticking point']],
  bright:[['Peak','brightest; strengths fully expressed'],['Strong','very bright; performs well'],['Good','decent; works normally'],['Fair','fair; some strength'],['Neutral','average; mixed'],['Weak','on the weak side'],['Fallen','weakest; strengths hard to express, weaknesses show more']],
  showBright:false,
- ui:{date:'Date of birth',time:'Time of birth',gender:'Sex (for Zi Wei decades)',female:'Female',male:'Male',city:'Place of birth',go:'Cast chart',dst:'Daylight saving time was in effect',adv:'Advanced: custom coordinates and time zone',lat:'Latitude (N +)',lon:'Longitude (E +)',tz:'Time zone (UTC + hours)',sample:'Showing sample data',
+ ui:{date:'Date of birth',time:'Time of birth',gender:'Sex (for Zi Wei decades)',female:'Female',male:'Male',city:'Place of birth',go:'Cast chart',dst:'Daylight saving time was in effect',adv:'Advanced: custom coordinates and time zone',lat:'Latitude (N +)',lon:'Longitude (E +)',tz:'Time zone (UTC + hours)',pick:'Select…',errGender:'Please choose a sex.',
   errTime:'Please enter a date and time of birth. An approximate time works, but the Ascendant, houses and Zi Wei chart may be off.',errPlace:'Choose a place of birth, or enter coordinates and a time zone under Advanced.',errLib:'The chart engine failed to load. Check your connection and reload the page.',
   tabW:'Western chart',tabZ:'Zi Wei Dou Shu',
   wPrimer:[['Planets = the actors','Each is a force: the Moon is emotion, Venus is love and taste.'],['Signs = the acting style','How that force shows up: Aries is direct, Cancer is caring.'],['Houses = the stage','Which part of life it plays out in: the 10th house is career.'],['Aspects = how the actors get along','Whether two planets help each other (green) or pull against each other (red).']],
@@ -479,7 +480,7 @@ ja:{
  mut:[['禄','化禄','この星が司ることは順調で、実りと人の縁がある。','順調'],['権','化権','この星が司ることを自分で主導したくなり、実力も発揮しやすい。','主導権'],['科','化科','この星が司ることで目立ち評判を得やすく、困ったときは助けが入る。','名声'],['忌','化忌','この星が司ることに一番こだわり、一番つまずきやすい。人生の大切な課題。','つまずきと課題']],
  bright:[['廟','最も明るく、長所が存分に発揮される'],['旺','とても明るく、よく働く'],['得','よい状態で、普通に力を出せる'],['利','まずまず、少し力がある'],['平','普通。良し悪し半々'],['不','力が弱め'],['陥','最も弱く、長所が出にくく短所が目立つ']],
  showBright:true,
- ui:{date:'生年月日（新暦）',time:'出生時刻',gender:'性別（紫微の大限に使用）',female:'女性',male:'男性',city:'出生地',go:'命盤を出す',dst:'出生時にサマータイムが実施されていた',adv:'詳細：緯度・経度とタイムゾーンを指定',lat:'緯度（北が正）',lon:'経度（東が正）',tz:'タイムゾーン（UTC＋時間）',sample:'サンプルデータを表示中',
+ ui:{date:'生年月日（新暦）',time:'出生時刻',gender:'性別（紫微の大限に使用）',female:'女性',male:'男性',city:'出生地',go:'命盤を出す',dst:'出生時にサマータイムが実施されていた',adv:'詳細：緯度・経度とタイムゾーンを指定',lat:'緯度（北が正）',lon:'経度（東が正）',tz:'タイムゾーン（UTC＋時間）',pick:'選択してください',errGender:'性別を選んでください。',
   errTime:'生年月日と出生時刻を入力してください。おおよその時刻でも構いませんが、アセンダント、ハウス、紫微命盤がずれることがあります。',errPlace:'出生地を選ぶか、「詳細」で緯度・経度とタイムゾーンを入力してください。',errLib:'計算プログラムを読み込めませんでした。接続を確認してページを再読み込みしてください。',
   tabW:'西洋占星術',tabZ:'紫微斗数',
   wPrimer:[['惑星＝役者','それぞれが一つの力。月は感情、金星は愛と好み。'],['星座＝演じ方','その力がどんな風に表れるか。牡羊座はストレート、蟹座は面倒見がいい。'],['ハウス＝舞台','人生のどの分野で働くか。第10ハウスは仕事。'],['アスペクト＝役者どうしの関係','二つの星が助け合う（緑）か、引っぱり合う（赤）か。']],
@@ -562,7 +563,7 @@ fr:{
  mut:[['Gain','Gain','Ce que régit cette étoile se déroule bien : gains et sympathie.','tout roule'],['Pouvoir','Pouvoir','Vous voulez diriger ce que régit cette étoile, et vous en avez les moyens.','vous dirigez'],['Renom','Renom','Ce que régit cette étoile se remarque et vous vaut une bonne réputation ; on vous aide en cas de souci.','reconnaissance'],['Nœud','Nœud','Ce que régit cette étoile vous tient le plus à cœur, et c’est là que vous bloquez le plus : une leçon de vie essentielle.','point de blocage']],
  bright:[['Apogée','le plus brillant : qualités pleinement exprimées'],['Fort','très brillant : bien exprimé'],['Bon','bon : s’exprime normalement'],['Correct','correct : un peu de force'],['Neutre','moyen : bilan mitigé'],['Faible','plutôt faible'],['Chute','le plus faible : qualités peu visibles, défauts plus marqués']],
  showBright:false,
- ui:{date:'Date de naissance',time:'Heure de naissance',gender:'Sexe (pour les décennies Zi Wei)',female:'Femme',male:'Homme',city:'Lieu de naissance',go:'Calculer',dst:'Heure d’été en vigueur à la naissance',adv:'Avancé : coordonnées et fuseau horaire',lat:'Latitude (N +)',lon:'Longitude (E +)',tz:'Fuseau (UTC + heures)',sample:'Données d’exemple',
+ ui:{date:'Date de naissance',time:'Heure de naissance',gender:'Sexe (pour les décennies Zi Wei)',female:'Femme',male:'Homme',city:'Lieu de naissance',go:'Calculer',dst:'Heure d’été en vigueur à la naissance',adv:'Avancé : coordonnées et fuseau horaire',lat:'Latitude (N +)',lon:'Longitude (E +)',tz:'Fuseau (UTC + heures)',pick:'Choisir…',errGender:'Veuillez indiquer le sexe.',
   errTime:'Indiquez la date et l’heure de naissance. Une heure approximative suffit, mais l’Ascendant, les maisons et le thème Zi Wei peuvent être faussés.',errPlace:'Choisissez un lieu de naissance, ou saisissez des coordonnées et un fuseau dans « Avancé ».',errLib:'Le moteur de calcul n’a pas pu se charger. Vérifiez votre connexion et rechargez la page.',
   tabW:'Thème astral',tabZ:'Zi Wei Dou Shu',
   wPrimer:[['Les planètes = les acteurs','Chacune est une force : la Lune, les émotions ; Vénus, l’amour et les goûts.'],['Les signes = le jeu','La manière dont cette force s’exprime : le Bélier est direct, le Cancer protecteur.'],['Les maisons = la scène','Le domaine de vie où elle agit : la maison 10, c’est la carrière.'],['Les aspects = les relations entre acteurs','Deux planètes s’entraident (vert) ou se contrarient (rouge).']],
@@ -664,22 +665,19 @@ const fmtDeg=l=>{const x=norm(l)%30;const d=Math.floor(x),m=Math.floor((x-d)*60)
 
 /* ===================== 狀態 ===================== */
 const $=s=>document.querySelector(s);
-const SAMPLE={date:'1995-08-20',time:'14:30',g:'女',city:'台中',dst:false};
 let W=null,Z=null,ZH=null,selW='Sun',selZ=null;
 
-function fillCities(){const s=$('#f-city');s.innerHTML='';const li={zh:0,en:1,ja:2,fr:3}[LG];
+function fillCities(){const s=$('#f-city');s.innerHTML=`<option value="">${L.ui.pick}</option>`;const li={zh:0,en:1,ja:2,fr:3}[LG];
   CITIES.forEach(c=>{const o=document.createElement('option');o.value=c[0];o.textContent=c[li];s.appendChild(o);});}
-function onCity(){const c=CITIES.find(x=>x[0]===$('#f-city').value);if(c&&c[4]!=null){$('#f-lat').value=c[4];$('#f-lon').value=c[5];$('#f-tz').value=c[6];}else{$('.adv').open=true;}}
-function setForm(v){$('#f-date').value=v.date;$('#f-time').value=v.time;$(v.g==='男'?'#f-g-m':'#f-g-f').checked=true;
-  $('#f-city').value=CITIES.some(c=>c[0]===v.city)?v.city:CITIES[CITIES.length-1][0];onCity();
-  if(v.lat!=null&&!isNaN(v.lat)){$('#f-lat').value=v.lat;$('#f-lon').value=v.lon;$('#f-tz').value=v.tz;}$('#f-dst').checked=!!v.dst;}
-function readForm(){return{date:$('#f-date').value,time:$('#f-time').value,g:document.querySelector('input[name=g]:checked').value,city:$('#f-city').value,dst:$('#f-dst').checked,lat:parseFloat($('#f-lat').value),lon:parseFloat($('#f-lon').value),tz:parseFloat($('#f-tz').value)};}
+function onCity(){const v=$('#f-city').value;const c=CITIES.find(x=>x[0]===v);if(c&&c[4]!=null){$('#f-lat').value=c[4];$('#f-lon').value=c[5];$('#f-tz').value=c[6];}else if(!v){$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';}else{$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';$('.adv').open=true;}}
+function readForm(){return{date:$('#f-date').value,time:$('#f-time').value,g:(document.querySelector('input[name=g]:checked')||{}).value,city:$('#f-city').value,dst:$('#f-dst').checked,lat:parseFloat($('#f-lat').value),lon:parseFloat($('#f-lon').value),tz:parseFloat($('#f-tz').value)};}
 let errKey=null;
 function showErr(k){errKey=k;const e=$('#err');if(k){e.textContent=L.ui[k];e.hidden=false;}else e.hidden=true;}
 
 function compute(v){
   showErr(null);
   if(!v.date||!v.time){showErr('errTime');return false;}
+  if(!v.g){showErr('errGender');return false;}
   if([v.lat,v.lon,v.tz].some(isNaN)){showErr('errPlace');return false;}
   const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
   const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0);
@@ -827,8 +825,6 @@ function applyLang(lg){
 
 /* ===================== 啟動 ===================== */
 function renderAll(){drawWheel();showPlanet();westSummary();westTable();drawZW();showPalace();zwSummary();}
-function store(v){try{localStorage.setItem('kdwp-birth',JSON.stringify(v));}catch(e){}}
-function load(){try{return JSON.parse(localStorage.getItem('kdwp-birth')||'null');}catch(e){return null;}}
 function tab(which){const w=which==='west';$('#t-west').setAttribute('aria-selected',w);$('#t-zw').setAttribute('aria-selected',!w);$('#p-west').hidden=!w;$('#p-zw').hidden=w;try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
 
 function boot(){
@@ -841,10 +837,8 @@ function boot(){
   fillCities();
   $('#f-city').addEventListener('change',onCity);
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
-  const saved=load();setForm(saved||SAMPLE);$('#sample-note').hidden=!!saved;
-  compute(readForm());
   applyLang(LG);
-  $('#birth').addEventListener('submit',e=>{e.preventDefault();const v=readForm();if(compute(v)){store(v);$('#sample-note').hidden=true;selW='Sun';renderAll();}});
+  $('#birth').addEventListener('submit',e=>{e.preventDefault();const v=readForm();if(compute(v)){selW='Sun';renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
   $('#t-west').addEventListener('click',()=>tab('west'));$('#t-zw').addEventListener('click',()=>tab('zw'));
   let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(t==='zw')tab('zw');
 }
