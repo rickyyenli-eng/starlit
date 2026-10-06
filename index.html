@@ -8,12 +8,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;700&display=swap">
 <style>
-/* Layout: one reading column — birth form, then two tabs (星盤 / 紫微); each tab = summary strip → chart + explanation panel side by side → full table */
+/* Layout: one reading column — birth form, then three tabs (星盤 / 紫微 / 人類圖); each tab = summary strip → chart + explanation panel side by side → full table */
 :root{
   --bg:#EDF0F5; --panel:#FFFFFF; --sunk:#F5F7FA; --ink:#1B2136; --muted:#5A6177; --line:#D3D9E3;
   --accent:#2C47A3; --accent-soft:#E2E8F7; --seal:#B23D2C; --seal-soft:#F6E3DF;
   --good:#2C7A57; --good-soft:#DFF0E7; --hold:#A0681E; --hold-soft:#F5EAD6;
   --fire:#C4532F; --earth:#8C6B26; --air:#2F7EA6; --water:#4A4FB0;
+  --hd-yellow:#F2D27A; --hd-green:#9CCB8E; --hd-brown:#C9A27A; --hd-red:#E58F7E; --hd-p:#1B2136; --hd-d:#C23B2B;
   --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --f-data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -23,12 +24,14 @@
   --bg:#0F1220; --panel:#171B2C; --ink:#E5E8F1; --muted:#9BA2B8; --line:#2B3149;
   --accent:#93A8F2; --accent-soft:#222C52; --seal:#E5735F; --seal-soft:#3A2220;
   --good:#6CCB9D; --good-soft:#1C3329; --hold:#E0AA5C; --hold-soft:#3A2D19;
-  --fire:#EE8460; --earth:#D1AE63; --air:#6EB8DE; --water:#9EA3F2; color-scheme:dark; --sunk:#131727; }}
+  --fire:#EE8460; --earth:#D1AE63; --air:#6EB8DE; --water:#9EA3F2; color-scheme:dark; --sunk:#131727;
+  --hd-yellow:#8F7A35; --hd-green:#4E7A47; --hd-brown:#7A5C3E; --hd-red:#8E4337; --hd-p:#E5E8F1; --hd-d:#F0705C; }}
 :root[data-theme="dark"]{
   --bg:#0F1220; --panel:#171B2C; --sunk:#131727; --ink:#E5E8F1; --muted:#9BA2B8; --line:#2B3149;
   --accent:#93A8F2; --accent-soft:#222C52; --seal:#E5735F; --seal-soft:#3A2220;
   --good:#6CCB9D; --good-soft:#1C3329; --hold:#E0AA5C; --hold-soft:#3A2D19;
-  --fire:#EE8460; --earth:#D1AE63; --air:#6EB8DE; --water:#9EA3F2; color-scheme:dark; }
+  --fire:#EE8460; --earth:#D1AE63; --air:#6EB8DE; --water:#9EA3F2; color-scheme:dark;
+  --hd-yellow:#8F7A35; --hd-green:#4E7A47; --hd-brown:#7A5C3E; --hd-red:#8E4337; --hd-p:#E5E8F1; --hd-d:#F0705C; }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;padding:0 16px;}
 .wrap{max-width:1120px;margin:0 auto;padding-block:28px 64px;display:flex;flex-direction:column;gap:24px}
@@ -190,6 +193,60 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
 .asplist{display:flex;flex-direction:column;gap:8px;font-size:14px}
 .mutlist{display:flex;flex-direction:column;gap:3px;font-size:14px}
 .cell .stars span{white-space:normal}
+
+/* reading */
+.reading{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px clamp(16px,3vw,32px);display:flex;flex-direction:column;gap:10px;min-width:0}
+.reading .rhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
+.reading .rhead h2{font-size:22px}
+.reading .body{display:flex;flex-direction:column;gap:10px;max-width:75ch}
+.reading .body h3{font-size:19px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.reading .body h3:first-child,.reading .readnote+h3{margin-top:0;padding-top:0;border-top:0}
+.reading .body h4{font-size:16px;margin:6px 0 0;color:var(--accent)}
+.reading .body ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.reading .body li{line-height:1.75}
+.reading .body li b{color:var(--ink)}
+.reading .body p{line-height:1.85}
+.reading .body .tablewrap{max-width:none}
+.reading .body table{min-width:640px;font-size:13.5px}
+.reading td.warn{color:var(--seal);font-weight:700}
+.reading small.br{color:var(--muted);font-size:.78em;margin:0 1px}
+.readnote{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:8px 12px}
+button.copyread{font:inherit;font-size:13px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer}
+button.copyread:hover{border-color:var(--accent)}
+/* zi wei layers */
+.zbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.seg.mini label{padding:4px 12px;font-size:13px}
+.zbar .yr{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.zbar .yr input{width:6em;padding:4px 8px}
+.cell .layer{font-size:11px;line-height:1.5}
+.mut.lay{outline:1px dashed currentColor;outline-offset:-1px}
+.cell .lname{font-size:11px;font-weight:700;color:var(--hold);border:1px solid var(--hold);border-radius:4px;padding:0 4px;align-self:flex-start;margin-top:2px}
+.cell .lname.on{background:var(--hold);color:var(--panel)}
+/* human design */
+.card.hd .big{font-size:20px}
+.card.hd .big.sm{font-size:16px;line-height:1.5}
+.card .big.accent{color:var(--accent)} .card .big.seal{color:var(--seal)}
+.card.wide{grid-column:1/-1}
+.hdstage{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:start}
+@media (max-width:560px){.hdstage{grid-template-columns:1fr 1fr}.hdstage .bodywrap{grid-column:1/-1;grid-row:1}}
+svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
+.ctr{fill:var(--panel);stroke:var(--muted);stroke-width:1.5;cursor:pointer}
+.ctr.on{stroke:var(--accent);stroke-width:3}
+.ctr:focus-visible{outline:none;stroke:var(--accent);stroke-width:3}
+.ch line.base{stroke:var(--line);stroke-width:7;stroke-linecap:round}
+.ch line.act{stroke-width:5;stroke-linecap:round}
+.ch line.act.p{stroke:var(--hd-p)} .ch line.act.d{stroke:var(--hd-d)}
+.ch line.act.dash{stroke-dasharray:4 4}
+.ch line.hit{stroke:transparent;stroke-width:14;cursor:pointer}
+.ch.on line.base{stroke:var(--accent)}
+.gn{font-family:var(--f-data);font-size:9px;text-anchor:middle;dominant-baseline:central;fill:var(--muted);pointer-events:none}
+.gn.on{fill:var(--ink);font-weight:700}
+.act-col{display:flex;flex-direction:column;gap:2px;font-size:13px;min-width:74px}
+.act-h{font-size:11.5px;font-weight:700;text-align:center;padding:3px 4px;border-radius:6px;margin-bottom:4px}
+.act-col.d .act-h{background:var(--seal-soft);color:var(--seal)} .act-col.p .act-h{background:var(--sunk);color:var(--ink)}
+.act-r{display:flex;justify-content:space-between;gap:8px;padding:1px 6px}
+.act-col.d .act-r .mono{color:var(--hd-d);font-weight:700} .act-col.p .act-r .mono{color:var(--hd-p);font-weight:700}
+.gl{font-size:15px;line-height:1.2}
 </style>
 </head>
 <body>
@@ -222,6 +279,7 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
   <nav class="tabs" role="tablist">
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
+    <button role="tab" id="t-hd" aria-selected="false" aria-controls="p-hd" data-t="tabH"></button>
   </nav>
 
   <section class="pane" id="p-west" role="tabpanel" aria-labelledby="t-west">
@@ -236,613 +294,38 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
     </div>
     <h2 data-t="wTable"></h2>
     <div class="tablewrap"><table><thead><tr><th data-t="thP"></th><th data-t="thS"></th><th data-t="thH"></th><th data-t="thL"></th></tr></thead><tbody id="w-table"></tbody></table></div>
+    <article class="reading" id="w-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div></article>
   </section>
 
   <section class="pane" id="p-zw" role="tabpanel" aria-labelledby="t-zw" hidden>
     <div class="primer" id="z-primer"></div>
     <div class="sum" id="z-sum"></div>
     <div class="split">
-      <div class="stage"><div class="zw" id="zw"></div></div>
+      <div class="stage"><div class="zbar" id="z-bar"></div><div class="zw" id="zw"></div></div>
       <aside class="detail" id="z-detail" aria-live="polite"></aside>
     </div>
+  
+    <article class="reading" id="z-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div></article>
+  </section>
+
+  <section class="pane" id="p-hd" role="tabpanel" aria-labelledby="t-hd" hidden>
+    <div class="primer" id="h-primer"></div>
+    <div class="sum" id="h-sum"></div>
+    <div class="split">
+      <div class="stage"><div class="hdstage"><div id="h-design"></div><div class="bodywrap"><svg class="body" id="body" viewBox="20 8 360 540" role="img" aria-label="Bodygraph"></svg></div><div id="h-pers"></div></div></div>
+      <aside class="detail" id="h-detail" aria-live="polite"></aside>
+    </div>
+    <article class="reading" id="h-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div></article>
   </section>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/iztro@2.6.1/dist/iztro.min.js"></script>
-<script>
-/* ===================== 語言資料 ===================== */
-const ord=n=>n+((n%100>=11&&n%100<=13)?'th':(['th','st','nd','rd'][n%10]||'th'));
-const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-const SYM_P=['☉','☽','☿','♀','♂','♃','♄','♅','♆','♇'].map(c=>c+'︎');
-const SYM_S=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'].map(c=>c+'︎');
-const PINYIN_MAJOR=['Zi Wei','Tian Ji','Tai Yang','Wu Qu','Tian Tong','Lian Zhen','Tian Fu','Tai Yin','Tan Lang','Ju Men','Tian Xiang','Tian Liang','Qi Sha','Po Jun'];
-const PINYIN_MINOR=['Zuo Fu','You Bi','Wen Chang','Wen Qu','Tian Kui','Tian Yue','Lu Cun','Tian Ma','Qing Yang','Tuo Luo','Huo Xing','Ling Xing','Di Kong','Di Jie'];
-
-const I18N={
-/* ---------- 中文 ---------- */
-zh:{
- htmlLang:'zh-Hant', title:'Starlit 星曜',
- planets:[
-  ['太陽','日','自我','你的核心自我','代表你是誰、想活成什麼樣子，也是你的活力來源。大家常說的「我是什麼座」就是指太陽星座。'],
-  ['月亮','月','情緒','你的情緒與安全感','代表你需要什麼才覺得安心、心情怎麼起伏，也是你在家或私底下放鬆時的樣子。'],
-  ['水星','水','思考','你的思考和說話方式','代表你怎麼想事情、怎麼學習、怎麼跟人溝通。'],
-  ['金星','金','愛與喜好','你喜歡什麼、怎麼去愛','代表你的審美、享受方式，以及在感情裡被什麼吸引、怎麼表達好感。'],
-  ['火星','火','行動力','你的行動力和脾氣','代表你怎麼爭取想要的東西、做事的衝勁，以及生氣時的樣子。'],
-  ['木星','木','成長','你的好運與成長方向','代表你容易順利、願意相信、會越做越大的地方。'],
-  ['土星','土','責任','你的壓力和人生功課','代表你覺得有責任、會害怕或卡住的地方。需要時間慢慢練，練成了就很穩。'],
-  ['天王星','天','突破','你想突破的地方','代表你想與眾不同、打破常規的部分。它走得很慢，同年紀的人星座都差不多，所以宮位比星座更有個人意義。'],
-  ['海王星','海','夢想','你的夢想與想像','代表理想、靈感，也代表容易看不清、想得太美的地方。它是世代星，宮位比星座更有個人意義。'],
-  ['冥王星','冥','蛻變','你深層的執著與蛻變','代表你會非常執著、最後會徹底改變的地方。它是世代星，宮位比星座更有個人意義。']],
- signs:[
-  ['牡羊座','羊','直接、搶第一、說做就做','熱血直接，想到就做，不喜歡等。缺點是急、沒耐性。'],
-  ['金牛座','牛','穩定、務實、重視實際享受','慢慢來但很穩，重視安全感和舒服的生活。缺點是固執、不愛改變。'],
-  ['雙子座','雙','好奇、靈活、愛聊天交流','反應快、興趣廣，喜歡新鮮資訊。缺點是三分鐘熱度、容易分心。'],
-  ['巨蟹座','蟹','照顧人、重感情、需要安全感','顧家、念舊、很會照顧人。缺點是容易受傷、情緒化。'],
-  ['獅子座','獅','大方、有自信、希望被看見','熱情慷慨，喜歡當主角、被肯定。缺點是愛面子、怕被忽略。'],
-  ['處女座','處','細心、講究方法、追求做對','注重細節、做事有條理、願意服務別人。缺點是挑剔、容易焦慮。'],
-  ['天秤座','秤','重和諧、在意公平與美感','有禮貌、懂得協調、品味好。缺點是猶豫不決、太在意別人看法。'],
-  ['天蠍座','蠍','深入、專注、愛恨分明','專注、洞察力強、感情深。缺點是佔有慾、不輕易信任人。'],
-  ['射手座','射','樂觀、愛自由、追求意義','樂觀開朗、愛冒險和學習。缺點是不耐拘束、說話太直。'],
-  ['摩羯座','摩','有規劃、能吃苦、看重成就','務實有責任感，願意長期努力。缺點是太嚴肅、壓力大。'],
-  ['水瓶座','瓶','獨立、理性、想法前衛','有自己的想法，重視自由和朋友。缺點是有距離感、不愛被管。'],
-  ['雙魚座','魚','敏感、有同理心、富想像力','溫柔體貼、直覺強、有藝術感。缺點是容易逃避、界線模糊。']],
- modes:['開創','固定','變動'],
- elems:{fire:['火','熱情、行動'],earth:['土','務實、穩定'],air:['風','思考、交流'],water:['水','感受、情感']},
- houses:['自我形象與第一印象','金錢、物質與自我價值','溝通、學習、兄弟姊妹','家庭、根源與內心的安全基地','戀愛、玩樂、創作與小孩','日常工作、作息與健康','伴侶、合作與一對一關係','共享資源、親密與深層轉變','遠行、信念與進修','事業、社會地位與公眾形象','朋友、社群與未來願望','潛意識、獨處與看不見的地方'],
- aspects:[['合相','兩股力量綁在一起，互相放大'],['六合','小幫手，主動一點就能互相成全'],['刑相','互相拉扯，會卡住，但也逼你成長'],['拱相','天生順暢，不太費力就能配合'],['沖相','兩邊擺盪，要學會找平衡']],
- palaces:[
-  ['命宮','你是怎樣的人：個性、天賦和整體人生基調。'],['兄弟宮','和兄弟姊妹、親近同輩的關係。'],['夫妻宮','你的感情模式，以及你會吸引、適合的伴侶。'],['子女宮','和孩子、晚輩的緣分，也代表創作和合夥。'],['財帛宮','你賺錢和用錢的方式、對金錢的態度。'],['疾厄宮','身體體質，以及壓力容易累積在哪裡。'],['遷移宮','出外、在外面的表現，和外界互動的運氣。'],['僕役宮','朋友、同事、下屬與人脈（也叫交友宮）。'],['官祿宮','工作與事業的型態、做事風格。'],['田宅宮','家庭環境、住所、不動產和家的氣氛。'],['福德宮','內心的享受、精神狀態、興趣和福氣。'],['父母宮','和父母、長輩、上司的關係，也和文書、考試有關。']],
- major:[
-  ['紫微','帝王星','有領導氣質、自尊心強，想掌握全局。','有格局、扛得起責任','好面子、不愛聽人指揮'],
-  ['天機','智慧星','腦筋轉得快、善於規劃，常常想很多。','點子多、反應快','想太多、計畫常變'],
-  ['太陽','發光的星','熱心、大方，喜歡付出和照顧人。','有正義感、願意承擔','太累、付出被當成理所當然'],
-  ['武曲','財星、將星','果斷務實，重視結果和效率。','執行力強、會理財','說話直、給人剛硬的感覺'],
-  ['天同','福星','溫和隨和，懂得享受生活。','人緣好、心態樂觀','容易懶散、少了衝勁'],
-  ['廉貞','次桃花星','有原則、好勝，感情濃烈。','有公關能力、做事有規矩','情緒起伏大、太在意輸贏'],
-  ['天府','財庫星','穩重包容，擅長守成和管理。','穩健、能聚財','偏保守、不愛冒險'],
-  ['太陰','月亮星','細膩溫柔，重視家和內在感受。','心思細、有美感、會存錢','敏感多慮、有事悶在心裡'],
-  ['貪狼','桃花星','多才多藝、愛交際，慾望和好奇心都強。','學得快、人緣佳','興趣太多不專一、容易沉迷'],
-  ['巨門','口才星','觀察細、愛追根究柢，很會說。','分析力強，適合靠專業和口才吃飯','容易多疑，話說太重引起是非'],
-  ['天相','印星','重形象、守規矩，擅長協調。','公正、很會輔佐別人','受環境影響大、不易下決定'],
-  ['天梁','蔭星','成熟穩重、愛照顧人，有長者風範。','能化解困難、常有貴人','愛說教、管太多'],
-  ['七殺','將星','獨立勇敢，敢衝敢拚。','開創力強、不怕困難','衝動、人生起伏較大'],
-  ['破軍','先鋒星','喜歡破舊立新，追求改變。','有改革力，敢做別人不敢做的事','不安定、花費或耗損大']],
- minor:[['左輔','助力星：身邊常有人幫忙，人緣好。'],['右弼','助力星：有人暗中支援，懂得配合別人。'],['文昌','文才星：會讀書、考試運好、文字能力強。'],['文曲','才藝星：口才和才藝好，有藝術感。'],['天魁','貴人星：容易得到長輩、上司的明面幫助。'],['天鉞','貴人星：常有人在背後默默幫忙。'],['祿存','財祿星：收入穩定，花錢偏保守。'],['天馬','驛馬星：變動、奔波，也代表外出的機會。'],['擎羊','衝勁很強，但容易衝突、受小傷。'],['陀羅','事情容易拖延，心裡比較糾結。'],['火星','脾氣急、爆發力強，來得快去得快。'],['鈴星','情緒會悶著累積，久了才爆發。'],['地空','想法天馬行空，不太在乎錢，物質容易落空。'],['地劫','容易因大意而破財，起伏較多。']],
- mut:[['祿','化祿','這顆星管的事比較順，有收穫、有人緣。','順利'],['權','化權','這顆星管的事你想主導，也比較有實權和能力。','掌握'],['科','化科','這顆星管的事容易被看見、有好名聲，遇到問題有人幫忙解。','名聲'],['忌','化忌','這顆星管的事你最在意，也最容易卡住，是這輩子的重點功課。','卡關與功課']],
- bright:[['廟','最亮，優點完全發揮'],['旺','很亮，表現很好'],['得','不錯，能正常發揮'],['利','尚可，有一點力量'],['平','普通，好壞參半'],['不','力量偏弱'],['陷','最弱，優點不易發揮，缺點較明顯']],
- showBright:true,
- ui:{date:'出生日期（國曆）',time:'出生時間',gender:'性別（紫微排大限用）',female:'女',male:'男',city:'出生地',go:'排盤',dst:'出生時實施夏令時間',adv:'進階：自訂經緯度與時區',lat:'緯度（北為正）',lon:'經度（東為正）',tz:'時區（UTC＋幾小時）',pick:'請選擇',errGender:'請選擇性別。',
-  errTime:'請填入出生日期和出生時間。不知道確切時間的話，可以先填大概的時間，但上升星座、宮位和紫微命盤可能會不準。',errPlace:'請選擇出生地，或在「進階」填入經緯度和時區。',errLib:'排盤程式沒有載入成功，請檢查網路後重新整理頁面。',
-  tabW:'西洋星盤',tabZ:'紫微斗數',
-  wPrimer:[['行星＝演員','代表一種力量，例如月亮是情緒、金星是愛與喜好。'],['星座＝演法','這股力量用什麼風格表現，例如牡羊很直接、巨蟹很顧家。'],['宮位＝舞台','力量用在人生哪個領域，例如第 10 宮是事業。'],['相位＝演員之間的關係','兩顆星是互相幫忙（綠線）還是互相拉扯（紅線）。']],
-  zPrimer:[['十二宮＝人生的十二個房間','命宮是你自己，夫妻宮是感情，財帛宮是金錢，以此類推。'],['主星＝房間的主人','決定這個領域的基本個性。沒有主星的房間就借對面房間來看。'],['四化＝標記',null],['大限＝每十年換一個房間','虛線框是你現在這十年的重點宮位，「流年」標的是今年。']],
-  legGood:'和諧相位',legBad:'緊張相位',legConj:'合相',wTable:'所有行星一覽',thP:'行星',thS:'星座',thH:'宮位',thL:'一句話',
-  ascName:'上升點',ascShort:'上升',ascTxt:'別人第一眼看到的你，也是第 1 宮的起點。',mcName:'天頂',mcTxt:'你在社會上想被認識的樣子，也是事業方向的指標。',ascL:'上升',mcL:'天頂',
-  picked:'你點的是',retro:'逆行',gen:'世代星',secRetro:'逆行是什麼意思',retroTxt:'從地球看，這顆星當時像在倒退走。一般解讀是這股力量比較內化，你會習慣先在心裡反覆想過，再表現出來。它不代表壞事。',secAsp:'和其他行星的關係',noAsp:'這顆星沒有和其他行星形成主要相位，表現比較獨立。',
-  cardWho:'你是誰',cardNeed:'你需要什麼',cardAsc:'別人第一眼看到的你',cardEl:'四元素比例',wheelAria:'星盤圓盤',
-  empty:'空宮',strengths:'優點',watch:'要注意',bodyHere:'身宮在這',decNow:'你現在的大限',yrNow:'今年流年',otherStars:'其他重要的星',secBody:'身宮是什麼',zwTitle:'紫微命盤',
-  tagBody:'身',tagDec:'大限',tagYr:'流年',zCardMing:'你是怎樣的人（命宮）',zCardBody:'後天的重心（身宮）',zCardMut:'生年四化（一生最明顯的標記）',sameBody:'命身同宮',sameBodyTxt:'先天和後天一致，做自己就是你的重心。',
-  solar:'國曆',lunar:'農曆',pillars:'',soul:'命主',body:'身主'},
- fn:{
-  secPlanet:p=>`${p}代表什麼`,secSign:s=>`${s}的風格`,
-  head:(p,s,n)=>`${p}在${s}・第 ${n} 宮`,
-  say:(p,core,s,style,n,h)=>`<strong>${p}</strong>是${core}。它落在<strong>${s}</strong>，所以表現得${style}；在<strong>第 ${n} 宮</strong>，代表這股力量主要用在${h}。`,
-  line:(core,style,h)=>`${core}，用「${style}」的方式表現，主要用在「${h}」。`,
-  elemMode:(e,m)=>`${e}象・${m}`,
-  aspLine:(o,say,t1,t2)=>`${o}：${say}（${t1}和${t2}）`,
-  big:(n,s)=>`${n} ${s}`,sunCard:s=>`核心性格${s}。`,moonCard:s=>`情緒上${s}，這樣才覺得安心。`,ascCard:s=>`給人的印象是${s}。`,elTop:(n,t)=>`${n}元素最多，偏向${t}。`,
-  main:l=>`主星是<strong>${l}</strong>。`,
-  empty:(o,st)=>`這是<strong>空宮</strong>，沒有主星。看法是借對面的${o}（${st}）來參考，代表這方面比較受環境和身邊的人影響，彈性也比較大。`,
-  bodyTxt:d=>`命宮看先天的個性，身宮看後天的重心。中年以後，你會越來越在意這一塊：${d}`,
-  decTxt:(a,b,d,m)=>`你 ${a} 到 ${b} 歲（虛歲）走這個宮，這段時間生活的重心會落在這一塊：${d}${m?`這個大限的四化是：${m}。`:''}`,
-  yrHead:g=>`今年（${g}年）`,yrTxt:d=>`今年的流年命宮落在這裡，今年特別容易碰到這方面的事：${d}`,
-  borrowed:o=>`以下是借來參考的${o}主星：`,decAges:r=>`大限 ${r} 歲`,zCardDec:r=>`現在這十年（${r} 歲）`,
-  mutPair:(s,f)=>`${s}${f}`,mutWhere:(s,p)=>`${s}，在${p}`,
-  bodyCard:d=>`中年以後會越來越在意：${d}`,decCard:(d,y)=>`重心落在：${d}今年流年在${y}。`,
-  fiveEl:(e,n,raw)=>raw,timeLbl:(raw,br,rng)=>raw,lunarLbl:(raw,y,m,d,leap)=>raw,
-  list:a=>a.join('、')}
-},
-/* ---------- English ---------- */
-en:{
- htmlLang:'en', title:'Starlit',
- planets:[
-  ['Sun',SYM_P[0],'self','your core self','Who you are and who you want to become, and your source of vitality. When people say “I’m a Leo,” they mean their Sun sign.'],
-  ['Moon',SYM_P[1],'feelings','your emotions and sense of security','What you need to feel safe, how your moods move, and how you are in private or at home.'],
-  ['Mercury',SYM_P[2],'mind','how you think and talk','How you think, learn and communicate.'],
-  ['Venus',SYM_P[3],'love','what you love and how you love','Your taste, how you enjoy life, what attracts you in love and how you show affection.'],
-  ['Mars',SYM_P[4],'drive','your drive and temper','How you go after what you want, your energy for action, and how you get angry.'],
-  ['Jupiter',SYM_P[5],'growth','where luck and growth come to you','Where things tend to go well, where you have faith, and where you keep expanding.'],
-  ['Saturn',SYM_P[6],'duty','your pressures and life lessons','Where you feel responsible, afraid or stuck. It takes time to master, and once you do, you become very steady.'],
-  ['Uranus',SYM_P[7],'change','where you want to break free','The part of you that wants to be different and break the rules. It moves slowly, so people born around the same time share its sign; its house matters more.'],
-  ['Neptune',SYM_P[8],'dreams','your dreams and imagination','Ideals and inspiration, and also where you may see things through rose-tinted glasses. It is a generational planet, so its house matters more than its sign.'],
-  ['Pluto',SYM_P[9],'transformation','your deep obsessions and transformations','Where you hold on intensely and are eventually transformed. It is a generational planet, so its house matters more than its sign.']],
- signs:[
-  ['Aries',SYM_S[0],'direct, first to act, quick to start','Passionate and direct; acts as soon as an idea arrives and hates waiting. The downside is impatience.'],
-  ['Taurus',SYM_S[1],'steady, practical, fond of real comfort','Slow but sure; values security and a comfortable life. The downside is stubbornness and resistance to change.'],
-  ['Gemini',SYM_S[2],'curious, nimble, chatty','Quick-witted with wide interests and a taste for new information. The downside is short-lived enthusiasm and distraction.'],
-  ['Cancer',SYM_S[3],'caring, sentimental, security-seeking','Home-loving, nostalgic and good at looking after people. The downside is being easily hurt and moody.'],
-  ['Leo',SYM_S[4],'generous, confident, wanting to be seen','Warm and generous; likes the spotlight and recognition. The downside is pride and a fear of being ignored.'],
-  ['Virgo',SYM_S[5],'careful, methodical, keen to get it right','Detail-minded, organized and willing to serve. The downside is being critical and anxious.'],
-  ['Libra',SYM_S[6],'harmony-seeking, fair-minded, aesthetic','Polite, a natural mediator with good taste. The downside is indecision and caring too much what others think.'],
-  ['Scorpio',SYM_S[7],'intense, focused, all-or-nothing','Focused and perceptive, with deep feelings. The downside is possessiveness and slow trust.'],
-  ['Sagittarius',SYM_S[8],'optimistic, freedom-loving, meaning-seeking','Cheerful; loves adventure and learning. The downside is restlessness under rules and blunt speech.'],
-  ['Capricorn',SYM_S[9],'planned, hardworking, achievement-minded','Practical and responsible, willing to work for the long haul. The downside is being too serious and under pressure.'],
-  ['Aquarius',SYM_S[10],'independent, rational, ahead of its time','Has its own ideas; values freedom and friends. The downside is seeming distant and disliking control.'],
-  ['Pisces',SYM_S[11],'sensitive, empathetic, imaginative','Gentle and caring, intuitive and artistic. The downside is escapism and blurry boundaries.']],
- modes:['Cardinal','Fixed','Mutable'],
- elems:{fire:['Fire','passion and action'],earth:['Earth','practicality and stability'],air:['Air','thinking and exchange'],water:['Water','feeling and emotion']},
- houses:['self-image and first impressions','money, possessions and self-worth','communication, learning and siblings','family, roots and your inner safe place','romance, fun, creativity and children','daily work, routines and health','partners, collaboration and one-to-one relationships','shared resources, intimacy and deep change','travel, beliefs and higher learning','career, status and public image','friends, communities and hopes for the future','the subconscious, solitude and what stays hidden'],
- aspects:[['Conjunction','the two forces are bound together and amplify each other'],['Sextile','a small helper: take the first step and they support each other'],['Square','they pull against each other; it can feel stuck, but it pushes you to grow'],['Trine','naturally smooth; they work together with little effort'],['Opposition','you swing between the two and need to find balance']],
- palaces:[
-  ['Life','Who you are: personality, talents and the overall tone of your life.'],['Siblings','Your bond with siblings and close peers.'],['Spouse','How you love, and the partners you attract and suit.'],['Children','Your bond with children and younger people; also creativity and partnerships.'],['Wealth','How you earn and spend money, and how you feel about it.'],['Health','Your constitution, and where stress tends to build up in your body.'],['Travel','How you do away from home, and your luck with the outside world.'],['Friends','Friends, colleagues, staff and your wider network.'],['Career','The shape of your work and career, and your working style.'],['Property','Your home environment, where you live, real estate and the feel of home.'],['Fortune','Inner contentment, state of mind, hobbies and blessings.'],['Parents','Your bond with parents, elders and bosses; also paperwork and exams.']],
- major:[
-  ['Emperor star','A natural leader with strong self-respect who wants to see the whole picture.','Big-picture thinking; takes on responsibility','Proud; dislikes taking orders'],
-  ['Wisdom star','Quick-minded and good at planning; often thinks a lot.','Full of ideas, fast reactions','Overthinks; plans keep changing'],
-  ['Shining star','Warm-hearted and generous; loves to give and look after others.','Strong sense of justice, willing to carry the load','Wears out; generosity gets taken for granted'],
-  ['Wealth and general star','Decisive and practical; cares about results and efficiency.','Gets things done; good with money','Blunt; can seem hard'],
-  ['Blessing star','Gentle and easygoing; knows how to enjoy life.','Well liked, optimistic','Can be lazy and lack drive'],
-  ['Passion star','Principled and competitive, with intense feelings.','Good at public relations; plays by the rules','Moody; cares too much about winning'],
-  ['Treasury star','Steady and tolerant; good at keeping and managing.','Reliable; builds wealth','Conservative; avoids risk'],
-  ['Moon star','Delicate and gentle; values home and inner feelings.','Attentive, aesthetic, good at saving','Sensitive; keeps worries to itself'],
-  ['Charm star','Multi-talented and sociable, with strong desires and curiosity.','Learns fast; popular','Too many interests; prone to indulgence'],
-  ['Speech star','Observant and probing, and a skilled talker.','Sharp analysis; suited to expertise and speaking','Can be suspicious; harsh words stir up trouble'],
-  ['Seal star','Image-conscious, follows the rules, good at coordinating.','Fair; an excellent right hand','Easily swayed; slow to decide'],
-  ['Shelter star','Mature and steady, protective of others, with an elder’s air.','Resolves difficulties; often helped by mentors','Preachy; meddles too much'],
-  ['General star','Independent and brave; dares to charge ahead.','Pioneering; unafraid of hardship','Impulsive; life has bigger ups and downs'],
-  ['Vanguard star','Likes to tear down the old and build the new; seeks change.','A reformer who dares what others won’t','Restless; high spending or wear']].map((r,i)=>[PINYIN_MAJOR[i],...r]),
- minor:['Helper star: people around you often lend a hand; good rapport.','Helper star: quiet support from behind the scenes; you cooperate well.','Scholar star: good at study and exams, strong with words.','Talent star: eloquent and gifted in the arts.','Patron star: open help from elders and superiors.','Patron star: someone often helps you quietly.','Income star: steady income, cautious spending.','Travel star: movement and busyness, and chances that come from going out.','Strong drive, but prone to conflict and minor injuries.','Things tend to drag; you get tangled in your own thoughts.','Quick temper and explosive energy; flares up and cools down fast.','Feelings build up silently and burst out later.','Imaginative and unconcerned with money; material plans may fall through.','Carelessness can cost money; more ups and downs.'].map((d,i)=>[PINYIN_MINOR[i],d]),
- mut:[['Gain','Gain','Things ruled by this star flow well, bringing rewards and goodwill.','things flow'],['Power','Power','You want to take charge of what this star rules, and you have real ability there.','you take charge'],['Fame','Fame','What this star rules gets noticed and earns a good name; help appears when problems arise.','recognition'],['Snag','Snag','What this star rules matters most to you and is where you get stuck most: a key life lesson.','a sticking point']],
- bright:[['Peak','brightest; strengths fully expressed'],['Strong','very bright; performs well'],['Good','decent; works normally'],['Fair','fair; some strength'],['Neutral','average; mixed'],['Weak','on the weak side'],['Fallen','weakest; strengths hard to express, weaknesses show more']],
- showBright:false,
- ui:{date:'Date of birth',time:'Time of birth',gender:'Sex (for Zi Wei decades)',female:'Female',male:'Male',city:'Place of birth',go:'Cast chart',dst:'Daylight saving time was in effect',adv:'Advanced: custom coordinates and time zone',lat:'Latitude (N +)',lon:'Longitude (E +)',tz:'Time zone (UTC + hours)',pick:'Select…',errGender:'Please choose a sex.',
-  errTime:'Please enter a date and time of birth. An approximate time works, but the Ascendant, houses and Zi Wei chart may be off.',errPlace:'Choose a place of birth, or enter coordinates and a time zone under Advanced.',errLib:'The chart engine failed to load. Check your connection and reload the page.',
-  tabW:'Western chart',tabZ:'Zi Wei Dou Shu',
-  wPrimer:[['Planets = the actors','Each is a force: the Moon is emotion, Venus is love and taste.'],['Signs = the acting style','How that force shows up: Aries is direct, Cancer is caring.'],['Houses = the stage','Which part of life it plays out in: the 10th house is career.'],['Aspects = how the actors get along','Whether two planets help each other (green) or pull against each other (red).']],
-  zPrimer:[['12 palaces = 12 rooms of life','Life is you, Spouse is love, Wealth is money, and so on.'],['Main stars = who lives in each room','They set the basic character of that area. An empty room borrows from the room opposite.'],['Transformations = markers',null],['Decades = a new room every ten years','The dashed box is your current decade; the “Year” tag marks this year.']],
-  legGood:'Harmonious',legBad:'Tense',legConj:'Conjunction',wTable:'All planets',thP:'Planet',thS:'Sign',thH:'House',thL:'In a sentence',
-  ascName:'Ascendant',ascShort:'Ascendant',ascTxt:'How others first see you; the start of the 1st house.',mcName:'Midheaven',mcTxt:'How you want to be known in the world; a pointer to your career.',ascL:'ASC',mcL:'MC',
-  picked:'You selected',retro:'Retrograde',gen:'Generational',secRetro:'What retrograde means',retroTxt:'Seen from Earth, the planet appeared to move backward at the time. It is usually read as energy turned inward: you think things over before showing them. It is not a bad sign.',secAsp:'Links to other planets',noAsp:'This planet forms no major aspects, so it acts fairly independently.',
-  cardWho:'Who you are',cardNeed:'What you need',cardAsc:'First impression',cardEl:'Element balance',wheelAria:'Birth chart wheel',
-  empty:'Empty',strengths:'Strengths',watch:'Watch out',bodyHere:'Body palace',decNow:'Your current decade',yrNow:'This year',otherStars:'Other key stars',secBody:'What the Body palace means',zwTitle:'Zi Wei chart',
-  tagBody:'Body',tagDec:'Decade',tagYr:'Year',zCardMing:'Who you are (Life palace)',zCardBody:'Where your focus grows (Body palace)',zCardMut:'Birth-year transformations',sameBody:'Same as Life',sameBodyTxt:'Your inborn nature and later focus are one: being yourself is the point.',
-  solar:'Born',lunar:'Lunar',pillars:'Pillars',soul:'Life ruler',body:'Body ruler'},
- fn:{
-  secPlanet:p=>`What the ${p} means`.replace('the Mercury','Mercury').replace('the Venus','Venus').replace('the Mars','Mars').replace('the Jupiter','Jupiter').replace('the Saturn','Saturn').replace('the Uranus','Uranus').replace('the Neptune','Neptune').replace('the Pluto','Pluto'),
-  secSign:s=>`The ${s} style`,
-  head:(p,s,n)=>`${p} in ${s} · ${ord(n)} house`,
-  say:(p,core,s,style,n,h)=>`<strong>${p==='Sun'||p==='Moon'?'The '+p:p}</strong> is ${core}. It is in <strong>${s}</strong>, so it comes across as ${style}. In the <strong>${ord(n)} house</strong>, this energy goes mainly into ${h}.`,
-  line:(core,style,h)=>`${cap(core)}: ${style}; mainly about ${h}.`,
-  elemMode:(e,m)=>`${e} · ${m}`,
-  aspLine:(o,say,t1,t2)=>`${o}: ${say} (${t1} and ${t2})`,
-  big:(n,s)=>`${n} in ${s}`,sunCard:s=>`At your core: ${s}.`,moonCard:s=>`Emotionally: ${s}.`,ascCard:s=>`Others see you as ${s}.`,elTop:(n,t)=>`Mostly ${n}: ${t}.`,
-  main:l=>`Main stars: <strong>${l}</strong>.`,
-  empty:(o,st)=>`No main star here. This is an <strong>empty palace</strong>, read through the opposite one, ${o} (${st}). This area is shaped more by your surroundings and the people around you, and stays flexible.`,
-  bodyTxt:d=>`The Life palace shows your inborn nature; the Body palace shows where your focus moves later. From midlife on, this area matters more and more: ${d}`,
-  decTxt:(a,b,d,m)=>`From age ${a} to ${b} (East Asian count) you move through this palace, and life centers on this area: ${d}${m?` This decade’s transformations: ${m}.`:''}`,
-  yrHead:g=>`This year (${g})`,yrTxt:d=>`This year’s palace falls here, so matters in this area come up more often: ${d}`,
-  borrowed:o=>`Main stars borrowed from ${o}:`,decAges:r=>`Decade: ages ${r}`,zCardDec:r=>`This decade (ages ${r})`,
-  mutPair:(s,f)=>`${s} ${f}`,mutWhere:(s,p)=>`${s} (${p})`,
-  bodyCard:d=>`From midlife on, this matters more: ${d}`,decCard:(d,y)=>`Focus: ${d} This year: ${y}.`,
-  fiveEl:(e,n)=>`${e}-${n} class`,timeLbl:(raw,br,rng)=>`${br} hour (${rng})`,lunarLbl:(raw,y,m,d,leap)=>`${y}-${m}-${d}${leap?' (leap)':''}`,
-  list:a=>a.join(', ')}
-},
-/* ---------- 日本語 ---------- */
-ja:{
- htmlLang:'ja', title:'Starlit 星曜',
- planets:[
-  ['太陽','日','自分らしさ','あなたの核となる自分','あなたが何者で、どう生きたいか。活力の源でもあります。「私は〇〇座」というときの星座は、この太陽星座のことです。'],
-  ['月','月','感情','あなたの感情と安心感','何があれば安心できるか、気分の揺れ方、家やプライベートでくつろいでいるときの姿を表します。'],
-  ['水星','水','思考','考え方と話し方','物事の考え方、学び方、人とのコミュニケーションの仕方を表します。'],
-  ['金星','金','愛と好み','好きなものと愛し方','美意識や楽しみ方、恋愛で惹かれるもの、好意の伝え方を表します。'],
-  ['火星','火','行動力','行動力と怒り方','欲しいものをどう取りにいくか、物事を進める勢い、怒ったときの様子を表します。'],
-  ['木星','木','成長','幸運と成長の方向','うまくいきやすく、信じることができ、どんどん広がっていく分野を表します。'],
-  ['土星','土','責任','プレッシャーと人生の課題','責任を感じたり、怖れたり、行き詰まったりする分野。時間をかけて鍛えれば、とても安定した強みになります。'],
-  ['天王星','天','変革','打ち破りたいもの','人と違っていたい、常識を壊したいという部分。動きが遅く同世代はほぼ同じ星座なので、星座よりハウスのほうが個人的な意味を持ちます。'],
-  ['海王星','海','夢','夢と想像力','理想やインスピレーション、そして見通しが甘くなりやすいところ。世代の星なので、星座よりハウスのほうが重要です。'],
-  ['冥王星','冥','変容','深い執着と生まれ変わり','強く執着し、やがて根本から変わっていく分野。世代の星なので、星座よりハウスのほうが重要です。']],
- signs:[
-  ['牡羊座','羊','まっすぐで一番乗りが好き、思い立ったらすぐ行動','情熱的でストレート。思いついたらすぐ動き、待つのが苦手。短所はせっかちなところ。'],
-  ['牡牛座','牛','安定志向で現実的、心地よさを大切にする','ゆっくりでも着実。安心感と心地よい暮らしを大切にします。短所は頑固で変化を嫌うところ。'],
-  ['双子座','双','好奇心旺盛で身軽、おしゃべり好き','頭の回転が速く興味が広い。新しい情報が好き。短所は飽きっぽく気が散りやすいところ。'],
-  ['蟹座','蟹','面倒見がよく情に厚い、安心感を求める','家庭的で思い出を大切にし、人の世話が得意。短所は傷つきやすく感情的なところ。'],
-  ['獅子座','獅','おおらかで自信があり、注目されたい','情熱的で気前がよく、主役になって認められたい。短所はプライドが高く、無視されるのを嫌うところ。'],
-  ['乙女座','乙','細やかで段取り上手、きちんとやりたい','細部に気を配り、段取りよく人の役に立とうとします。短所は批判的で心配性なところ。'],
-  ['天秤座','秤','調和を重んじ、公平さと美しさを大切にする','礼儀正しく調整上手でセンスがよい。短所は優柔不断で人目を気にしすぎるところ。'],
-  ['蠍座','蠍','深く集中し、愛憎がはっきりしている','集中力と洞察力があり、愛情が深い。短所は独占欲が強く、簡単には人を信じないところ。'],
-  ['射手座','射','楽観的で自由を愛し、意味を求める','明るく、冒険と学びが好き。短所は束縛を嫌い、言い方がストレートすぎるところ。'],
-  ['山羊座','山','計画的で粘り強く、成果を重んじる','現実的で責任感があり、長く努力できる。短所は真面目すぎてプレッシャーを抱えやすいところ。'],
-  ['水瓶座','瓶','自立していて理性的、発想が先進的','自分の考えを持ち、自由と友人を大切にする。短所は距離を感じさせ、管理されるのを嫌うところ。'],
-  ['魚座','魚','繊細で共感力があり、想像力豊か','優しく思いやりがあり、直感と芸術性に富む。短所は現実逃避しやすく、境界があいまいなところ。']],
- modes:['活動宮','不動宮','柔軟宮'],
- elems:{fire:['火','情熱・行動'],earth:['地','現実・安定'],air:['風','思考・交流'],water:['水','感受性・感情']},
- houses:['自己イメージと第一印象','お金・持ち物・自己価値','コミュニケーション・学び・兄弟姉妹','家庭・ルーツ・心の拠りどころ','恋愛・遊び・創作・子ども','日々の仕事・生活リズム・健康','パートナー・協力・一対一の関係','共有する資源・親密さ・深い変化','遠い旅・信念・学問','仕事・社会的地位・世間からの評価','友人・仲間・未来の願い','無意識・ひとりの時間・見えないもの'],
- aspects:[['コンジャンクション','二つの力が結びつき、互いを強め合う'],['セクスタイル','小さな助け合い。自分から動けば支え合える'],['スクエア','引っぱり合って行き詰まるが、成長のきっかけにもなる'],['トライン','自然とスムーズ。無理なく協力できる'],['オポジション','二つの間で揺れ動き、バランスを学ぶ']],
- palaces:[
-  ['命宮','あなたがどんな人か。性格、才能、人生全体の基調。'],['兄弟宮','兄弟姉妹や身近な同世代との関係。'],['夫妻宮','恋愛のパターンと、惹かれる相手・合う相手。'],['子女宮','子どもや年下との縁。創作や共同事業も表します。'],['財帛宮','お金の稼ぎ方・使い方、お金への考え方。'],['疾厄宮','体質と、ストレスがたまりやすいところ。'],['遷移宮','外出先や外の世界での振る舞いと運。'],['交友宮','友人・同僚・部下などの人脈。'],['官禄宮','仕事やキャリアの形、仕事の進め方。'],['田宅宮','家庭環境・住まい・不動産・家の雰囲気。'],['福徳宮','心の満足、精神状態、趣味、福の厚さ。'],['父母宮','両親・目上・上司との関係。書類や試験にも関わります。']],
- major:[
-  ['紫微','帝王の星','リーダーの気質があり、自尊心が強く、全体を掌握したい。','器が大きく、責任を背負える','体面を気にし、指図されるのを嫌う'],
-  ['天機','知恵の星','頭の回転が速く計画上手。考えすぎることも多い。','アイデア豊富で反応が速い','考えすぎ、計画が変わりやすい'],
-  ['太陽','輝く星','親切でおおらか、人に尽くし世話をするのが好き。','正義感があり、引き受ける力がある','疲れやすく、尽くしても当然と思われがち'],
-  ['武曲','財と武の星','決断力があり現実的。結果と効率を重んじる。','実行力があり、お金の管理が上手','言い方がきつく、硬い印象を与える'],
-  ['天同','福の星','穏やかで人当たりがよく、人生を楽しめる。','人に好かれ、楽観的','怠けがちで、勢いに欠ける'],
-  ['廉貞','情熱の星','信念があり負けず嫌い、感情が濃い。','対人関係が上手で、筋を通す','感情の起伏が大きく、勝ち負けにこだわる'],
-  ['天府','財庫の星','落ち着いて包容力があり、守りと管理が得意。','堅実で、財を蓄えられる','保守的で冒険を好まない'],
-  ['太陰','月の星','繊細で優しく、家と内面の感覚を大切にする。','気配りができ、美的センスがあり貯蓄上手','敏感で考えすぎ、悩みを抱え込む'],
-  ['貪狼','魅力の星','多才で社交的、欲求も好奇心も強い。','覚えが早く、人気がある','興味が多すぎて一つに絞れず、のめり込みやすい'],
-  ['巨門','弁舌の星','観察眼が鋭く、とことん追究し、話がうまい。','分析力があり、専門性や話術で身を立てられる','疑い深くなりやすく、言葉がきつくてもめごとに'],
-  ['天相','印綬の星','体裁を重んじ、ルールを守り、調整が得意。','公正で、補佐役として優秀','環境に左右されやすく、決断が遅い'],
-  ['天梁','庇護の星','成熟して落ち着きがあり、面倒見がよく長老の風格。','困難を解決でき、援助者に恵まれる','説教くさく、口を出しすぎる'],
-  ['七殺','将軍の星','独立心と勇気があり、果敢に突き進む。','開拓力があり、困難を恐れない','衝動的で、人生の浮き沈みが大きい'],
-  ['破軍','先鋒の星','古いものを壊して新しく作るのが好きで、変化を求める。','改革力があり、人がやらないことをやれる','落ち着かず、出費や消耗が大きい']],
- minor:[['左輔','補佐の星。周りに助けてくれる人が多く、人望がある。'],['右弼','補佐の星。陰で支えてくれる人がいて、人に合わせるのが上手。'],['文昌','学問の星。勉強や試験に強く、文章力がある。'],['文曲','才芸の星。話術や芸事に優れ、芸術的センスがある。'],['天魁','貴人の星。目上や上司から表立った援助を受けやすい。'],['天鉞','貴人の星。陰でそっと助けてくれる人がいる。'],['禄存','財禄の星。収入が安定し、お金の使い方は堅実。'],['天馬','移動の星。変化や奔走、外に出ることで得るチャンス。'],['擎羊','勢いが強いが、衝突や小さなけがをしやすい。'],['陀羅','物事が長引きやすく、心の中で迷いがち。'],['火星','気が短く爆発力があり、すぐ怒ってすぐ収まる。'],['鈴星','感情を内にため込み、あとで爆発する。'],['地空','発想が自由でお金に執着しない。物質面は空振りしやすい。'],['地劫','うっかりでお金を失いやすく、浮き沈みが多い。']],
- mut:[['禄','化禄','この星が司ることは順調で、実りと人の縁がある。','順調'],['権','化権','この星が司ることを自分で主導したくなり、実力も発揮しやすい。','主導権'],['科','化科','この星が司ることで目立ち評判を得やすく、困ったときは助けが入る。','名声'],['忌','化忌','この星が司ることに一番こだわり、一番つまずきやすい。人生の大切な課題。','つまずきと課題']],
- bright:[['廟','最も明るく、長所が存分に発揮される'],['旺','とても明るく、よく働く'],['得','よい状態で、普通に力を出せる'],['利','まずまず、少し力がある'],['平','普通。良し悪し半々'],['不','力が弱め'],['陥','最も弱く、長所が出にくく短所が目立つ']],
- showBright:true,
- ui:{date:'生年月日（新暦）',time:'出生時刻',gender:'性別（紫微の大限に使用）',female:'女性',male:'男性',city:'出生地',go:'命盤を出す',dst:'出生時にサマータイムが実施されていた',adv:'詳細：緯度・経度とタイムゾーンを指定',lat:'緯度（北が正）',lon:'経度（東が正）',tz:'タイムゾーン（UTC＋時間）',pick:'選択してください',errGender:'性別を選んでください。',
-  errTime:'生年月日と出生時刻を入力してください。おおよその時刻でも構いませんが、アセンダント、ハウス、紫微命盤がずれることがあります。',errPlace:'出生地を選ぶか、「詳細」で緯度・経度とタイムゾーンを入力してください。',errLib:'計算プログラムを読み込めませんでした。接続を確認してページを再読み込みしてください。',
-  tabW:'西洋占星術',tabZ:'紫微斗数',
-  wPrimer:[['惑星＝役者','それぞれが一つの力。月は感情、金星は愛と好み。'],['星座＝演じ方','その力がどんな風に表れるか。牡羊座はストレート、蟹座は面倒見がいい。'],['ハウス＝舞台','人生のどの分野で働くか。第10ハウスは仕事。'],['アスペクト＝役者どうしの関係','二つの星が助け合う（緑）か、引っぱり合う（赤）か。']],
-  zPrimer:[['十二宮＝人生の十二の部屋','命宮はあなた自身、夫妻宮は恋愛、財帛宮はお金、というように分かれています。'],['主星＝部屋の主','その分野の基本的な性格を決めます。主星のない部屋は向かいの部屋を借りて読みます。'],['四化＝しるし',null],['大限＝十年ごとに部屋が変わる','点線の枠が今の十年の宮、「流年」が今年です。']],
-  legGood:'調和',legBad:'緊張',legConj:'コンジャンクション',wTable:'惑星一覧',thP:'惑星',thS:'星座',thH:'ハウス',thL:'ひとことで',
-  ascName:'アセンダント',ascShort:'アセンダント',ascTxt:'人から最初に見えるあなた。第1ハウスの始まりでもあります。',mcName:'MC（天頂）',mcTxt:'社会でどう認められたいか。仕事の方向を示します。',ascL:'ASC',mcL:'MC',
-  picked:'あなたが選んだのは',retro:'逆行',gen:'世代の星',secRetro:'逆行とは',retroTxt:'地球から見て、この星がそのとき後ろ向きに動いて見えていた状態です。一般には、この力が内向きに働き、心の中で何度も考えてから表に出すと読みます。悪い意味ではありません。',secAsp:'ほかの惑星との関係',noAsp:'この星はほかの惑星と主要なアスペクトを作っておらず、独立して働きます。',
-  cardWho:'あなたは何者か',cardNeed:'あなたに必要なもの',cardAsc:'第一印象',cardEl:'四元素のバランス',wheelAria:'ホロスコープ',
-  empty:'空宮',strengths:'長所',watch:'注意点',bodyHere:'身宮がここ',decNow:'今の大限',yrNow:'今年の流年',otherStars:'その他の主な星',secBody:'身宮とは',zwTitle:'紫微命盤',
-  tagBody:'身',tagDec:'大限',tagYr:'流年',zCardMing:'あなたはどんな人か（命宮）',zCardBody:'後天的な重心（身宮）',zCardMut:'生年四化（一生を通じた目印）',sameBody:'命身同宮',sameBodyTxt:'先天と後天が一致。自分らしくいることが重心です。',
-  solar:'新暦',lunar:'旧暦',pillars:'四柱',soul:'命主',body:'身主'},
- fn:{
-  secPlanet:p=>`${p}が表すもの`,secSign:s=>`${s}のスタイル`,
-  head:(p,s,n)=>`${p} ${s}・第${n}ハウス`,
-  say:(p,core,s,style,n,h)=>`<strong>${p}</strong>は${core}を表します。<strong>${s}</strong>にあるので、スタイルは「${style}」。<strong>第${n}ハウス</strong>にあるので、この力は主に「${h}」で使われます。`,
-  line:(core,style,h)=>`${core}。スタイルは「${style}」、主な舞台は「${h}」。`,
-  elemMode:(e,m)=>`${e}・${m}`,
-  aspLine:(o,say,t1,t2)=>`${o}：${say}（${t1}と${t2}）`,
-  big:(n,s)=>`${n} ${s}`,sunCard:s=>`核となる性格：${s}。`,moonCard:s=>`感情面：${s}。`,ascCard:s=>`周りからの印象：${s}。`,elTop:(n,t)=>`${n}の要素が最も多く、${t}寄りです。`,
-  main:l=>`主星は<strong>${l}</strong>です。`,
-  empty:(o,st)=>`主星のない<strong>空宮</strong>です。向かいの${o}（${st}）を借りて読みます。この分野は環境や周りの人の影響を受けやすく、柔軟性もあります。`,
-  bodyTxt:d=>`命宮は生まれ持った性質、身宮は後天的な重心を表します。中年以降、この分野をますます大切にするようになります：${d}`,
-  decTxt:(a,b,d,m)=>`数え年${a}〜${b}歳はこの宮を通ります。この時期の生活の重心は：${d}${m?`この大限の四化は${m}。`:''}`,
-  yrHead:g=>`今年（${g}年）`,yrTxt:d=>`今年の流年命宮はここ。この分野のことが起きやすい一年です：${d}`,
-  borrowed:o=>`以下は向かいの${o}から借りた主星です：`,decAges:r=>`大限 ${r}歳`,zCardDec:r=>`今の十年（${r}歳）`,
-  mutPair:(s,f)=>`${s}${f}`,mutWhere:(s,p)=>`${s}（${p}）`,
-  bodyCard:d=>`中年以降、ますます大切になること：${d}`,decCard:(d,y)=>`重心：${d}今年の流年は${y}。`,
-  fiveEl:(e,n,raw)=>raw,timeLbl:(raw,br,rng)=>`${br}の刻（${rng}）`,lunarLbl:(raw,y,m,d,leap)=>`${y}年${leap?'閏':''}${m}月${d}日`,
-  list:a=>a.join('、')}
-},
-/* ---------- Français ---------- */
-fr:{
- htmlLang:'fr', title:'Starlit',
- planets:[
-  ['Soleil',SYM_P[0],'le moi','votre moi profond','Qui vous êtes et ce que vous voulez devenir ; votre source de vitalité. Quand on dit « je suis Lion », on parle du signe solaire.'],
-  ['Lune',SYM_P[1],'les émotions','vos émotions et votre besoin de sécurité','Ce dont vous avez besoin pour vous sentir en sécurité, vos humeurs, et qui vous êtes dans l’intimité ou chez vous.'],
-  ['Mercure',SYM_P[2],'la pensée','votre façon de penser et de parler','Comment vous réfléchissez, apprenez et communiquez.'],
-  ['Vénus',SYM_P[3],'l’amour','ce que vous aimez et votre façon d’aimer','Vos goûts, votre manière de profiter de la vie, ce qui vous attire en amour et comment vous montrez votre affection.'],
-  ['Mars',SYM_P[4],'l’action','votre élan et votre tempérament','Comment vous poursuivez ce que vous voulez, votre énergie d’action et votre façon de vous mettre en colère.'],
-  ['Jupiter',SYM_P[5],'la croissance','votre chance et votre croissance','Là où les choses vous réussissent facilement, où vous avez confiance et où vous grandissez.'],
-  ['Saturne',SYM_P[6],'le devoir','vos pressions et vos leçons de vie','Là où vous vous sentez responsable, inquiet ou bloqué. Cela demande du temps, mais une fois maîtrisé, vous devenez très solide.'],
-  ['Uranus',SYM_P[7],'le changement','là où vous voulez vous libérer','La part de vous qui veut être différente et briser les règles. Elle avance lentement : les personnes nées à la même époque partagent son signe, sa maison compte donc davantage.'],
-  ['Neptune',SYM_P[8],'les rêves','vos rêves et votre imagination','Idéaux et inspiration, mais aussi là où vous risquez de vous faire des illusions. Planète générationnelle : sa maison compte plus que son signe.'],
-  ['Pluton',SYM_P[9],'la métamorphose','vos attachements profonds et vos métamorphoses','Là où vous vous accrochez intensément avant d’être profondément transformé. Planète générationnelle : sa maison compte plus que son signe.']],
- signs:[
-  ['Bélier',SYM_S[0],'direct, pionnier, prompt à agir','Passionné et direct, il agit dès qu’une idée surgit et déteste attendre. Revers : l’impatience.'],
-  ['Taureau',SYM_S[1],'stable, concret, attaché au confort','Lent mais sûr, il tient à la sécurité et au confort. Revers : l’entêtement et la résistance au changement.'],
-  ['Gémeaux',SYM_S[2],'curieux, agile, bavard','Vif d’esprit, aux intérêts multiples, avide de nouveautés. Revers : l’enthousiasme passager et la dispersion.'],
-  ['Cancer',SYM_S[3],'protecteur, sentimental, en quête de sécurité','Attaché au foyer et aux souvenirs, il prend soin des autres. Revers : la susceptibilité et les humeurs changeantes.'],
-  ['Lion',SYM_S[4],'généreux, confiant, désireux d’être vu','Chaleureux et généreux, il aime la scène et la reconnaissance. Revers : l’orgueil et la peur d’être ignoré.'],
-  ['Vierge',SYM_S[5],'minutieux, méthodique, soucieux de bien faire','Attentive aux détails, organisée et serviable. Revers : l’esprit critique et l’anxiété.'],
-  ['Balance',SYM_S[6],'en quête d’harmonie, d’équité et de beauté','Courtoise, médiatrice, dotée de goût. Revers : l’indécision et le souci du regard des autres.'],
-  ['Scorpion',SYM_S[7],'intense, concentré, entier','Concentré, perspicace, aux sentiments profonds. Revers : la possessivité et la méfiance.'],
-  ['Sagittaire',SYM_S[8],'optimiste, épris de liberté, en quête de sens','Joyeux, amoureux de l’aventure et du savoir. Revers : l’impatience face aux contraintes et le franc-parler.'],
-  ['Capricorne',SYM_S[9],'organisé, endurant, tourné vers la réussite','Concret et responsable, prêt à travailler sur la durée. Revers : trop de sérieux et de pression.'],
-  ['Verseau',SYM_S[10],'indépendant, rationnel, avant-gardiste','Des idées bien à lui, attaché à la liberté et à l’amitié. Revers : une certaine distance et le refus d’être encadré.'],
-  ['Poissons',SYM_S[11],'sensible, empathique, imaginatif','Doux et attentionné, intuitif et artiste. Revers : la fuite et des limites floues.']],
- modes:['Cardinal','Fixe','Mutable'],
- elems:{fire:['Feu','passion et action'],earth:['Terre','sens pratique et stabilité'],air:['Air','pensée et échanges'],water:['Eau','ressenti et émotions']},
- houses:['l’image de soi et la première impression','l’argent, les biens et l’estime de soi','la communication, les études et la fratrie','la famille, les racines et votre refuge intérieur','l’amour, les loisirs, la création et les enfants','le travail quotidien, les habitudes et la santé','le couple, les associations et les relations à deux','les ressources partagées, l’intimité et les transformations profondes','les voyages, les convictions et les études supérieures','la carrière, le statut et l’image publique','les amis, les groupes et les projets d’avenir','l’inconscient, la solitude et ce qui reste caché'],
- aspects:[['Conjonction','les deux forces sont liées et s’amplifient'],['Sextile','un petit coup de pouce : avec un peu d’initiative, elles s’entraident'],['Carré','elles se contrarient ; cela bloque, mais vous pousse à grandir'],['Trigone','naturellement fluide : elles s’accordent sans effort'],['Opposition','vous oscillez entre les deux et devez trouver l’équilibre']],
- palaces:[
-  ['Vie','Qui vous êtes : personnalité, talents et tonalité générale de votre vie.'],['Fratrie','Vos liens avec vos frères et sœurs et vos proches du même âge.'],['Couple','Votre façon d’aimer et les partenaires qui vous attirent et vous conviennent.'],['Enfants','Vos liens avec les enfants et les plus jeunes ; aussi la création et les associations.'],['Richesse','Votre façon de gagner et de dépenser l’argent, et votre rapport à lui.'],['Santé','Votre constitution et les endroits où le stress s’accumule.'],['Déplacements','Votre façon d’être hors de chez vous et votre chance avec le monde extérieur.'],['Amis','Amis, collègues, collaborateurs et réseau.'],['Carrière','La forme de votre travail et de votre carrière, votre style de travail.'],['Foyer','Votre cadre familial, votre logement, l’immobilier et l’ambiance du foyer.'],['Bien-être','Contentement intérieur, état d’esprit, loisirs et bonne fortune.'],['Parents','Vos liens avec vos parents, les aînés et vos supérieurs ; aussi les documents et les examens.']],
- major:[
-  ['Étoile de l’Empereur','Un leader né, fier, qui veut maîtriser l’ensemble.','Envergure, sens des responsabilités','Soucieux de son image, n’aime pas recevoir d’ordres'],
-  ['Étoile de la Sagesse','Esprit vif et bon planificateur, pense souvent beaucoup.','Plein d’idées, réactif','Réfléchit trop, change souvent de plan'],
-  ['Étoile rayonnante','Chaleureux et généreux, aime donner et prendre soin des autres.','Sens de la justice, prêt à porter la charge','S’épuise ; sa générosité est tenue pour acquise'],
-  ['Étoile de la Richesse et du Général','Décidé et pragmatique, attaché aux résultats et à l’efficacité.','Grande capacité d’exécution, bon gestionnaire','Parole directe, peut paraître dur'],
-  ['Étoile de la Félicité','Doux et accommodant, sait profiter de la vie.','Apprécié, optimiste','Tendance à la paresse, manque d’élan'],
-  ['Étoile de la Passion','Attaché à ses principes, compétitif, aux sentiments intenses.','Sens des relations publiques, respect des règles','Humeur changeante, obsédé par la victoire'],
-  ['Étoile du Trésor','Posé et tolérant, doué pour conserver et gérer.','Solide, sait accumuler','Prudent à l’excès, évite le risque'],
-  ['Étoile de la Lune','Délicat et doux, attaché au foyer et à la vie intérieure.','Attentif, sens esthétique, sait épargner','Sensible, inquiet, garde tout pour lui'],
-  ['Étoile du Charme','Polyvalent et sociable, avec de forts désirs et une grande curiosité.','Apprend vite, populaire','Trop d’intérêts, tendance aux excès'],
-  ['Étoile de la Parole','Observateur, aime aller au fond des choses, beau parleur.','Esprit d’analyse, fait pour l’expertise et la parole','Soupçonneux ; des mots trop durs causent des conflits'],
-  ['Étoile du Sceau','Soigne son image, respecte les règles, bon coordinateur.','Juste, excellent second','Influençable, lent à décider'],
-  ['Étoile protectrice','Mûr et posé, protecteur, une allure de sage.','Résout les difficultés, souvent aidé par des mentors','Moralisateur, se mêle de tout'],
-  ['Étoile du Général','Indépendant et courageux, ose foncer.','Esprit pionnier, ne craint pas l’effort','Impulsif, vie faite de hauts et de bas'],
-  ['Étoile de l’Avant-garde','Aime faire table rase pour reconstruire, cherche le changement.','Réformateur, ose ce que d’autres n’osent pas','Instable, grosses dépenses ou usure']].map((r,i)=>[PINYIN_MAJOR[i],...r]),
- minor:['Étoile d’appui : on vous aide souvent, bonne entente.','Étoile d’appui : un soutien discret en coulisses, vous savez coopérer.','Étoile du lettré : doué pour les études, les examens et l’écrit.','Étoile des talents : éloquence et sens artistique.','Étoile protectrice : l’aide visible des aînés et des supérieurs.','Étoile protectrice : quelqu’un vous aide souvent en silence.','Étoile des revenus : revenus stables, dépenses prudentes.','Étoile du voyage : mouvement et agitation, mais aussi des occasions à l’extérieur.','Grande combativité, mais risque de conflits et de petites blessures.','Les choses traînent, vous ressassez.','Tempérament vif et explosif, qui s’enflamme et retombe vite.','Les émotions s’accumulent en silence puis éclatent.','Imagination débordante, peu d’intérêt pour l’argent ; les biens matériels peuvent s’évaporer.','L’inattention peut coûter de l’argent ; plus de hauts et de bas.'].map((d,i)=>[PINYIN_MINOR[i],d]),
- mut:[['Gain','Gain','Ce que régit cette étoile se déroule bien : gains et sympathie.','tout roule'],['Pouvoir','Pouvoir','Vous voulez diriger ce que régit cette étoile, et vous en avez les moyens.','vous dirigez'],['Renom','Renom','Ce que régit cette étoile se remarque et vous vaut une bonne réputation ; on vous aide en cas de souci.','reconnaissance'],['Nœud','Nœud','Ce que régit cette étoile vous tient le plus à cœur, et c’est là que vous bloquez le plus : une leçon de vie essentielle.','point de blocage']],
- bright:[['Apogée','le plus brillant : qualités pleinement exprimées'],['Fort','très brillant : bien exprimé'],['Bon','bon : s’exprime normalement'],['Correct','correct : un peu de force'],['Neutre','moyen : bilan mitigé'],['Faible','plutôt faible'],['Chute','le plus faible : qualités peu visibles, défauts plus marqués']],
- showBright:false,
- ui:{date:'Date de naissance',time:'Heure de naissance',gender:'Sexe (pour les décennies Zi Wei)',female:'Femme',male:'Homme',city:'Lieu de naissance',go:'Calculer',dst:'Heure d’été en vigueur à la naissance',adv:'Avancé : coordonnées et fuseau horaire',lat:'Latitude (N +)',lon:'Longitude (E +)',tz:'Fuseau (UTC + heures)',pick:'Choisir…',errGender:'Veuillez indiquer le sexe.',
-  errTime:'Indiquez la date et l’heure de naissance. Une heure approximative suffit, mais l’Ascendant, les maisons et le thème Zi Wei peuvent être faussés.',errPlace:'Choisissez un lieu de naissance, ou saisissez des coordonnées et un fuseau dans « Avancé ».',errLib:'Le moteur de calcul n’a pas pu se charger. Vérifiez votre connexion et rechargez la page.',
-  tabW:'Thème astral',tabZ:'Zi Wei Dou Shu',
-  wPrimer:[['Les planètes = les acteurs','Chacune est une force : la Lune, les émotions ; Vénus, l’amour et les goûts.'],['Les signes = le jeu','La manière dont cette force s’exprime : le Bélier est direct, le Cancer protecteur.'],['Les maisons = la scène','Le domaine de vie où elle agit : la maison 10, c’est la carrière.'],['Les aspects = les relations entre acteurs','Deux planètes s’entraident (vert) ou se contrarient (rouge).']],
-  zPrimer:[['12 palais = 12 pièces de la vie','Vie, c’est vous ; Couple, l’amour ; Richesse, l’argent, etc.'],['Étoiles principales = les occupants','Elles donnent le caractère de chaque domaine. Une pièce vide emprunte à la pièce d’en face.'],['Transformations = des marqueurs',null],['Décennies = une nouvelle pièce tous les dix ans','Le cadre en pointillé indique votre décennie actuelle ; l’étiquette « Année », l’année en cours.']],
-  legGood:'Harmonieux',legBad:'Tendu',legConj:'Conjonction',wTable:'Toutes les planètes',thP:'Planète',thS:'Signe',thH:'Maison',thL:'En une phrase',
-  ascName:'Ascendant',ascShort:'Ascendant',ascTxt:'L’image que vous donnez au premier abord ; le début de la maison 1.',mcName:'Milieu du Ciel',mcTxt:'La façon dont vous voulez être reconnu ; un indicateur de carrière.',ascL:'ASC',mcL:'MC',
-  picked:'Vous avez choisi',retro:'Rétrograde',gen:'Générationnelle',secRetro:'Que signifie rétrograde ?',retroTxt:'Vue de la Terre, la planète semblait reculer à ce moment-là. On l’interprète comme une énergie tournée vers l’intérieur : vous réfléchissez longuement avant d’agir. Ce n’est pas un mauvais signe.',secAsp:'Liens avec les autres planètes',noAsp:'Cette planète ne forme aucun aspect majeur : elle agit de façon plutôt indépendante.',
-  cardWho:'Qui vous êtes',cardNeed:'Ce dont vous avez besoin',cardAsc:'Première impression',cardEl:'Équilibre des éléments',wheelAria:'Roue du thème astral',
-  empty:'Vide',strengths:'Atouts',watch:'Vigilance',bodyHere:'Palais du Corps',decNow:'Votre décennie actuelle',yrNow:'Cette année',otherStars:'Autres étoiles importantes',secBody:'Le palais du Corps',zwTitle:'Thème Zi Wei',
-  tagBody:'Corps',tagDec:'Décennie',tagYr:'Année',zCardMing:'Qui vous êtes (palais de la Vie)',zCardBody:'Votre centre de gravité (palais du Corps)',zCardMut:'Transformations de naissance',sameBody:'Identique à la Vie',sameBodyTxt:'Nature innée et centre de gravité ne font qu’un : être soi-même est l’essentiel.',
-  solar:'Naissance',lunar:'Lunaire',pillars:'Piliers',soul:'Maître de vie',body:'Maître du corps'},
- fn:{
-  secPlanet:p=>`Ce que représente ${p}`.replace('représente Soleil','représente le Soleil').replace('représente Lune','représente la Lune'),
-  secSign:s=>`Le style ${s}`,
-  head:(p,s,n)=>`${p} en ${s} · maison ${n}`,
-  say:(p,core,s,style,n,h)=>`<strong>${p==='Soleil'?'Le Soleil':p==='Lune'?'La Lune':p}</strong> représente ${core}. En <strong>${s}</strong>, son style est : ${style}. En <strong>maison ${n}</strong>, cette énergie se porte surtout sur ${h}.`,
-  line:(core,style,h)=>`${cap(core)} : ${style} ; surtout tourné vers ${h}.`,
-  elemMode:(e,m)=>`${e} · ${m}`,
-  aspLine:(o,say,t1,t2)=>`${o} : ${say} (${t1} et ${t2})`,
-  big:(n,s)=>`${n} en ${s}`,sunCard:s=>`Au fond de vous : ${s}.`,moonCard:s=>`Sur le plan émotionnel : ${s}.`,ascCard:s=>`On vous perçoit comme : ${s}.`,elTop:(n,t)=>`Dominante ${n} : ${t}.`,
-  main:l=>`Étoiles principales : <strong>${l}</strong>.`,
-  empty:(o,st)=>`Aucune étoile principale ici : c’est un <strong>palais vide</strong>, qu’on lit à travers le palais opposé, ${o} (${st}). Ce domaine dépend davantage de votre entourage et reste plus flexible.`,
-  bodyTxt:d=>`Le palais de la Vie montre votre nature innée ; celui du Corps, là où votre attention se porte avec l’âge. À partir de la quarantaine, ce domaine compte de plus en plus : ${d}`,
-  decTxt:(a,b,d,m)=>`De ${a} à ${b} ans (âge à l’asiatique), vous traversez ce palais, et la vie se concentre ici : ${d}${m?` Transformations de cette décennie : ${m}.`:''}`,
-  yrHead:g=>`Cette année (${g})`,yrTxt:d=>`Le palais de l’année tombe ici : ce domaine sera particulièrement présent. ${d}`,
-  borrowed:o=>`Étoiles principales empruntées au palais ${o} :`,decAges:r=>`Décennie : ${r} ans`,zCardDec:r=>`Cette décennie (${r} ans)`,
-  mutPair:(s,f)=>`${s} ${f}`,mutWhere:(s,p)=>`${s} (${p})`,
-  bodyCard:d=>`À partir de la quarantaine, ceci compte de plus en plus : ${d}`,decCard:(d,y)=>`Priorité : ${d} Cette année : ${y}.`,
-  fiveEl:(e,n)=>`Classe ${e} ${n}`,timeLbl:(raw,br,rng)=>`Heure ${br} (${rng})`,lunarLbl:(raw,y,m,d,leap)=>`${d}/${m}/${y}${leap?' (intercalaire)':''}`,
-  list:a=>a.join(', ')}
-}};
-I18N.en.fiveElNames={'水':'Water','木':'Wood','金':'Metal','土':'Earth','火':'Fire'};
-I18N.fr.fiveElNames={'水':'Eau','木':'Bois','金':'Métal','土':'Terre','火':'Feu'};
-
-const CITIES=[
- ['台北','Taipei','台北','Taipei',25.04,121.56,8],['新北','New Taipei','新北','New Taipei',25.01,121.47,8],['基隆','Keelung','基隆','Keelung',25.13,121.74,8],['桃園','Taoyuan','桃園','Taoyuan',24.99,121.30,8],['新竹','Hsinchu','新竹','Hsinchu',24.80,120.97,8],['苗栗','Miaoli','苗栗','Miaoli',24.56,120.82,8],['台中','Taichung','台中','Taichung',24.15,120.67,8],['彰化','Changhua','彰化','Changhua',24.08,120.54,8],['南投','Nantou','南投','Nantou',23.91,120.69,8],['雲林','Yunlin','雲林','Yunlin',23.71,120.43,8],['嘉義','Chiayi','嘉義','Chiayi',23.48,120.45,8],['台南','Tainan','台南','Tainan',22.99,120.21,8],['高雄','Kaohsiung','高雄','Kaohsiung',22.63,120.30,8],['屏東','Pingtung','屏東','Pingtung',22.67,120.49,8],['宜蘭','Yilan','宜蘭','Yilan',24.75,121.75,8],['花蓮','Hualien','花蓮','Hualien',23.99,121.60,8],['台東','Taitung','台東','Taitung',22.76,121.14,8],['澎湖','Penghu','澎湖','Penghu',23.57,119.58,8],['金門','Kinmen','金門','Kinmen',24.43,118.32,8],['馬祖','Matsu','馬祖','Matsu',26.16,119.95,8],
- ['香港','Hong Kong','香港','Hong Kong',22.32,114.17,8],['澳門','Macau','マカオ','Macao',22.20,113.54,8],['北京','Beijing','北京','Pékin',39.90,116.40,8],['上海','Shanghai','上海','Shanghai',31.23,121.47,8],['廣州','Guangzhou','広州','Canton',23.13,113.26,8],['深圳','Shenzhen','深セン','Shenzhen',22.54,114.06,8],['廈門','Xiamen','廈門','Xiamen',24.48,118.09,8],['成都','Chengdu','成都','Chengdu',30.66,104.07,8],['新加坡','Singapore','シンガポール','Singapour',1.35,103.82,8],['吉隆坡','Kuala Lumpur','クアラルンプール','Kuala Lumpur',3.14,101.69,8],['曼谷','Bangkok','バンコク','Bangkok',13.76,100.50,7],['東京','Tokyo','東京','Tokyo',35.68,139.69,9],['大阪','Osaka','大阪','Osaka',34.69,135.50,9],['首爾','Seoul','ソウル','Séoul',37.57,126.98,9],['雪梨','Sydney','シドニー','Sydney',-33.87,151.21,10],['倫敦','London','ロンドン','Londres',51.51,-0.13,0],['巴黎','Paris','パリ','Paris',48.86,2.35,1],['紐約','New York','ニューヨーク','New York',40.71,-74.01,-5],['洛杉磯','Los Angeles','ロサンゼルス','Los Angeles',34.05,-118.24,-8],['溫哥華','Vancouver','バンクーバー','Vancouver',49.28,-123.12,-8],
- ['其他（用進階自訂）','Other (use Advanced)','その他（詳細で指定）','Autre (voir Avancé)',null,null,null]];
-
-
-/* ===================== 結構常數 ===================== */
-const PK=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
-const GEN={Uranus:1,Neptune:1,Pluto:1};
-const EL=['fire','earth','air','water'];
-const ASPECTS=[{a:0,orb:8,tone:'conj'},{a:60,orb:5,tone:'good'},{a:90,orb:7,tone:'bad'},{a:120,orb:7,tone:'good'},{a:180,orb:8,tone:'bad'}];
-const PALACE_KEYS=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母'];
-const MAJOR_KEYS=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
-const MINOR_KEYS=['左輔','右弼','文昌','文曲','天魁','天鉞','祿存','天馬','擎羊','陀羅','火星','鈴星','地空','地劫'];
-const MUT_KEYS=['祿','權','科','忌'];
-const BRIGHT_KEYS=['廟','旺','得','利','平','不','陷'];
-const BRANCH=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥','子'];
-const NUM={'二':2,'三':3,'四':4,'五':5,'六':6};
-
-let LG='zh',L=I18N.zh;
-const pl=k=>{const r=L.planets[PK.indexOf(k)];return{name:r[0],glyph:r[1],theme:r[2],core:r[3],long:r[4]};};
-const sg=i=>{const r=L.signs[i];return{name:r[0],glyph:r[1],style:r[2],long:r[3],el:EL[i%4],mode:L.modes[i%3]};};
-const palName=z=>L.palaces[PALACE_KEYS.indexOf(z)][0];
-const palDesc=z=>L.palaces[PALACE_KEYS.indexOf(z)][1];
-const starName=z=>{let i=MAJOR_KEYS.indexOf(z);if(i>=0)return L.major[i][0];i=MINOR_KEYS.indexOf(z);return i>=0?L.minor[i][0]:z;};
-const mutOf=z=>L.mut[MUT_KEYS.indexOf(z)];
-const brOf=z=>L.bright[BRIGHT_KEYS.indexOf(z)];
-const isMinor=z=>MINOR_KEYS.includes(z);
-
-/* ===================== 計算 ===================== */
-const D2R=Math.PI/180,R2D=180/Math.PI,norm=x=>((x%360)+360)%360;
-function westChart(utc,lat,lon){
-  const A=Astronomy,t=A.MakeTime(utc);
-  const Lo=(b,tt)=>b==='Moon'?A.EclipticGeoMoon(tt).lon:b==='Sun'?A.SunPosition(tt).elon:A.Ecliptic(A.GeoVector(b,tt,true)).elon;
-  const pos={};
-  for(const k of PK){const l=Lo(k,t);let d=norm(l-Lo(k,t.AddDays(-0.5)));if(d>180)d-=360;pos[k]={lon:l,retro:d<0};}
-  const ramc=norm(A.SiderealTime(t)*15+lon);
-  const e=(23.4392911-0.0130042*(t.tt/36525))*D2R,ra=ramc*D2R,ph=lat*D2R;
-  const mc=norm(Math.atan2(Math.sin(ra),Math.cos(ra)*Math.cos(e))*R2D);
-  const asc=norm(Math.atan2(Math.cos(ra),-(Math.sin(ra)*Math.cos(e)+Math.tan(ph)*Math.sin(e)))*R2D);
-  function cusp(f,off,above){let r=ramc+off,lam;
-    for(let i=0;i<60;i++){lam=norm(Math.atan2(Math.sin(r*D2R),Math.cos(r*D2R)*Math.cos(e))*R2D);
-      const dec=Math.asin(Math.sin(e)*Math.sin(lam*D2R)),x=Math.tan(ph)*Math.tan(dec);
-      if(Math.abs(x)>1)return null;const ad=Math.asin(x)*R2D;
-      const rn=above?ramc+f*(90+ad):ramc+180-f*(90-ad);
-      if(Math.abs(norm(rn-r+180)-180)<1e-7)break;r=rn;}
-    return lam;}
-  const c11=cusp(1/3,30,true),c12=cusp(2/3,60,true),c2=cusp(2/3,120,false),c3=cusp(1/3,150,false);
-  let houses;
-  if([c11,c12,c2,c3].some(v=>v==null))houses=[...Array(12)].map((_,i)=>norm(asc+30*i));
-  else houses=[asc,c2,c3,norm(mc+180),norm(c11+180),norm(c12+180),norm(asc+180),norm(c2+180),norm(c3+180),mc,c11,c12];
-  for(const k of PK)pos[k].house=houseOf(pos[k].lon,houses);
-  const asp=[];
-  for(let i=0;i<PK.length;i++)for(let j=i+1;j<PK.length;j++){
-    const a=PK[i],b=PK[j];let d=Math.abs(pos[a].lon-pos[b].lon);if(d>180)d=360-d;
-    const lum=(a==='Sun'||a==='Moon'||b==='Sun'||b==='Moon')?2:0;
-    for(let s=0;s<ASPECTS.length;s++){const o=Math.abs(d-ASPECTS[s].a);if(o<=ASPECTS[s].orb+lum){asp.push({a,b,t:s,tone:ASPECTS[s].tone,deg:ASPECTS[s].a,orb:o});break;}}
-  }
-  asp.sort((x,y)=>x.orb-y.orb);
-  return {pos,asc,mc,houses,asp};
-}
-function houseOf(l,h){for(let i=0;i<12;i++){const a=h[i],b=h[(i+1)%12];if(norm(l-a)<norm(b-a))return i+1;}return 1;}
-const signOf=l=>Math.floor(norm(l)/30);
-const fmtDeg=l=>{const x=norm(l)%30;const d=Math.floor(x),m=Math.floor((x-d)*60);return `${d}°${String(m).padStart(2,'0')}′`;};
-
-/* ===================== 狀態 ===================== */
-const $=s=>document.querySelector(s);
-let W=null,Z=null,ZH=null,selW='Sun',selZ=null;
-
-function fillCities(){const s=$('#f-city');s.innerHTML=`<option value="">${L.ui.pick}</option>`;const li={zh:0,en:1,ja:2,fr:3}[LG];
-  CITIES.forEach(c=>{const o=document.createElement('option');o.value=c[0];o.textContent=c[li];s.appendChild(o);});}
-function onCity(){const v=$('#f-city').value;const c=CITIES.find(x=>x[0]===v);if(c&&c[4]!=null){$('#f-lat').value=c[4];$('#f-lon').value=c[5];$('#f-tz').value=c[6];}else if(!v){$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';}else{$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';$('.adv').open=true;}}
-function readForm(){return{date:$('#f-date').value,time:$('#f-time').value,g:(document.querySelector('input[name=g]:checked')||{}).value,city:$('#f-city').value,dst:$('#f-dst').checked,lat:parseFloat($('#f-lat').value),lon:parseFloat($('#f-lon').value),tz:parseFloat($('#f-tz').value)};}
-let errKey=null;
-function showErr(k){errKey=k;const e=$('#err');if(k){e.textContent=L.ui[k];e.hidden=false;}else e.hidden=true;}
-
-function compute(v){
-  showErr(null);
-  if(!v.date||!v.time){showErr('errTime');return false;}
-  if(!v.g){showErr('errGender');return false;}
-  if([v.lat,v.lon,v.tz].some(isNaN)){showErr('errPlace');return false;}
-  const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
-  const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0);
-  W=westChart(new Date(stdMs-v.tz*3600e3),v.lat,v.lon);
-  const sd=new Date(stdMs),sh=sd.getUTCHours();
-  const ti=sh===23?12:Math.floor((sh+1)/2);
-  Z=iztro.astro.bySolar(`${sd.getUTCFullYear()}-${sd.getUTCMonth()+1}-${sd.getUTCDate()}`,ti,v.g,true,'zh-TW');
-  try{ZH=Z.horoscope(new Date());}catch(e){ZH=null;}
-  Z._ti=ti;Z._std=sd;
-  selZ=Z.palaces.findIndex(p=>p.name==='命宮');
-  return true;
-}
-
-/* ===================== 星盤 ===================== */
-const C=270;
-function xy(l,r){const th=(180+(l-W.asc))*D2R;return[C+r*Math.cos(th),C-r*Math.sin(th)];}
-function arc(l1,l2,r1,r2){const[a,b]=xy(l1,r2),[c,d]=xy(l2,r2),[e,f]=xy(l2,r1),[g,h]=xy(l1,r1);
-  return `M${a},${b} A${r2},${r2} 0 0 0 ${c},${d} L${e},${f} A${r1},${r1} 0 0 1 ${g},${h}Z`;}
-function drawWheel(){
-  const svg=$('#wheel');svg.setAttribute('aria-label',L.ui.wheelAria);const R0=262,R1=226,R2=112,RP=184;let s='';
-  for(let i=0;i<12;i++){const g=sg(i),l=i*30;s+=`<path d="${arc(l,l+30,R1,R0)}" fill="var(--${g.el})" fill-opacity="${i%2?0.10:0.17}" stroke="var(--line)"/>`;
-    const[x,y]=xy(l+15,(R0+R1)/2);s+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="700" fill="var(--${g.el})">${g.glyph}</text>`;}
-  s+=`<circle cx="${C}" cy="${C}" r="${R1}" fill="none" stroke="var(--line)"/><circle cx="${C}" cy="${C}" r="${R2}" fill="var(--sunk)" stroke="var(--line)"/>`;
-  for(let d=0;d<360;d+=5){if(d%30===0)continue;const[a,b]=xy(d,R1),[c,e]=xy(d,R1-(d%10===0?7:4));s+=`<line x1="${a}" y1="${b}" x2="${c}" y2="${e}" stroke="var(--muted)" stroke-opacity=".5"/>`;}
-  W.houses.forEach((h,i)=>{const ang=i===0||i===9;const[a,b]=xy(h,R2),[c,d]=xy(h,ang?R0+4:R1);
-    s+=`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${ang?'var(--ink)':'var(--line)'}" stroke-width="${ang?2:1}"/>`;
-    const mid=h+norm(W.houses[(i+1)%12]-h)/2;const[x,y]=xy(mid,R2+14);s+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--muted)" class="mono">${i+1}</text>`;});
-  {const[x,y]=xy(W.asc,R0-10);s+=`<text x="${x+2}" y="${y-10}" font-size="11" font-weight="700" fill="var(--ink)">${L.ui.ascL}</text>`;
-   const[mx,my]=xy(W.mc,R0-6);s+=`<text x="${mx+6}" y="${my+4}" font-size="11" font-weight="700" fill="var(--ink)">${L.ui.mcL}</text>`;}
-  for(const a of W.asp){if(a.deg===0)continue;const[x1,y1]=xy(W.pos[a.a].lon,R2-4),[x2,y2]=xy(W.pos[a.b].lon,R2-4);
-    const col=a.tone==='good'?'var(--good)':'var(--seal)';const on=a.a===selW||a.b===selW;
-    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${on?2:1.2}" stroke-opacity="${on?0.95:0.15}"/>`;}
-  const arr=PK.map(k=>({k,l:W.pos[k].lon,d:W.pos[k].lon}));arr.sort((a,b)=>a.l-b.l);
-  for(let it=0;it<40;it++){let moved=false;for(let i=0;i<arr.length;i++){const a=arr[i],b=arr[(i+1)%arr.length];const df=norm(b.d-a.d);if(df<10){a.d-=(10-df)/2;b.d+=(10-df)/2;moved=true;}}if(!moved)break;}
-  for(const o of arr){const p=pl(o.k);const[t1,t2]=xy(o.l,R1),[t3,t4]=xy(o.l,R1-10),[cx,cy]=xy(o.d,RP),[l3,l4]=xy(o.d,RP+15);
-    s+=`<line x1="${t1}" y1="${t2}" x2="${t3}" y2="${t4}" stroke="var(--ink)" stroke-width="2"/><line x1="${t3}" y1="${t4}" x2="${l3}" y2="${l4}" stroke="var(--muted)" stroke-opacity=".5"/>`;
-    s+=`<g class="pl${selW===o.k?' on':''}" data-k="${o.k}" tabindex="0" role="button" aria-label="${p.name}"><circle class="bg" cx="${cx}" cy="${cy}" r="15"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central">${p.glyph}</text>${W.pos[o.k].retro?`<text x="${cx+13}" y="${cy+12}" font-size="9" style="font-family:var(--f-body);font-weight:700;fill:var(--seal)">R</text>`:''}</g>`;}
-  svg.innerHTML=s;
-  svg.querySelectorAll('.pl').forEach(g=>{const f=()=>{selW=g.dataset.k;drawWheel();showPlanet();};g.addEventListener('click',f);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f();}});});
-}
-function showPlanet(){
-  const k=selW,p=pl(k),q=W.pos[k],g=sg(signOf(q.lon)),U=L.ui,F=L.fn;
-  const asp=W.asp.filter(a=>a.a===k||a.b===k);
-  $('#w-detail').innerHTML=`<div><div class="eyebrow">${U.picked}</div><h2>${F.head(p.name,g.name,q.house)}</h2></div>
-  <p class="say">${F.say(p.name,p.core,g.name,g.style,q.house,L.houses[q.house-1])}</p>
-  <div class="chips"><span class="chip mono">${g.name} ${fmtDeg(q.lon)}</span><span class="chip">${F.elemMode(L.elems[g.el][0],g.mode)}</span>${q.retro?`<span class="chip bad">${U.retro}</span>`:''}${GEN[k]?`<span class="chip hold">${U.gen}</span>`:''}</div>
-  <div class="block"><h4>${F.secPlanet(p.name)}</h4><p>${p.long}</p></div>
-  <div class="block"><h4>${F.secSign(g.name)}</h4><p>${g.long}</p></div>
-  ${q.retro?`<div class="block"><h4>${U.secRetro}</h4><p>${U.retroTxt}</p></div>`:''}
-  <div class="block"><h4>${U.secAsp}</h4>${asp.length?`<div class="asplist">${asp.map(a=>{const o=pl(a.a===k?a.b:a.a);const[n,say]=L.aspects[a.t];return `<div><span class="chip ${a.tone==='good'?'good':a.tone==='bad'?'bad':'acc'}">${n}</span> ${F.aspLine(o.name,say,p.theme,o.theme)}</div>`;}).join('')}</div>`:`<p class="muted">${U.noAsp}</p>`}</div>`;
-}
-function westSummary(){
-  const U=L.ui,F=L.fn,sun=sg(signOf(W.pos.Sun.lon)),moon=sg(signOf(W.pos.Moon.lon)),asc=sg(signOf(W.asc));
-  const cnt={fire:0,earth:0,air:0,water:0};['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'].forEach(k=>cnt[sg(signOf(W.pos[k].lon)).el]++);cnt[asc.el]++;
-  const mx=Math.max(...Object.values(cnt));const tops=EL.filter(k=>cnt[k]===mx);
-  $('#w-sum').innerHTML=`
-  <div class="card"><span class="q">${U.cardWho}</span><span class="big">${F.big(pl('Sun').name,sun.name)}</span><p>${F.sunCard(sun.style)}</p></div>
-  <div class="card"><span class="q">${U.cardNeed}</span><span class="big">${F.big(pl('Moon').name,moon.name)}</span><p>${F.moonCard(moon.style)}</p></div>
-  <div class="card"><span class="q">${U.cardAsc}</span><span class="big">${F.big(U.ascShort,asc.name)}</span><p>${F.ascCard(asc.style)}</p></div>
-  <div class="card"><span class="q">${U.cardEl}</span><div class="elem">${EL.map(k=>`<div class="erow"><span>${L.elems[k][0]}</span><div class="ebar"><span style="width:${cnt[k]/8*100}%;background:var(--${k})"></span></div><span class="mono">${cnt[k]}</span></div>`).join('')}</div><p>${F.elTop(F.list(tops.map(k=>L.elems[k][0])),F.list(tops.map(k=>L.elems[k][1])))}</p></div>`;
-}
-function westTable(){
-  const U=L.ui,F=L.fn;
-  const rows=PK.map(k=>{const p=pl(k),q=W.pos[k],g=sg(signOf(q.lon));return `<tr data-k="${k}"><td class="p">${p.name}${q.retro?` <span class="chip bad">${U.retro}</span>`:''}</td><td>${g.name} <span class="mono muted">${fmtDeg(q.lon)}</span></td><td class="mono">${q.house}</td><td>${F.line(p.core,g.style,L.houses[q.house-1])}</td></tr>`;});
-  rows.push(`<tr><td class="p">${U.ascName}</td><td>${sg(signOf(W.asc)).name} <span class="mono muted">${fmtDeg(W.asc)}</span></td><td class="mono">1</td><td>${U.ascTxt}</td></tr>`);
-  rows.push(`<tr><td class="p">${U.mcName}</td><td>${sg(signOf(W.mc)).name} <span class="mono muted">${fmtDeg(W.mc)}</span></td><td class="mono">10</td><td>${U.mcTxt}</td></tr>`);
-  $('#w-table').innerHTML=rows.join('');
-  $('#w-table').querySelectorAll('tr[data-k]').forEach(r=>r.addEventListener('click',()=>{selW=r.dataset.k;drawWheel();showPlanet();$('#w-detail').scrollIntoView({behavior:'smooth',block:'nearest'});}));
-}
-
-/* ===================== 紫微 ===================== */
-const POS={3:[1,1],4:[1,2],5:[1,3],6:[1,4],2:[2,1],7:[2,4],1:[3,1],8:[3,4],0:[4,1],11:[4,2],10:[4,3],9:[4,4]};
-const mutBadge=z=>`<span class="mut ${z}">${mutOf(z)[0]}</span>`;
-function starHTML(s){return `<span>${starName(s.name)}${L.showBright&&s.brightness?`<sup>${brOf(s.brightness)[0]}</sup>`:''}${s.mutagen?mutBadge(s.mutagen):''}</span>`;}
-function drawZW(){
-  const U=L.ui,F=L.fn,g=$('#zw');let h='';
-  const dec=ZH?ZH.decadal.index:-1,yr=ZH?ZH.yearly.index:-1;
-  Z.palaces.forEach((p,i)=>{const[r,c]=POS[i];const minor=p.minorStars.filter(s=>isMinor(s.name));
-    h+=`<button type="button" class="cell${p.name==='命宮'?' ming':''}${i===dec?' dec':''}${i===selZ?' on':''}" style="grid-row:${r};grid-column:${c}" data-i="${i}" aria-label="${palName(p.name)}">
-      <div class="stars">${p.majorStars.length?p.majorStars.map(starHTML).join(''):`<span class="muted" style="font-weight:400;font-size:12px">${U.empty}</span>`}</div>
-      ${minor.length?`<div class="minor">${minor.map(s=>starName(s.name)+(s.mutagen?mutBadge(s.mutagen):'')).join(' ')}</div>`:''}
-      <div class="foot"><div><div class="tags">${p.isBodyPalace?`<span class="tag body">${U.tagBody}</span>`:''}${i===dec?`<span class="tag dc">${U.tagDec}</span>`:''}${i===yr?`<span class="tag yr">${U.tagYr}</span>`:''}</div><div class="pname">${palName(p.name)}</div></div><div style="text-align:right"><div class="gz">${p.heavenlyStem}${p.earthlyBranch}</div><div class="age">${p.decadal.range.join('–')}</div></div></div></button>`;});
-  const sd=Z._std,ti=Z._ti,rd=Z.rawDates.lunarDate,cd=Z.rawDates.chineseDate;
-  const rng=ti===0?'23:00–01:00':ti===12?'23:00–24:00':`${String(ti*2-1).padStart(2,'0')}:00–${String(ti*2+1).padStart(2,'0')}:00`;
-  const fe=Z.fiveElementsClass,feTxt=L.fiveElNames?F.fiveEl(L.fiveElNames[fe[0]],NUM[fe[1]],fe):F.fiveEl(null,null,fe);
-  const pillars=[cd.yearly,cd.monthly,cd.daily,cd.hourly].map(x=>x.join('')).join(' ');
-  h+=`<div class="center"><div class="nm">${U.zwTitle}</div>
-   <div>${U.solar} ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${F.timeLbl(Z.time,BRANCH[ti],rng)}</div>
-   <div>${U.lunar} ${F.lunarLbl(Z.lunarDate,rd.lunarYear,rd.lunarMonth,rd.lunarDay,rd.isLeap)}</div>
-   <div>${U.pillars?U.pillars+' ':''}${pillars}</div>
-   <div class="kl"><span>${feTxt}</span><span>${U.soul} ${starName(Z.soul)}</span><span>${U.body} ${starName(Z.body)}</span></div>
-   <div class="kl">${MUT_KEYS.map((m,j)=>`<span>${mutBadge(m)}${LG==='zh'||LG==='ja'?L.mut[j][3]:''}</span>`).join('')}</div></div>`;
-  g.innerHTML=h;
-  g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
-}
-function majorBlock(s){const U=L.ui,m=L.major[MAJOR_KEYS.indexOf(s.name)];const b=s.brightness&&brOf(s.brightness);
-  return `<div class="block"><h4>${m[0]}・${m[1]}${b?` <span class="chip">${b[0]}：${b[1]}</span>`:''}${s.mutagen?` <span class="mut ${s.mutagen}">${mutOf(s.mutagen)[1]}</span>`:''}</h4><p>${m[2]}</p><div class="pros"><span class="t g">${U.strengths}</span><span>${m[3]}</span><span class="t w">${U.watch}</span><span>${m[4]}</span></div>${s.mutagen?`<p class="muted" style="font-size:13.5px">${mutOf(s.mutagen)[1]}：${mutOf(s.mutagen)[2]}</p>`:''}</div>`;}
-function decMuts(){if(!ZH||!ZH.decadal.mutagen)return '';return L.fn.list(ZH.decadal.mutagen.map((s,j)=>L.fn.mutPair(starName(s),L.mut[j][1])));}
-function showPalace(){
-  const U=L.ui,F=L.fn,i=selZ,p=Z.palaces[i],opp=Z.palaces[(i+6)%12];
-  const dec=ZH&&ZH.decadal.index===i,yr=ZH&&ZH.yearly.index===i;
-  const minor=p.minorStars.filter(s=>isMinor(s.name));
-  const stars=p.majorStars.length?p.majorStars:opp.majorStars;
-  const d=palDesc(p.name);
-  const lead=p.majorStars.length?F.main(F.list(p.majorStars.map(s=>starName(s.name)))):F.empty(palName(opp.name),F.list(opp.majorStars.map(s=>starName(s.name)))||'—');
-  $('#z-detail').innerHTML=`<div><div class="eyebrow">${U.picked}</div><h2>${palName(p.name)}<span class="muted" style="font-size:15px;font-weight:400">　${p.heavenlyStem}${p.earthlyBranch}</span></h2></div>
-  <p class="say">${d} ${lead}</p>
-  <div class="chips">${p.isBodyPalace?`<span class="chip acc">${U.bodyHere}</span>`:''}${dec?`<span class="chip hold">${U.decNow}</span>`:''}${yr?`<span class="chip bad">${U.yrNow}</span>`:''}<span class="chip mono">${F.decAges(p.decadal.range.join('–'))}</span></div>
-  ${p.isBodyPalace?`<div class="block"><h4>${U.secBody}</h4><p>${F.bodyTxt(d)}</p></div>`:''}
-  ${dec?`<div class="block"><h4>${U.decNow}</h4><p>${F.decTxt(p.decadal.range[0],p.decadal.range[1],d,decMuts())}</p></div>`:''}
-  ${yr?`<div class="block"><h4>${F.yrHead(ZH.yearly.heavenlyStem+ZH.yearly.earthlyBranch)}</h4><p>${F.yrTxt(d)}</p></div>`:''}
-  ${(p.majorStars.length?'':`<p class="hint">${F.borrowed(palName(opp.name))}</p>`)+stars.map(majorBlock).join('')}
-  ${minor.length?`<div class="block"><h4>${U.otherStars}</h4>${minor.map(s=>`<p><b>${starName(s.name)}</b>${s.mutagen?` <span class="mut ${s.mutagen}">${mutOf(s.mutagen)[1]}</span>`:''}：${L.minor[MINOR_KEYS.indexOf(s.name)][1]}</p>`).join('')}</div>`:''}`;
-}
-function zwSummary(){
-  const U=L.ui,F=L.fn,ming=Z.palaces.find(p=>p.name==='命宮'),body=Z.palaces.find(p=>p.isBodyPalace);
-  const mi=Z.palaces.indexOf(ming),opp=Z.palaces[(mi+6)%12];
-  const src=ming.majorStars.length?ming.majorStars:opp.majorStars;
-  const ms=ming.majorStars.length?src.map(s=>starName(s.name)).join('・'):`${U.empty}（${src.map(s=>starName(s.name)).join('・')||'—'}）`;
-  const msDesc=src.map(s=>L.major[MAJOR_KEYS.indexOf(s.name)][2]).join(' ');
-  const dec=ZH?Z.palaces[ZH.decadal.index]:null,yr=ZH?Z.palaces[ZH.yearly.index]:null;
-  const mlist=[];Z.palaces.forEach(p=>[...p.majorStars,...p.minorStars].forEach(s=>{if(s.mutagen)mlist.push({m:s.mutagen,s:starName(s.name),p:palName(p.name)});}));
-  mlist.sort((a,b)=>MUT_KEYS.indexOf(a.m)-MUT_KEYS.indexOf(b.m));
-  const same=body.name==='命宮';
-  $('#z-sum').innerHTML=`
-  <div class="card"><span class="q">${U.zCardMing}</span><span class="big">${ms}</span><p>${msDesc}</p></div>
-  <div class="card"><span class="q">${U.zCardBody}</span><span class="big">${same?U.sameBody:palName(body.name)}</span><p>${same?U.sameBodyTxt:F.bodyCard(palDesc(body.name))}</p></div>
-  ${dec?`<div class="card"><span class="q">${F.zCardDec(dec.decadal.range.join('–'))}</span><span class="big">${palName(dec.name)}</span><p>${F.decCard(palDesc(dec.name),palName(yr.name))}</p></div>`:''}
-  <div class="card"><span class="q">${U.zCardMut}</span><div class="mutlist">${mlist.map(x=>`<div>${mutBadge(x.m)} ${F.mutWhere(x.s,x.p)}</div>`).join('')}</div></div>`;
-}
-
-/* ===================== 語言切換 ===================== */
-function primer(id,arr){$(id).innerHTML=arr.map(([b,t])=>`<div><b>${b}</b><span>${t??L.mut.map((m,j)=>`${mutBadge(MUT_KEYS[j])} ${m[3]}`).join('　')}</span></div>`).join('');}
-function applyLang(lg){
-  LG=I18N[lg]?lg:'zh';L=I18N[LG];
-  document.documentElement.lang=L.htmlLang;document.title=L.title;
-  document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=L.ui[el.dataset.t];});
-  const cur=$('#f-city').value;fillCities();if(cur)$('#f-city').value=cur;
-  primer('#w-primer',L.ui.wPrimer);primer('#z-primer',L.ui.zPrimer);
-  $('#langs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LG));
-  if(errKey)showErr(errKey);
-  if(W&&Z)renderAll();
-  try{localStorage.setItem('starlit-lang',LG);}catch(e){}
-}
-
-/* ===================== 啟動 ===================== */
-function renderAll(){drawWheel();showPlanet();westSummary();westTable();drawZW();showPalace();zwSummary();}
-function tab(which){const w=which==='west';$('#t-west').setAttribute('aria-selected',w);$('#t-zw').setAttribute('aria-selected',!w);$('#p-west').hidden=!w;$('#p-zw').hidden=w;try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
-
-function boot(){
-  const names={zh:'中文',en:'English',ja:'日本語',fr:'Français'};
-  $('#langs').innerHTML=Object.keys(names).map(k=>`<button type="button" data-l="${k}" lang="${I18N[k].htmlLang}">${names[k]}</button>`).join('');
-  $('#langs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.l)));
-  let lg=null;try{lg=localStorage.getItem('starlit-lang');}catch(e){}
-  if(!lg){const n=(navigator.language||'zh').toLowerCase();lg=n.startsWith('ja')?'ja':n.startsWith('fr')?'fr':n.startsWith('zh')?'zh':'en';}
-  LG=I18N[lg]?lg:'zh';L=I18N[LG];
-  fillCities();
-  $('#f-city').addEventListener('change',onCity);
-  if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
-  applyLang(LG);
-  $('#birth').addEventListener('submit',e=>{e.preventDefault();const v=readForm();if(compute(v)){selW='Sun';renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
-  $('#t-west').addEventListener('click',()=>tab('west'));$('#t-zw').addEventListener('click',()=>tab('zw'));
-  let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(t==='zw')tab('zw');
-}
-boot();
-</script>
+<script src="js/i18n.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/hd-zh.js"></script>
+<script src="js/reading-zh.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

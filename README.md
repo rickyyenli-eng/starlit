@@ -1,7 +1,12 @@
 # Starlit 星曜
 
-輸入出生資料，排出西洋星盤與紫微斗數命盤，點任何一顆星或宮位就有白話解釋。
+輸入出生資料，同時排出西洋星盤、紫微斗數命盤與人類圖，並產生詳細解析。
 
-- 單一檔案網站：`index.html`
-- 星盤計算：[astronomy-engine](https://github.com/cosinekitty/astronomy)（回歸黃道、Placidus 宮位）
-- 紫微排盤：[iztro](https://github.com/SylarLong/iztro)（全書派四化）
+- `index.html`：頁面與樣式
+- `js/engine.js`：星盤（回歸黃道、Placidus）、真月交點、人類圖計算
+- `js/reading-zh.js`：三套詳解產生器（中文）
+- `js/hd-zh.js`：人類圖中文資料與輪迴交叉表
+- `js/i18n.js`：中、英、日、法介面文字
+- `js/app.js`：畫面互動
+
+計算來源：[astronomy-engine](https://github.com/cosinekitty/astronomy)、[iztro](https://github.com/SylarLong/iztro)。
