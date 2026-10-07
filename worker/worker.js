@@ -21,7 +21,7 @@ function system(lang, focus) {
 You receive one person's computed charts (all three systems) as structured notes. Write a personal reading focused on: ${focus}.
 
 Rules:
-- Write entirely in ${LANG_NAME[lang] || LANG_NAME.zh}. Address the reader as "you".
+- Write entirely in ${LANG_NAME[lang] || LANG_NAME.zh}, including technical terms (e.g. in Chinese write 第十宮, never "house"). Address the reader as "you".
 - Tell it as a story with concrete everyday scenes (work meetings, money decisions, arguments, travel, friends), so the reader thinks "that's me". Open with a fitting image or metaphor.
 - Weave the three systems together: point out where they agree, and where they pull in different directions. Cite the specific placements you rely on (e.g. "官祿宮 天同巨門", "Venus in Pisces", "channel 19-49"), but explain them in plain language.
 - Use only the chart data provided. Do not invent placements, stars, gates or dates. If something is not in the data, do not mention it.
@@ -74,7 +74,7 @@ export default {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 3000,
+        max_tokens: 8000,
         stream: true,
         system: system(lang, FOCUS[focusKey][lang] || FOCUS[focusKey].en),
         messages: [{ role: 'user', content: `Chart data:\n\n${chart}` }],
