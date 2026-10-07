@@ -160,8 +160,16 @@ function showPalace(){
   const stars=p.majorStars.length?p.majorStars:opp.majorStars;
   const d=palDesc(p.name);
   const lead=p.majorStars.length?F.main(F.list(p.majorStars.map(s=>starName(s.name)))):F.empty(palName(opp.name),F.list(opp.majorStars.map(s=>starName(s.name)))||'—');
+  let st='';
+  if(LG==='zh'){const ZO=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];const cb=p.majorStars.map(s=>s.name).sort((x,y)=>ZO.indexOf(x)-ZO.indexOf(y)).join('·')||'空';
+    const n=p.name;let e=null,txt='';
+    if(n==='命宮'&&window.STORY_ZW_MING){e=STORY_ZW_MING.ming[cb];if(e)txt=e.image+e.story;}
+    else if(n==='夫妻'&&window.STORY_ZW_SPOUSE){e=STORY_ZW_SPOUSE[cb];if(e)txt=e.partner+e.pattern;}
+    else if((n==='財帛'||n==='官祿')&&window.STORY_ZW_WORK){e=STORY_ZW_WORK[n==='財帛'?'wealth':'career'][cb];if(e)txt=e.story;}
+    else if(window.STORY_ZW_PAL&&STORY_ZW_PAL[n]){e=STORY_ZW_PAL[n][cb];if(e)txt=e.story;}
+    if(e)st=`<div class="block story"><h4>「${e.title}」</h4><p>${Readings.zh.fit(txt,p,Z.palaces[(selZ+6)%12].majorStars)}</p>${e.scenes.map(x=>`<p class="scene">${x}</p>`).join('')}</div>`;}
   $('#z-detail').innerHTML=`<div><div class="eyebrow">${U.picked}</div><h2>${palName(p.name)}<span class="muted" style="font-size:15px;font-weight:400">　${p.heavenlyStem}${p.earthlyBranch}</span></h2></div>
-  <p class="say">${d} ${lead}</p>
+  <p class="say">${d} ${lead}</p>${st}
   <div class="chips">${p.isBodyPalace?`<span class="chip acc">${U.bodyHere}</span>`:''}${dec?`<span class="chip hold">${U.decNow}</span>`:''}${yr?`<span class="chip bad">${U.yrNow}</span>`:''}<span class="chip mono">${F.decAges(p.decadal.range.join('–'))}</span></div>
   ${p.isBodyPalace?`<div class="block"><h4>${U.secBody}</h4><p>${F.bodyTxt(d)}</p></div>`:''}
   ${dec?`<div class="block"><h4>${U.decNow}</h4><p>${F.decTxt(p.decadal.range[0],p.decadal.range[1],d,decMuts())}</p></div>`:''}
@@ -239,7 +247,7 @@ function splitSections(html){return html.split('<h3').filter(x=>x.trim()).map(x=
 /* 分類：同一類的段落放在同一頁（依中文詳解的標題比對） */
 const GROUPS={
  west:[['catW0',['w-story']],['catW1',['w-more']],['catW2',['w-houses','@table','w-rulers']],['catW3',['w-dignity','w-balance']],['catW4',['w-aspects','w-patterns']],['catW5',['w-node','w-transits']]],
- zw:[['catZ0',['z-story']],['catZ1',['z-info','z-patterns','z-core']],['catZ6',['z-work']],['catZ5',['z-love']],['catZ4',['z-map','z-decade','z-year','z-next','z-advice','@tool']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palaces']]],
+ zw:[['catZ0',['z-story']],['catZ1',['z-info','z-patterns','z-core']],['catZ6',['z-work']],['catZ5',['z-love']],['catZ4',['z-map','z-decade','z-year','z-next','z-advice','@tool']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palstory','z-palaces']]],
  hd:[['catH0',['h-story']],['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]]};
 function openDetail(tab,i){
   const U=L.ui;DLG.tab=tab;const raw=splitSections(ADV[tab]||'');
