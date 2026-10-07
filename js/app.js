@@ -266,7 +266,7 @@ function openDetail(tab,i){
 }
 function showSection(k){
   if(k<0||k>=DLG.secs.length)return;DLG.i=k;const x=DLG.secs[k];
-  const note=DLG.tab==='mix'?(L.ui.mixNote?`<p class="readnote">${L.ui.mixNote}</p>`:''):!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
+  const note=DLG.tab==='mix'?(!(Themes[LG]&&Themes[LG].TAGS)&&L.ui.mixNote?`<p class="readnote">${L.ui.mixNote}</p>`:''):!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   $('#dlg-body').innerHTML=`<article class="reading plain"><div class="body">${note}${x.parts.map(pt=>`<section class="dsec"><h3>${pt.full}</h3>${pt.html}</section>`).join('')}</div></article>`;
   x.parts.forEach(pt=>pt.after&&pt.after());
   $('#dlg-body').scrollTop=0;
@@ -297,8 +297,8 @@ function renderReadings(){
   document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
 }
 function renderMix(){
-  const U=L.ui;let r;try{r=Themes.zh.mix(W,Z,HD,Engine);}catch(e){console.error(e);$('#m-sum').innerHTML='';$('#m-read .body').innerHTML='<p class="err">—</p>';ADV.mix='';return;}
-  const note=U.mixNote?`<p class="readnote">${U.mixNote}</p>`:'';
+  const U=L.ui;const ml=Themes[LG]&&Themes[LG].TAGS?LG:'zh';let r;try{r=Themes.mix(ml,W,Z,HD,Engine);}catch(e){console.error(e);$('#m-sum').innerHTML='';$('#m-read .body').innerHTML='<p class="err">—</p>';ADV.mix='';return;}
+  const note=ml!==LG&&U.mixNote?`<p class="readnote">${U.mixNote}</p>`:'';
   $('#m-read .body').innerHTML=note+r.basic;ADV.mix=r.adv;
   const cat=['catM1','catM2','catM3','catM4','catM5'];
   $('#m-sum').innerHTML=r.cards.map((c,i)=>`<button type="button" class="card mix" data-i="${i}"><span class="q">${U[cat[i]]}</span><span class="big">${c.labels.join(c.tension?' ⇄ ':'・')}</span><span class="agree">${[0,1,2].map(k=>`<i class="${k<c.agree?'on':''}"></i>`).join('')} ${c.agree>=2?c.agree+U.mixAgree:U.mixSplit}</span><p>${c.line}</p><span class="go2">${U.mixOpen} →</span></button>`).join('');
