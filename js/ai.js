@@ -1,5 +1,5 @@
 /* AI 說故事：把三張盤整理成結構化摘要，送到 Cloudflare Worker 中繼站，串流顯示 Claude 的解讀 */
-const AI_URL='';   // 例如 'https://starlit-ai.xxxx.workers.dev'；空字串時隱藏此功能
+const AI_URL='https://starlit-ai.rickyyenli.workers.dev/';   // 例如 'https://starlit-ai.xxxx.workers.dev'；空字串時隱藏此功能
 
 const AI_TXT={
  zh:{title:'請 AI 說你的故事',intro:'把你的紫微、星盤、人類圖一起交給 AI，寫一篇專屬於你、有生活場景的完整解讀。每次內容都會不同。',focus:'想聽哪個主題',opts:{all:'整體人生',career:'事業',wealth:'財運',love:'感情',year:'今年與明年'},go:'開始說故事',busy:'AI 正在寫…',stop:'停止',again:'再寫一次',err:'暫時連不上，請稍後再試。',limit:n=>`今天的次數用完了（每天 ${n} 次），明天再來。`,note:'以下內容由 AI 根據你的盤面生成，僅供參考。',copy:'複製'},
