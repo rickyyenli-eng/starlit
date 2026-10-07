@@ -1,0 +1,9 @@
+name = "starlit-ai"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# 每日次數限制：建好 KV namespace 後，把下面兩行的 # 拿掉並填入 id
+# [[kv_namespaces]]
+# binding = "RL"
+# id = "填入 KV namespace 的 ID"
