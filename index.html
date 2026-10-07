@@ -283,6 +283,11 @@ button.card.mix:hover,button.card.mix:focus-visible{border-color:var(--accent)}
 .card.mix .agree i{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .card.mix .agree i.on{background:var(--accent)}
 .card.mix .go2{font-size:13px;font-weight:700;color:var(--accent);margin-top:auto}
+.reading.ai .ai-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:4px 0 8px}
+.reading.ai select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.go2btn{font:inherit;font-weight:700;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
+.go2btn:hover{filter:brightness(1.08)}
+.ai-status{font-size:13.5px;min-height:1em}
 .mixintro{color:var(--muted);font-size:14.5px;margin:14px 0 14px}
 #m-sum{grid-template-columns:repeat(auto-fit,minmax(196px,1fr))}
 .hdstage{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:start}
@@ -380,6 +385,10 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
     <p class="mixintro" data-t="mixIntro"></p>
     <div class="sum" id="m-sum"></div>
     <article class="reading" id="m-read"><div class="rhead"><h2 data-t="mixTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="mixBtn"></button></article>
+    <article class="reading ai" id="ai-box" hidden><div class="rhead"><h2></h2><button type="button" class="copyread" id="ai-copy" hidden></button></div>
+      <p class="ai-intro muted"></p>
+      <div class="ai-ctl"><label><span class="ai-flab"></span> <select id="ai-focus"></select></label><button type="button" class="go2btn" id="ai-go"></button></div>
+      <p class="ai-status muted" aria-live="polite"></p><div class="body ai-out"></div></article>
   </section>
   </div>
 </div>
@@ -419,6 +428,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/reading-en.js"></script>
 <script src="js/reading-ja.js"></script>
 <script src="js/reading-fr.js"></script>
+<script src="js/ai.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -8,6 +8,14 @@ const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
 const lc=s=>s?s.charAt(0).toLowerCase()+s.slice(1):s;
 const ord=n=>{const v=n%100;return n+((v>=11&&v<=13)?'th':({1:'st',2:'nd',3:'rd'})[n%10]||'th');};
 const andList=a=>a.length<=1?(a[0]||''):a.length===2?`${a[0]} and ${a[1]}`:`${a.slice(0,-1).join(', ')} and ${a[a.length-1]}`;
+const STA=()=>globalThis.STORY_WEST_ASC_EN,STW=()=>globalThis.STORY_WEST_EN,SZM=()=>globalThis.STORY_ZW_MING_EN,SZS=()=>globalThis.STORY_ZW_SPOUSE_EN,SZW=()=>globalThis.STORY_ZW_WORK_EN,SHD=()=>globalThis.STORY_HD_EN,SZP=()=>globalThis.STORY_ZW_PAL_EN;
+const ZORDER=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
+const comboOf=p=>p.majorStars.map(s=>s.name).sort((a,b)=>ZORDER.indexOf(a)-ZORDER.indexOf(b)).join('·')||'空';
+const firstSent=t=>{const m=String(t||'').match(/^[\s\S]*?[.!?]["”’)]?(?=\s|$)/);return m?m[0]:t;};
+const scene=t=>`<p class="scene">${t}</p>`;
+/* brightness markers {{B:star:bright|dim}} are resolved by StoryFit (js/story-fit.js) */
+const fit=(t,p,src)=>StoryFit.fit(t,p,src);
+const PAL_ORDER=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母'];
 const SG=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const signOf=l=>Math.floor(norm(l)/30);
 const fmt=l=>{const x=norm(l)%30;return `${Math.floor(x)}°${String(Math.floor((x%1)*60)).padStart(2,'0')}′`;};
@@ -124,12 +132,15 @@ function readWest(W,E){
   else mix=`${opp?'a one-of-a-kind bundle of contradictions':'a many-sided personality'} who is ${andList(els.map(e=>ELQ[e]))} all at once`;
   o.push(h3('Your signs at a glance'));
   o.push(p(`This combination (Sun in ${SG[sun]}, Ascendant in ${SG[asc]}, Moon in ${SG[moon]}, Venus in ${SG[ven]}) describes someone who is ${OUTER[asc]} on the outside and ${INNER[moon]} on the inside: ${mix}.`));
+  if(STA())o.push(p(STA().ascSun[asc][sun]));
+  if(STW())o.push(p(STW().sunMoon[sun][moon]));
   let n=1;const basic=o;
   for(const k of ['ASC','Sun','Moon','Venus','Mercury','Mars']){
     const [title,pname,data]=ROLE[k];const i=s(k);
     if(k==='Mercury'){o=[];o.push(h3('More sign placements','w-more'));}
     o.push(h4(`${n++}. ${title}: ${pname} in ${SG[i]}`));
     o.push(ul(data[i].map(([a,b])=>pt(a,b))));
+    if(STW()&&STW().scenes[k]&&STW().scenes[k][i])o.push(scene(STW().scenes[k][i]));
   }
   /* houses */
   o.push(h3('Planets in houses','w-houses'));
@@ -151,7 +162,7 @@ function readWest(W,E){
   const personal=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];
   const keyAsp=W.asp.filter(a=>a.orb<=4&&(personal.includes(a.a)||personal.includes(a.b))).slice(0,10);
   o.push(h3('Major aspects','w-aspects'));
-  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0]} ${PN[a.b]} (orb ${a.orb.toFixed(1)}°)`,`${cap(THEME[a.a])} and ${THEME[a.b]}: ${ASP[a.t][1]}.`))):p('There are no major aspects within a 4° orb.'));
+  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0]} ${PN[a.b]} (orb ${a.orb.toFixed(1)}°)`,(STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t])||`${cap(THEME[a.a])} and ${THEME[a.b]}: ${ASP[a.t][1]}.`))):p('There are no major aspects within a 4° orb.'));
   /* patterns */
   const pats=patterns(W,E);
   o.push(h3('Aspect patterns and stelliums','w-patterns'));
@@ -177,6 +188,19 @@ function readWest(W,E){
   o.push(h3('Current transits','w-transits'));
   o.push(ul(tr.map(t=>{const hit=t.hits.map(x=>`${ASP[x.t][0]} your natal ${PN[x.n]} (orb ${x.orb.toFixed(1)}°, ${HIT_TONE[x.tone]})`).join('; ');
     return pt(`${PN[t.k]} transiting ${SG[signOf(t.lon)]}, through your natal ${ord(t.house)} house`,`${cap(HOUSE[t.house-1])}: ${TRANSIT[t.k]}${hit?` Right now it is ${hit}.`:''}`);})));
+  /* your story (rule-based) */
+  const ws=[];
+  if(STA())ws.push(`Start with how you meet the world. ${STA().ascSun[asc][sun]}`);
+  if(STW())ws.push(`Then look further in. ${STW().sunMoon[sun][moon]}`);
+  if(STW()){const mars=s('Mars'),strip=t=>cap(String(t).replace(/^(for example|for instance|say),?\s+/i,''));
+    ws.push(`In love, your Venus in ${SG[ven]} often shows up like this: ${strip(STW().scenes.Venus[ven])} When there is a conflict, or something you want to go after, your Mars in ${SG[mars]} takes over: ${strip(STW().scenes.Mars[mars])}`);}
+  {const dom=EL.filter(e=>cnt[e]===Math.max(...EL.map(x=>cnt[x])));const miss=EL.filter(e=>cnt[e]===0);
+   ws.push(`Step back and look at the whole chart. Your chart ruler ${PN[ar]} sits in your ${ord(P[ar].house)} house, so your life keeps getting pulled toward ${HOUSE[P[ar].house-1]}. Among the ten planets, ${andList(dom.map(e=>ELN[e]))} ${dom.length>1?'are the most common elements':'is the most common element'}, so being ${andList(dom.map(e=>ELQ[e]))} is your base note.${miss.length?` You have no planets at all in ${andList(miss.map(e=>ELN[e]))}, and that is a skill you will need to build on purpose.`:''}`);}
+  {const a=keyAsp[0];const t=a&&STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t];
+   if(t)ws.push(`The tightest aspect in your chart is ${PN[a.a]} ${ASP[a.t][0]} ${PN[a.b]} (orb ${a.orb.toFixed(1)}°), and it shows clearly in your life. ${t}`);}
+  {const hit=tr.filter(x=>['Saturn','Uranus','Neptune','Pluto'].includes(x.k)).flatMap(x=>x.hits.filter(h=>['Sun','Moon','ASC'].includes(h.n)).map(h=>({...h,k:x.k}))).sort((a,b)=>a.orb-b.orb)[0];
+   if(hit)ws.push(`And in these years, ${PN[hit.k]} is ${ASP[hit.t][0]} your natal ${PN[hit.n]} (${HIT_TONE[hit.tone]}). ${{Saturn:'This is a time to face reality and strengthen your foundations. It is hard work, but what you build now will truly be yours.',Uranus:'You will want to break out of your old frame, and life may take a sudden turn. Following your curiosity often leads to good surprises.',Neptune:'Your picture of your own life is changing. Inspiration grows, but things can also get blurry, so double-check important decisions.',Pluto:'This is a period of deep transformation. The old you is slowly stepping aside, and a new strength is growing in its place.'}[hit.k]}`);}
+  if(ws.length)o.unshift(h3('Your story','w-story'),...ws.map(p));
   return{basic:basic.join(''),adv:o.join('')};
 }
 function patterns(W,E){
@@ -239,6 +263,14 @@ function readZW(Z,ctx){
   const sTxt=s=>S(s.name)+(s.brightness?`<small class="br"> [${BL(s.brightness)}]</small>`:'')+(s.mutagen?' '+ML(s.mutagen):'');
   const stLine=i=>{const m=pal[i].majorStars.map(sTxt);return m.length?m.join(', '):'no main star';};
   const minorLine=i=>pal[i].minorStars.map(sTxt).join(', ');
+  const comboTxt=c=>c==='空'?'no main star':andList(c.split('·').map(S));
+  const oppOf=i=>pal[(i+6)%12];
+  const fitAt=(t,i)=>fit(t,pal[i],oppOf(i).majorStars);
+  const borrowed=(oc,t)=>`This palace has no main star of its own, so it borrows ${comboTxt(oc)} from the opposite palace. Read that way: ${t}`;
+  function brNote(p){const st=p.majorStars;if(!st.length)return '';
+    const weak=st.filter(s=>['陷','不'].includes(s.brightness)).map(s=>`${S(s.name)} (${BL(s.brightness)})`),strong=st.filter(s=>s.brightness==='廟').map(s=>S(s.name));
+    return (strong.length?` ${andList(strong)} ${strong.length>1?'are':'is'} at full brightness here, so these qualities come through completely.`:'')+(weak.length?` ${andList(weak)} ${weak.length>1?'are':'is'} dim here, though, so the strengths above take more effort to bring out, and the weak spots show more.`:'');}
+  const mutNote=(s,nm)=>cap((s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})[nm]||(s.mutagen==='權'?`you take a strong lead in ${DOM[nm]}.`:`you tend to earn a good name in ${DOM[nm]}.`));
   const birthMut={};pal.forEach((p,i)=>[...p.majorStars,...p.minorStars].forEach(s=>{if(s.mutagen)birthMut[s.mutagen]={star:s.name,i};}));
   const sd=Z._std,rd=Z.rawDates.lunarDate;
   const yinyang=('甲丙戊庚壬'.includes(Z.rawDates.chineseDate.yearly[0])?'Yang':'Yin')+' '+(Z.gender==='男'?'male':'female');
@@ -255,6 +287,13 @@ function readZW(Z,ctx){
 
   /* 3. core */
   o.push(h3('Core nature and personality','z-core'));
+  const mcombo=comboOf(pal[ming]),ocombo=comboOf(pal[(ming+6)%12]);
+  {const ms=SZM()&&SZM().ming[mcombo];
+   if(ms){o.push(h4(ms.title));o.push(p(fitAt(ms.image+' '+ms.story,ming)+brNote(pal[ming])));
+     if(mcombo==='空'&&SZM().ming[ocombo])o.push(p(borrowed(ocombo,fit(SZM().ming[ocombo].story,oppOf(ming)))));
+     o.push(ms.scenes.map(scene).join(''));
+     o.push(ul([pt('Strengths',ms.strengths),pt('Blind spots',ms.blind),pt('Advice',ms.advice)]));
+     o.push(h4('The stars in detail'));}}
   const mp=pal[ming],opp=pal[(ming+6)%12];
   const items=[];
   const src=mp.majorStars.length?mp.majorStars:opp.majorStars;
@@ -304,11 +343,19 @@ function readZW(Z,ctx){
   if(notes.length)o.push(ul(notes));
 
   /* 6. twelve palaces */
+  if(SZP()){o.push(h3('Stories of your other palaces','z-palstory'));
+    for(const nm of ['兄弟','子女','疾厄','遷移','僕役','田宅','福德','父母']){const i=idx(nm);if(i<0||!SZP()[nm])continue;const c=comboOf(pal[i]);const e=SZP()[nm][c];if(!e)continue;
+      o.push(h4(`${cap(pn(nm))}: ${e.title}`));
+      o.push(p(`Your ${pn(nm)} is in ${pal[i].earthlyBranch} (${stLine(i)}${minorLine(i)?'; '+minorLine(i):''}). ${fitAt(e.story,i)}${brNote(pal[i])}`));
+      if(c==='空'){const oc=comboOf(oppOf(i));const oe=SZP()[nm][oc];if(oe&&oc!=='空')o.push(p(borrowed(oc,fit(oe.story,oppOf(i)))));}
+      o.push(e.scenes.map(scene).join(''));
+      const mts=[...pal[i].majorStars,...pal[i].minorStars].filter(s=>s.mutagen).map(s=>pt(`${mt(s.name,s.mutagen)} here`,mutNote(s,nm)));
+      o.push(ul([pt('Advice',e.advice),...mts]));}}
   o.push(h3('The twelve palaces at a glance','z-palaces'));
   const order=[ming,...[1,2,3,4,5,6,7,8,9,10,11].map(k=>(ming-k+12)%12)];
   o.push(`<div class="tablewrap"><table><thead><tr><th>Palace</th><th>Stem-branch</th><th>Main stars</th><th>Minor stars</th><th>Decade</th><th>What it covers</th></tr></thead><tbody>${order.map(i=>`<tr><td class="p">${pn(pal[i].name)}${pal[i].isBodyPalace?' (Body)':''}</td><td>${pal[i].heavenlyStem}${pal[i].earthlyBranch}</td><td>${stLine(i)}</td><td>${minorLine(i)||'—'}</td><td class="mono">${pal[i].decadal.range.join('–')}</td><td>${PAL(pal[i].name)}</td></tr>`).join('')}</tbody></table></div>`);
 
-  let decInfo=null,yearInfo=null,loveNow='';
+  let decInfo=null,yearInfo=null,loveNow='',decTitle='',decStory='';
   /* 7. decade */
   const H0=ctx.horoscope(new Date());
   const H=H0&&H0.decadal.name!=='童限'&&pal[H0.decadal.index]?H0:null;
@@ -317,6 +364,8 @@ function readZW(Z,ctx){
     const d=H.decadal,di=d.index,dp=pal[di];
     o.push(h3(`Your current decade (ages ${dp.decadal.range.join('–')}, ${d.heavenlyStem}${d.earthlyBranch} decade)`,'z-decade'));
     o.push(p(`From age ${dp.decadal.range[0]} to ${dp.decadal.range[1]} you are in the decade of your ${pn(dp.name)} (in ${dp.earthlyBranch}). Its main stars: ${stLine(di)}${minorLine(di)?', together with '+minorLine(di):''}.`));
+    {const dc=comboOf(dp.majorStars.length?dp:oppOf(di));const de=SZM()&&SZM().decade[dc];
+     if(de){decTitle=de.title;decStory=fitAt(de.story,di);o.push(h4(`This chapter: ${de.title}`));o.push(p(decStory));o.push(ul([pt('Biggest opportunity',de.chance),pt('Easiest trap to fall into',de.pitfall)]));}}
     const dl=[];
     for(const s of (dp.majorStars.length?dp.majorStars:pal[(di+6)%12].majorStars)){const m=M[s.name];if(m)dl.push(pt(`A decade led by ${S(s.name)}`,`${m[2]} These traits are amplified over these ten years: ${lc(m[3])}. But also watch out for: ${lc(m[4])}.`));}
     if(has(di,'祿存'))dl.push(pt(`${S('祿存')} in this decade`,`with ${S('祿存')} here, income is fairly stable over these ten years, giving your finances a solid base.`));
@@ -326,6 +375,19 @@ function readZW(Z,ctx){
     {const jt=findStar(d.mutagen[3]);decInfo={range:dp.decadal.range.join('–'),pal:pn(dp.name),star:(dp.majorStars.length?dp.majorStars:pal[(di+6)%12].majorStars).map(x=>S(x.name)).join(', ')||'—',dom:DOM[dp.name],jiStar:d.mutagen[3],
       ji:jt>=0?`${mt(d.mutagen[3],'忌')} falls in your ${pn(pal[jt].name)} (the decade’s ${pn(d.palaceNames[jt])}): ${JI_ADV[d.palaceNames[jt]]}`:''};}
     o.push(ul(dl));
+  }
+
+  /* life map */
+  if(SZM()){
+    const cur=H?H.decadal.index:-1;
+    const order=pal.map((x,i)=>i).sort((a,b)=>pal[a].decadal.range[0]-pal[b].decadal.range[0]).filter(i=>pal[i].decadal.range[0]<=95);
+    const rel=(t,i)=>PAL_ORDER[(i-t+12)%12];
+    o.push(h3('Your life map: one chapter per decade','z-map'));
+    o.push(p(`Each decade is a chapter of your life. The chapter title comes from the main stars of that decade’s Life palace, and the “watch” note comes from where that decade’s stem sends its ${ML('忌')} transformation.`));
+    o.push(`<ol class="lifemap">${order.map(i=>{const x=pal[i];const de=SZM().decade[comboOf(x.majorStars.length?x:oppOf(i))];
+      const mm=STEM_MUT[x.heavenlyStem],jt=findStar(mm[3]);const r=jt>=0?rel(jt,i):'';
+      const lead=x.decadal.range[0]<15?'This is the stage of childhood and school, so these traits show up first at home and in the classroom. ':x.decadal.range[0]>=75?'This is the later stage of life, so these traits show up in your daily pace, your family and your health. ':'';
+      return `<li class="${i===cur?'now':''}"><div class="age mono">${x.decadal.range.join('–')}</div><div class="ch"><b>${de?de.title:cap(pn(x.name))}</b> <span class="muted">${cap(pn(x.name))} · ${comboTxt(comboOf(x))}</span>${i===cur?' <span class="chip hold">Now</span>':''}<p>${de?lead+fitAt(de.story,i):''}</p>${de?`<p class="mini"><b>Opportunity</b> ${de.chance}</p>`:''}${r?`<p class="mini"><b>Watch</b> ${mt(mm[3],'忌')} falls in this decade’s ${pn(r)}. ${JI_ADV[r]}</p>`:''}</div></li>`;}).join('')}</ol>`);
   }
 
   /* 8. years */
@@ -353,9 +415,22 @@ function readZW(Z,ctx){
     }
   }
 
+  /* career and money */
+  if(SZW()){o.push(h3('Career and money','z-work'));
+    for(const [i,key,lab] of [[idx('官祿'),'career','Work'],[idx('財帛'),'wealth','Money']]){const c=comboOf(pal[i]);const e=SZW()[key][c];if(!e)continue;
+      o.push(h4(`${lab} (${pn(pal[i].name)}): ${e.title}`));
+      o.push(p(`Your ${pn(pal[i].name)} is in ${pal[i].earthlyBranch} (${stLine(i)}${minorLine(i)?'; '+minorLine(i):''}). ${fitAt(e.story,i)}${brNote(pal[i])}`));
+      if(c==='空'){const oc=comboOf(oppOf(i));const oe=SZW()[key][oc];if(oe&&oc!=='空')o.push(p(borrowed(oc,fit(oe.story,oppOf(i)))));}
+      if(e.fields)o.push(ul([pt('Directions that suit you',e.fields)]));
+      o.push(e.scenes.map(scene).join(''));o.push(ul([pt('Advice',e.advice)]));
+      for(const s of [...pal[i].majorStars,...pal[i].minorStars])if(s.mutagen)o.push(p(`<b>${mt(s.name,s.mutagen)} here</b>: ${mutNote(s,pal[i].name)}`));}}
   /* 9. love */
   o.push(h3('Love and romance','z-love'));
   const fi=idx('夫妻'),fp=pal[fi];
+  {const sc=comboOf(fp);const e=SZS()&&SZS()[sc];
+   if(e){o.push(h4(e.title));o.push(p(fitAt(e.partner+' '+e.pattern,fi)+brNote(fp)));
+     if(sc==='空'){const oc=comboOf(oppOf(fi));const oe=SZS()[oc];if(oe&&oc!=='空')o.push(p(borrowed(oc,fit(oe.partner,oppOf(fi)))));}
+     o.push(e.scenes.map(scene).join(''));o.push(ul([pt('Advice',e.advice)]));o.push(h4('Spouse palace details'));}}
   const fl=[pt(`Natal Spouse palace in ${fp.earthlyBranch} (${stLine(fi)}${minorLine(fi)?'; '+minorLine(fi):''})`,`${PAL('夫妻')}${fp.majorStars.map(s=>M[s.name]?` You, or your partner, carry ${S(s.name)}’s traits in love: ${lc(M[s.name][2])}`:'').join('')}`)];
   for(const s of fp.majorStars.concat(fp.minorStars))if(s.mutagen)fl.push(pt(`${mt(s.name,s.mutagen)} in the Spouse palace`,cap((s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})['夫妻']||`${S(s.name)}’s traits are amplified in love.`)));
   if(has(fi,'擎羊'))fl.push(pt(`${S('擎羊')} in the Spouse palace`,'arguments and clashes come easily in love, so soften your tone when you talk.'));
@@ -397,12 +472,36 @@ function readZW(Z,ctx){
     const yl=findStar(y.mutagen[0]);if(yl>=0)adv.push(pt(`This year’s opportunity: your natal ${pn(pal[yl].name)} (yearly ${pn(y.palaceNames[yl])})`,STAR_LU[y.mutagen[0]]||'things go more smoothly in this area this year.'));
   }
   if(adv.length){o.push(h3('Things to watch','z-advice'));o.push(ul(adv));}
+  /* your story (rule-based) */
+  const story=[];let workLine='';
+  {const ms=SZM()&&SZM().ming[mcombo];
+   if(ms){story.push(fitAt(ms.image+' '+ms.story,ming)+brNote(pal[ming]));
+     if(mcombo==='空'&&SZM().ming[ocombo])story.push(`Your Life palace has no main star, so it borrows ${comboTxt(ocombo)} from the opposite palace. You resemble “${SZM().ming[ocombo].title}”, but you are more easily shaped by your surroundings and the people around you.`);}
+   const bsrc=bp.majorStars.length?body:(body+6)%12,bc=comboOf(pal[bsrc]);
+   if(bp.name==='命宮')story.push('Your Body palace sits in the same place as your Life palace, so your inborn character stays the center of your whole life, and the older you get, the more you become yourself.');
+   else{let frag='';
+     const ws=SZW()&&bc!=='空'&&(bp.name==='財帛'?SZW().wealth[bc]:bp.name==='官祿'?SZW().career[bc]:null);
+     if(ws)frag=`Here you are “${ws.title}”: ${firstSent(fitAt(ws.story,body))}${brNote(bp)}`;
+     else if(bp.name==='夫妻'&&SZS()&&SZS()[bc]&&bc!=='空')frag=firstSent(fitAt(SZS()[bc].pattern,body));
+     else if(SZM()&&SZM().ming[bc]&&bc!=='空')frag=`The ${comboTxt(bc)} here ${bc.includes('·')?'read':'reads'} like “${SZM().ming[bc].title}”.`;
+     const lm=has(body,'天馬')&&(has(body,'祿存')||[...bp.majorStars,...bp.minorStars].some(s=>s.mutagen==='祿'));
+     story.push([`As life reaches its middle stretch, though, your focus gradually shifts to ${DOM[bp.name]}, because your Body palace is the ${pn(bp.name)}.`,frag.trim(),lm?'It also forms Lu Ma Jiao Chi (Wealth-and-Horse) here: the more you move around, the more you earn.':''].filter(Boolean).join(' '));}
+   if(SZW()){const ci=idx('官祿'),wi=idx('財帛');
+     const say=(i,key,lab)=>{const c=comboOf(pal[i]);if(c!=='空')return SZW()[key][c]?`${lab}, you are “${SZW()[key][c].title}”`:'';const oc=comboOf(oppOf(i));return SZW()[key][oc]&&oc!=='空'?`${lab}, your ${pn(pal[i].name)} has no main star, so it borrows ${comboTxt(oc)} from the opposite palace and you resemble “${SZW()[key][oc].title}”`:'';};
+     const parts=[say(ci,'career','at work'),say(wi,'wealth','with money')].filter(Boolean);
+     if(parts.length){workLine=cap(parts.join('; '))+'.';story.push(workLine);}}
+   if(birthMut['忌']){const jp=pal[birthMut['忌'].i].name;story.push(`What you care about most in life, and where you most often get stuck, is ${DOM[jp]}. ${mt(birthMut['忌'].star,'忌')} sits in your ${pn(jp)}: ${JI[jp]} This is not bad luck. It is the lesson most worth your effort in this lifetime.`);}
+   if(decInfo&&decTitle)story.push(`Right now you are in the chapter for ages ${decInfo.range}, and its theme is “${decTitle}”. ${decStory}`);
+   if(yearInfo)story.push(`In ${yearInfo.yr}, the yearly Life palace falls in your natal ${yearInfo.pal}${yearInfo.meet?', and it overlaps your decade Life palace, so the highs and lows of the year are doubled':''}.`);}
+  if(story.length)o.unshift(h3('Your story','z-story'),...story.map(p));
   /* basic */
   const b=[];
+  if(story.length){b.push(h3('Your story'));b.push(...story.slice(0,2).map(p));if(decInfo&&decTitle)b.push(p(`Right now you are in the chapter for ages ${decInfo.range}: “${decTitle}”.`));}
   b.push(h3('Your Zi Wei chart highlights'));
   const msrc=mp.majorStars.length?mp.majorStars:opp.majorStars;
-  const bItems=[pt(`Life palace (${msrc.map(x=>S(x.name)).join(', ')||'—'}${mp.majorStars.length?'':', borrowed from the opposite palace'})`,msrc.map(x=>M[x.name]?M[x.name][2]:'').join(' ')),
+  const bItems=story.length?[]:[pt(`Life palace (${msrc.map(x=>S(x.name)).join(', ')||'—'}${mp.majorStars.length?'':', borrowed from the opposite palace'})`,msrc.map(x=>M[x.name]?M[x.name][2]:'').join(' ')),
     pt(`Body palace in the ${pn(bp.name)}`,bp.name==='命宮'?'your inborn nature is also your later focus: being yourself matters most.':`from midlife on, ${DOM[bp.name]} will matter more and more to you.`)];
+  if(story.length&&workLine)bItems.push(pt('Work and money',workLine));
   const pn2=pats.map(x=>(x.match(/<b>(.*?)<\/b>/)||[])[1]).filter(Boolean);
   if(pn2.length)bItems.push(pt('Chart patterns',pn2.join('; ')+' (details in Advanced).'));
   if(birthMut["忌"])bItems.push(pt(`Lifelong lesson (${mt(birthMut['忌'].star,'忌')} in the ${pn(pal[birthMut['忌'].i].name)})`,JI[pal[birthMut['忌'].i].name]));
@@ -498,11 +597,11 @@ function readHD(H,Z){
   const [l1,l2]=H.profile,pk=`${l1}/${l2}`;
   o.push(h3('Your Human Design'));
   o.push(p(`You are a ${pk} ${T.n} with ${A.n} (${D[0]}). Your life is a journey of ${H.type==='projector'?'understanding others and waiting to be seen and invited':H.type==='manifestor'?'initiating and making an impact':H.type==='reflector'?'mirroring your surroundings and slowly gaining clarity':'experimenting, learning from experience and taking action'}.`));
+  {const ta=SHD()&&SHD().typeAuth[`${H.type}|${H.authority}`];if(ta){o.push(p(ta.story));o.push(scene(ta.scene));}}
   o.push(h4(T.n===T.en?T.n:`${T.n} (${T.en})`));
   o.push(ul([T.txt,pt('Strategy',T.strategy),pt('Signature (how it feels when you are on track)',T.sig),pt('Not-self theme (the warning sign you are off track)',T.ns)]));
   o.push(h4(A.n));o.push(p(A.txt));
-  o.push(h4(`${pk} profile`));
-  o.push(p(Z.profiles[pk]||''));
+  {const pr=SHD()&&SHD().profiles[pk];o.push(h4(`${pk} profile${pr?`: ${pr.title}`:''}`));o.push(p(pr?pr.summary:(Z.profiles[pk]||'')));}
   o.push(h4(D[0]));o.push(p(D[1]));
   const tips=[...T.tips,`${A.n}: ${({emotional:'Hit the brakes before acting on impulse, and sleep on any important decision at least one night.',sacral:'Trust your body’s response in the moment; you don’t need to find reasons for it.',splenic:'Your very first instinct is the most accurate; don’t wait until you have thought it through.','ego-m':'Before you say “I want”, check that you really want it, then tell the people it will affect.','ego-p':'Once invited, ask yourself “what’s in it for me?”, and commit only if it is worth it.',self:'Talk with people you trust and listen to what you say; your direction is in your own words.',mental:'Use a few trusted people as sounding boards, and talk your ideas through in the right environment.',lunar:'Wait one lunar cycle (about 28 days) before big decisions, and talk with different people in the meantime.'})[H.authority]}`];
   o.push(h4('Living your design'));o.push(ul(tips));
@@ -510,7 +609,10 @@ function readHD(H,Z){
   o.push(h3('The two lines of your profile','h-lines'));
   for(const [ln,label] of [[l1,'conscious'],[l2,'unconscious']]){const L=Z.lines[ln];
     o.push(p(`<b>Line ${ln} (${label}): ${L.n}</b>, ${L.k}. ${L.d}`));
-    o.push(ul([pt('Everyday example',L.e)]));}
+    const SL=SHD()&&SHD().lines[ln];
+    if(SL)o.push(ul([pt('Common misreading',SL.misread),pt('A better way to see it',SL.mindset)]));
+    o.push((SL?SL.examples:[L.e]).map(scene).join(''));}
+  {const pr=SHD()&&SHD().profiles[pk];if(pr){o.push(h4(`The ${pk} life cycle`));o.push(p(pr.loop));o.push(h4('In love'));o.push(p(pr.love));o.push(h4('At work and in business'));o.push(p(pr.work));o.push(h4(`Tips for a ${pk}`));o.push(ul(pr.tips));}}
   const cr=crossName(H,Z);
   o.push(h3('Incarnation Cross','h-cross'));
   o.push(p(`${cr.full}, gates ${H.cross.gates[0]}/${H.cross.gates[1]} | ${H.cross.gates[2]}/${H.cross.gates[3]}. ${Z.angles[H.cross.angle][1]}`));
@@ -518,13 +620,23 @@ function readHD(H,Z){
   const defd=['head','ajna','throat','g','heart','sacral','spleen','sp','root'];
   o.push(h3('The nine centers','h-centers'));
   o.push(h4('Defined centers'));
-  o.push(H.defined.length?ul(defd.filter(c=>H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].d))):p('You have no defined centers.'));
+  o.push(H.defined.length?ul(defd.filter(c=>H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].d+(SHD()&&SHD().centersDefined[c]?scene(SHD().centersDefined[c]):'')))):p('You have no defined centers.'));
   o.push(h4('Open centers'));
-  o.push(ul(defd.filter(c=>!H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].u))));
+  o.push(ul(defd.filter(c=>!H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].u+(SHD()&&SHD().centersOpen[c]?scene(SHD().centersOpen[c]):'')))));
   o.push(h3('Channels','h-channels'));
-  o.push(H.channels.length?ul(H.channels.map(([a,b])=>{const c=Z.channels[`${a}-${b}`];return pt(`${a}-${b} ${c[0]} (${c[1]})`,c[2]);})):p('You have no complete channels.'));
+  o.push(H.channels.length?ul(H.channels.map(([a,b])=>{const c=Z.channels[`${a}-${b}`];return pt(`${a}-${b} ${c[0]} (${c[1]})`,c[2]+(SHD()&&SHD().channels[`${a}-${b}`]?scene(SHD().channels[`${a}-${b}`]):''));})):p('You have no complete channels.'));
   o.push(h3('More tips for daily life','h-tips'));
-  o.push(ul([`Line ${l1}: ${({1:'Do your homework first; your security comes from knowledge.',2:'Keep time for yourself so your gifts can grow naturally.',3:'Allow yourself to stumble, and treat every mistake as field data.',4:'Look after your network of people; your opportunities are there.',5:'Stay aware of others’ expectations; you don’t have to rescue everyone.',6:'Move patiently through the three stages of your life and live authentically.'})[l1]}`,...(l2!==l1?[`Line ${l2}: ${({1:'Lay solid foundations before you make a move on anything important.',2:'When others notice your talent, don’t brush it off.',3:'Failure is just data, not a verdict.',4:'Opportunities often come through people you know, so nurture those ties.',5:'When people expect things of you, check that you really want to help before saying yes, and be clear about your limits.',6:'Give yourself time to settle, and find wisdom by watching from the side.'})[l2]}`]:[])]));
+  o.push(ul([`Line ${l1}: ${({1:'Do your homework first; your security comes from knowledge.',2:'Keep time for yourself so your gifts can grow naturally.',3:'Allow yourself to make mistakes; every “that didn’t work” becomes a reference point for your later judgment.',4:'Look after your network of people; your opportunities are there.',5:'Stay aware of others’ expectations; you don’t have to rescue everyone.',6:'Move patiently through the three stages of your life and live authentically.'})[l1]}`,...(l2!==l1?[`Line ${l2}: ${({1:'Lay solid foundations before you make a move on anything important.',2:'When others notice your talent, don’t brush it off.',3:'Failure is just data, not a verdict.',4:'Opportunities often come through people you know, so nurture those ties.',5:'When people expect things of you, check that you really want to help before saying yes, and be clear about your limits.',6:'Give yourself time to settle, and find wisdom by watching from the side.'})[l2]}`]:[])]));
+  /* your story (rule-based) */
+  {const hs=[],ta=SHD()&&SHD().typeAuth[`${H.type}|${H.authority}`],pr=SHD()&&SHD().profiles[pk];
+   hs.push([`You are ${/^[AEIOU]/.test(T.n)?'an':'a'} ${T.n}.`,firstSent(T.txt),ta?ta.story:''].filter(Boolean).join(' '));
+   if(pr)hs.push(`The script of your life is “${pr.title}”. ${pr.summary} ${pr.loop}`);
+   hs.push(`You have ${D[0]}. ${D[1]}`);
+   if(H.channels.length&&SHD()){const cs=H.channels.slice(0,2).map(([a,b])=>SHD().channels[`${a}-${b}`]?`${Z.channels[`${a}-${b}`][0]}: ${SHD().channels[`${a}-${b}`]}`:'').filter(Boolean);
+     hs.push(`You have ${H.channels.length} ${H.channels.length>1?'channels':'channel'} of built-in talent that ${H.channels.length>1?'run':'runs'} all the time. ${cs.join(' ')}`);}
+   if(SHD()){const oc=['sp','throat','heart','g','head','ajna','root','spleen','sacral'].find(c=>!H.defined.includes(c));if(oc&&SHD().centersOpen[oc])hs.push(`The place where the outside world sways you most is your open ${Z.centers[oc].n}. ${SHD().centersOpen[oc]}`);}
+   hs.push(`And the big theme of this life is your ${cr.full}. ${Z.angles[H.cross.angle][1]}`);
+   o.unshift(h3('Your story','h-story'),...hs.map(p));}
   return{basic,adv:o.join('')};
 }
 function crossName(H,Z){

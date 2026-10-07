@@ -14,6 +14,16 @@ const andList=a=>a.length<=1?a.join(''):a.slice(0,-1).join(', ')+' et '+a[a.leng
 const SG=['Bélier','Taureau','Gémeaux','Cancer','Lion','Vierge','Balance','Scorpion','Sagittaire','Capricorne','Verseau','Poissons'];
 const signOf=l=>Math.floor(norm(l)/30);
 const fmt=l=>{const x=norm(l)%30;return `${Math.floor(x)}°${String(Math.floor((x%1)*60)).padStart(2,'0')}′`;};
+/* contenus narratifs (facultatifs : on saute la section s’ils manquent) */
+const STA=()=>globalThis.STORY_WEST_ASC_FR,STW=()=>globalThis.STORY_WEST_FR,SZM=()=>globalThis.STORY_ZW_MING_FR,SZS=()=>globalThis.STORY_ZW_SPOUSE_FR,SZW=()=>globalThis.STORY_ZW_WORK_FR,SHD=()=>globalThis.STORY_HD_FR,SZP=()=>globalThis.STORY_ZW_PAL_FR;
+const ZORDER=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
+const comboOf=p=>p.majorStars.map(s=>s.name).sort((a,b)=>ZORDER.indexOf(a)-ZORDER.indexOf(b)).join('·')||'空';
+const firstSent=t=>{const m=String(t||'').match(/^.*?[.!?…»](?=\s|$)/);return m?m[0]:t;};
+const scene=t=>`<p class="scene">${t}</p>`;
+/* marqueurs d’éclat {{B:étoile:brillante|faible}} */
+const fit=(t,p,src)=>globalThis.StoryFit.fit(t,p,src);
+const sfs=t=>globalThis.StoryFit.strip(t);
+const PAL_ORDER=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母'];
 
 /* ===================================================================
    Thème astral
@@ -129,12 +139,15 @@ function readWest(W,E){
   else mix=`une personnalité qui réunit ${andList(els.map(e=>ELQ[e]))}, ${opp?'un mélange singulier, presque contradictoire':'aux multiples facettes'}`;
   o.push(h3('Lecture des signes'));
   o.push(p(`Avec le Soleil en ${SG[sun]}, l’Ascendant en ${SG[asc]}, la Lune en ${SG[moon]} et Vénus en ${SG[ven]}, vous dégagez à l’extérieur ${OUTER[asc]}, avec au fond de vous ${INNER[moon]} : ${mix}.`));
+  if(STA())o.push(p(STA().ascSun[asc][sun]));
+  if(STW())o.push(p(STW().sunMoon[sun][moon]));
   let n=1;const basic=o;
   for(const k of ['ASC','Sun','Moon','Venus','Mercury','Mars']){
     const [title,pname,data]=ROLE[k];const i=s(k);
     if(k==='Mercury'){o=[];o.push(h3('Autres facettes du thème','w-more'));}
     o.push(h4(`${n++}. ${title} : ${pname} en ${SG[i]}`));
     o.push(ul(data[i].map(([a,b])=>pt(a,b))));
+    if(STW()&&STW().scenes[k]&&STW().scenes[k][i])o.push(scene(STW().scenes[k][i]));
   }
   /* maisons */
   o.push(h3('Les planètes dans les maisons','w-houses'));
@@ -156,7 +169,7 @@ function readWest(W,E){
   const personal=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];
   const keyAsp=W.asp.filter(a=>a.orb<=4&&(personal.includes(a.a)||personal.includes(a.b))).slice(0,10);
   o.push(h3('Aspects majeurs','w-aspects'));
-  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0].toLowerCase()} ${PN[a.b]} (orbe ${dec1(a.orb)}°)`,`${cap(THEME[a.a])} et ${THEME[a.b]} — ${ASP[a.t][1]}.`))):p('Aucun aspect majeur avec un orbe inférieur à 4°.'));
+  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0].toLowerCase()} ${PN[a.b]} (orbe ${dec1(a.orb)}°)`,(STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t])||`${cap(THEME[a.a])} et ${THEME[a.b]} — ${ASP[a.t][1]}.`))):p('Aucun aspect majeur avec un orbe inférieur à 4°.'));
   /* configurations */
   const pats=patterns(W,E);
   o.push(h3('Configurations et stelliums','w-patterns'));
@@ -182,6 +195,18 @@ function readWest(W,E){
   o.push(h3('Transits actuels','w-transits'));
   o.push(ul(tr.map(t=>{const hit=t.hits.map(x=>`${ASP[x.t][0].toLowerCase()} avec votre ${natal(x.n)} (orbe ${dec1(x.orb)}°, ${HIT_TONE[x.tone]})`).join(' ; ');
     return pt(`${PN[t.k]} transite en ${SG[signOf(t.lon)]}, dans votre maison ${t.house} (${HOUSE[t.house-1]})`,`${cap(TRANSIT[t.k])}${hit?` En ce moment : ${hit}.`:''}`);})));
+  /* votre histoire (assemblage par règles) */
+  const ws=[];
+  if(STA())ws.push(`Commençons par ce que les autres voient de vous. ${STA().ascSun[asc][sun]}`);
+  if(STW())ws.push(`Regardons maintenant ce qui se passe au-dedans. ${STW().sunMoon[sun][moon]}`);
+  if(STW()){const mars=s('Mars'),strip=t=>String(t).replace(/^Par exemple,\s*/,'');ws.push(`En amour, Vénus en ${SG[ven]} se voit souvent ainsi : ${strip(STW().scenes.Venus[ven])} Et quand il faut agir, vous défendre ou obtenir quelque chose, Mars en ${SG[mars]} prend le relais : ${strip(STW().scenes.Mars[mars])}`);}
+  {const dom=EL.filter(e=>cnt[e]===Math.max(...EL.map(x=>cnt[x])));const miss=EL.filter(e=>cnt[e]===0);
+   ws.push(`Si l’on regarde le thème dans son ensemble, votre maître d’Ascendant, ${PN[ar]}, se trouve en maison ${P[ar].house} : votre vie gravite souvent autour de « ${HOUSE[P[ar].house-1]} ». Parmi les dix planètes, ${dom.length>1?`les éléments ${andList(dom.map(e=>ELN[e]))} dominent`:`l’élément ${ELN[dom[0]]} domine`}, et ${andList(dom.map(e=>ELQ[e]))} ${dom.length>1?'forment':'forme'} votre couleur de fond${miss.length?` ; en revanche, aucune planète en ${miss.map(e=>ELN[e]).join(' ni en ')} : c’est une capacité à cultiver consciemment`:''}.`);}
+  {const a=keyAsp[0];const t=a&&STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t];
+   if(t)ws.push(`L’aspect le plus serré de votre thème est ${PN[a.a]} ${ASP[a.t][0].toLowerCase()} ${PN[a.b]} (orbe ${dec1(a.orb)}°), et il se voit nettement chez vous. ${t}`);}
+  {const hit=tr.filter(x=>['Saturn','Uranus','Neptune','Pluto'].includes(x.k)).flatMap(x=>x.hits.filter(h=>['Sun','Moon','ASC'].includes(h.n)).map(h=>({...h,k:x.k}))).sort((a,b)=>a.orb-b.orb)[0];
+   if(hit)ws.push(`Et ces années-ci, ${PN[hit.k]} forme ${['une','un','un','un','une'][hit.t]} ${ASP[hit.t][0].toLowerCase()} avec votre ${natal(hit.n)} (${HIT_TONE[hit.tone]}). ${{Saturn:'C’est une période qui vous demande d’affronter la réalité et de consolider vos bases : c’est exigeant, mais ce que vous construisez maintenant vous appartiendra vraiment.',Uranus:'Vous avez envie de sortir du cadre, et votre vie peut prendre un virage soudain : suivre votre curiosité réserve souvent de bonnes surprises.',Neptune:'Votre vision de la vie est en train de changer : l’inspiration afflue, mais les choses sont aussi moins nettes. Vérifiez bien avant les décisions importantes.',Pluto:'C’est une période de métamorphose profonde : l’ancienne version de vous-même se retire peu à peu, et une force nouvelle est en train de naître.'}[hit.k]}`);}
+  if(ws.length)o.unshift(h3('Votre histoire','w-story'),...ws.map(p));
   return{basic:basic.join(''),adv:o.join('')};
 }
 function patterns(W,E){
@@ -266,6 +291,12 @@ function readZW(Z,ctx){
   const fe=String(Z.fiveElementsClass||''),feTxt=FIVE_EL[fe[0]]?`classe ${FIVE_EL[fe[0]]} ${FIVE_N[fe[1]]||''}`.trim():fe;
   const hourBr=(String(Z.time||'').match(/[子丑寅卯辰巳午未申酉戌亥]/)||[''])[0];
   const V=pn('命宮');
+  const comboTxt=c=>c==='空'?'aucune étoile principale':andList(c.split('·').map(S));
+  const borrow=c=>`Le palais opposé, où ${c.includes('·')?'siègent':'siège'} ${comboTxt(c)}, complète le tableau. `;
+  const brNote=pp=>{const st=pp.majorStars;if(!st.length)return '';
+    const weak=st.filter(s=>['陷','不'].includes(s.brightness)).map(s=>`${S(s.name)} (${BL(s.brightness)})`),strong=st.filter(s=>s.brightness==='廟').map(s=>S(s.name));
+    return (strong.length?` ${andList(strong)} ${strong.length>1?'brillent':'brille'} ici de tout ${strong.length>1?'leur':'son'} éclat (${BL('廟')}) : ces traits s’expriment pleinement.`:'')+(weak.length?` En revanche, ${andList(weak)} ${weak.length>1?'manquent':'manque'} d’éclat ici : les qualités décrites demandent plus d’efforts pour s’exprimer, et les défauts se voient davantage.`:'');};
+  const mutTxt=(s,nm)=>(s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})[nm]||(s.mutagen==='權'?`Pour ce qui touche ${DOMA(nm)}, vous avez la main.`:`Ce qui touche ${DOMA(nm)} vous vaut facilement une bonne réputation.`);
 
   /* 1. Informations */
   o.push(h3('Analyse du thème Zi Wei Dou Shu','z-info'));
@@ -278,6 +309,15 @@ function readZW(Z,ctx){
 
   /* 3. Nature profonde */
   o.push(h3('Nature profonde et personnalité','z-core'));
+  const mcombo=comboOf(pal[ming]),ocombo=comboOf(pal[(ming+6)%12]);
+  const oppStars=i=>pal[(i+6)%12].majorStars;
+  {const ms=SZM()&&SZM().ming[mcombo];
+   if(ms){const F=t=>fit(t,pal[ming],oppStars(ming));
+     o.push(h4(`« ${ms.title} »`));o.push(p(F(ms.image+' '+ms.story)+brNote(pal[ming])));
+     if(mcombo==='空'&&SZM().ming[ocombo])o.push(p(borrow(ocombo)+fit(SZM().ming[ocombo].story,pal[(ming+6)%12])));
+     o.push(ms.scenes.map(x=>scene(F(x))).join(''));
+     o.push(ul([pt('Atouts',F(ms.strengths)),pt('Angles morts',F(ms.blind)),pt('Conseil',F(ms.advice))]));
+     o.push(h4('Les étoiles en détail'));}}
   const mp=pal[ming],opp=pal[(ming+6)%12];
   const items=[];
   const src=mp.majorStars.length?mp.majorStars:opp.majorStars;
@@ -326,11 +366,20 @@ function readZW(Z,ctx){
   if(notes.length)o.push(ul(notes));
 
   /* 6. Les douze palais */
+  if(SZP()){o.push(h3('L’histoire des autres palais','z-palstory'));
+    for(const nm of ['兄弟','子女','疾厄','遷移','僕役','田宅','福德','父母']){const i=idx(nm);if(i<0||!SZP()[nm])continue;const c=comboOf(pal[i]);const e=SZP()[nm][c];if(!e)continue;
+      const F=t=>fit(t,pal[i],oppStars(i));
+      o.push(h4(`${cap(pn(nm))} : « ${e.title} »`));
+      o.push(p(`${cap(pn(nm))} en ${pal[i].earthlyBranch} (${stLine(i)}${minorLine(i)?', '+minorLine(i):''}). ${F(e.story)}${brNote(pal[i])}`));
+      if(c==='空'){const oc=comboOf(pal[(i+6)%12]);const oe=SZP()[nm][oc];if(oe)o.push(p(borrow(oc)+fit(oe.story,pal[(i+6)%12])));}
+      o.push(e.scenes.map(x=>scene(F(x))).join(''));
+      const mts=[...pal[i].majorStars,...pal[i].minorStars].filter(s=>s.mutagen).map(s=>pt(`${MZ(s.name,s.mutagen)} ici`,mutTxt(s,nm)));
+      o.push(ul([pt('Conseil',F(e.advice)),...mts]));}}
   o.push(h3('Les douze palais en un coup d’œil','z-palaces'));
   const order=[ming,...[1,2,3,4,5,6,7,8,9,10,11].map(k=>(ming-k+12)%12)];
   o.push(`<div class="tablewrap"><table><thead><tr><th>Palais</th><th>Tige-branche</th><th>Étoiles principales</th><th>Étoiles secondaires</th><th>Décennie</th><th>Domaine</th></tr></thead><tbody>${order.map(i=>`<tr><td class="p">${PN(pal[i].name)}${pal[i].isBodyPalace?' (Corps)':''}</td><td>${pal[i].heavenlyStem}${pal[i].earthlyBranch}</td><td>${stLine(i)}</td><td>${minorLine(i)||'—'}</td><td class="mono">${pal[i].decadal.range.join('–')}</td><td>${PAL(pal[i].name)}</td></tr>`).join('')}</tbody></table></div>`);
 
-  let decInfo=null,yearInfo=null,loveNow='';
+  let decInfo=null,yearInfo=null,loveNow='',decTitle='',decStory='';
   /* 7. Décennie */
   const H0=ctx.horoscope(new Date());
   const H=H0&&H0.decadal.name!=='童限'&&pal[H0.decadal.index]?H0:null;
@@ -339,6 +388,8 @@ function readZW(Z,ctx){
     const d=H.decadal,di=d.index,dp=pal[di];
     o.push(h3(`Votre décennie actuelle (${dp.decadal.range.join('–')} ans, décennie ${d.heavenlyStem}${d.earthlyBranch})`,'z-decade'));
     o.push(p(`Vous traversez actuellement la décennie de ${dp.decadal.range.join(' à ')} ans, celle du ${pn(dp.name)} (en ${dp.earthlyBranch}). Étoiles principales de la décennie : ${stLine(di)}${minorLine(di)?` ; également présentes : ${minorLine(di)}`:''}.`));
+    {const dc=comboOf(dp.majorStars.length?dp:pal[(di+6)%12]);const de=SZM()&&SZM().decade[dc];
+     if(de){const F=t=>fit(t,dp,pal[(di+6)%12].majorStars);o.push(h4(`Ce chapitre : « ${de.title} »`));o.push(p(F(de.story)));o.push(ul([pt('La plus grande occasion',F(de.chance)),pt('Le piège le plus courant',F(de.pitfall))]));decTitle=de.title;decStory=F(de.story);}}
     const dl=[];
     for(const s of (dp.majorStars.length?dp.majorStars:pal[(di+6)%12].majorStars)){const m=M[s.name];if(m)dl.push(pt(`Une décennie menée par ${S(s.name)}`,`${m[2]} Ces traits sont amplifiés pendant ces dix ans : ${lcf(m[3])} ; mais attention : ${lcf(m[4])}.`));}
     if(has(di,'祿存'))dl.push(pt(`${S('祿存')} dans la décennie`,`avec ${S('祿存')}, vos revenus restent plutôt stables pendant ces dix ans : une base financière solide.`));
@@ -348,6 +399,18 @@ function readZW(Z,ctx){
     {const jt=findStar(d.mutagen[3]);decInfo={range:dp.decadal.range.join('–'),pal:pn(dp.name),star:andList((dp.majorStars.length?dp.majorStars:pal[(di+6)%12].majorStars).map(x=>S(x.name)))||'—',dom:DOM[dp.name],jiStar:d.mutagen[3],
       ji:jt>=0?`${MZ(d.mutagen[3],'忌')} tombe dans le ${pn(pal[jt].name)} (${pn(d.palaceNames[jt])} de la décennie) : ${JI_ADV[d.palaceNames[jt]]}`:''};}
     o.push(ul(dl));
+  }
+
+  /* carte de vie */
+  if(SZM()){
+    const cur=H?H.decadal.index:-1;
+    const order=pal.map((x,i)=>i).sort((a,b)=>pal[a].decadal.range[0]-pal[b].decadal.range[0]).filter(i=>pal[i].decadal.range[0]<=95);
+    const rel=(t,i)=>PAL_ORDER[(i-t+12)%12];
+    o.push(h3('La carte de votre vie : un chapitre par décennie','z-map'));
+    o.push(p(`Chaque décennie est un chapitre de votre vie. Son titre vient des étoiles principales du ${V} de la décennie ; la ligne « Vigilance » indique le palais où tombe le ${ML('忌')} produit par la tige de cette décennie.`));
+    o.push(`<ol class="lifemap">${order.map(i=>{const x=pal[i];const c=comboOf(x.majorStars.length?x:pal[(i+6)%12]);const de=SZM().decade[c];
+      const mm=STEM_MUT[x.heavenlyStem],jt=findStar(mm[3]);const r=jt>=0?rel(jt,i):'';const F=t=>fit(t,x,pal[(i+6)%12].majorStars);
+      return `<li class="${i===cur?'now':''}"><div class="age mono">${x.decadal.range.join('–')}</div><div class="ch"><b>${de?de.title:cap(pn(x.name))}</b> <span class="muted">${cap(pn(x.name))} · ${comboTxt(x.majorStars.length?comboOf(x):'空')}</span>${i===cur?' <span class="chip hold">Maintenant</span>':''}<p>${de?(x.decadal.range[0]<15?'C’est le temps de l’enfance et des études : ces traits se manifestent d’abord à la maison et à l’école. ':x.decadal.range[0]>=75?'C’est le temps de la vieillesse : ces traits se manifestent dans le rythme de vie, la famille et la santé. ':'')+F(de.story):''}</p>${de?`<p class="mini"><b>Occasion</b> ${F(de.chance)}</p>`:''}${r?`<p class="mini"><b>Vigilance</b> ${MZ(mm[3],'忌')} tombe dans le ${pn(r)} de la décennie : ${JI_ADV[r]}</p>`:''}</div></li>`;}).join('')}</ol>`);
   }
 
   /* 8. Années */
@@ -375,9 +438,23 @@ function readZW(Z,ctx){
     }
   }
 
+  /* carrière et argent */
+  if(SZW()){o.push(h3('Carrière et argent','z-work'));
+    for(const [i,key,lab] of [[idx('官祿'),'career',`Carrière (${pn('官祿')})`],[idx('財帛'),'wealth',`Argent (${pn('財帛')})`]]){const c=comboOf(pal[i]);const e=SZW()[key][c];if(!e)continue;
+      const F=t=>fit(t,pal[i],oppStars(i));
+      o.push(h4(`${lab} : « ${e.title} »`));
+      o.push(p(`${cap(pn(pal[i].name))} en ${pal[i].earthlyBranch} (${stLine(i)}${minorLine(i)?', '+minorLine(i):''}). ${F(e.story)}${brNote(pal[i])}`));
+      if(c==='空'){const oc=comboOf(pal[(i+6)%12]);const oe=SZW()[key][oc];if(oe)o.push(p(borrow(oc)+fit(oe.story,pal[(i+6)%12])));}
+      if(e.fields)o.push(ul([pt('Domaines qui vous conviennent',F(e.fields))]));
+      o.push(e.scenes.map(x=>scene(F(x))).join(''));o.push(ul([pt('Conseil',F(e.advice))]));
+      for(const s of [...pal[i].majorStars,...pal[i].minorStars])if(s.mutagen)o.push(p(`<b>${MZ(s.name,s.mutagen)} ici</b> : ${mutTxt(s,pal[i].name)}`));}}
   /* 9. Amour */
   o.push(h3('Amour','z-love'));
   const fi=idx('夫妻'),fp=pal[fi];
+  {const sc=comboOf(fp);const e=SZS()&&SZS()[sc];
+   if(e){const F=t=>fit(t,fp,oppStars(fi));o.push(h4(`« ${e.title} »`));o.push(p(F(e.partner+' '+e.pattern)+brNote(fp)));
+     if(sc==='空'){const oc=comboOf(pal[(fi+6)%12]);const oe=SZS()[oc];if(oe)o.push(p(borrow(oc)+fit(oe.partner,pal[(fi+6)%12])));}
+     o.push(e.scenes.map(x=>scene(F(x))).join(''));o.push(ul([pt('Conseil',F(e.advice))]));o.push(h4(`Le ${pn('夫妻')} en détail`));}}
   const fl=[pt(`${cap(pn('夫妻'))} natal en ${fp.earthlyBranch} (${withMinor(fi)})`,`${PAL('夫妻')}${fp.majorStars.map(s=>M[s.name]?` Votre partenaire, ou vous-même en amour, porte les traits de ${S(s.name)} : ${lcf(M[s.name][2])}`:'').join('')}`)];
   for(const s of fp.majorStars.concat(fp.minorStars))if(s.mutagen)fl.push(pt(`${MZ(s.name,s.mutagen)} dans le ${pn('夫妻')}`,(s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})['夫妻']||`en amour, les traits de ${S(s.name)} sont amplifiés.`));
   if(has(fi,'擎羊'))fl.push(pt(`${S('擎羊')} dans le ${pn('夫妻')}`,'disputes et heurts faciles en amour : adoucissez le ton quand vous parlez.'));
@@ -419,12 +496,34 @@ function readZW(Z,ctx){
     const yl=findStar(y.mutagen[0]);if(yl>=0)adv.push(pt(`Cette année, l’opportunité est dans le ${pn(pal[yl].name)} natal (${pn(y.palaceNames[yl])} de l’année)`,STAR_LU[y.mutagen[0]]||'ce domaine se déroule plutôt bien cette année.'));
   }
   if(adv.length){o.push(h3('Points de vigilance','z-advice'));o.push(ul(adv));}
+  /* votre histoire (assemblage par règles) */
+  const story=[];let workLine='';
+  {const ms=SZM()&&SZM().ming[mcombo];
+   if(ms){story.push(fit(ms.image+' '+ms.story,pal[ming],oppStars(ming))+brNote(pal[ming]));if(mcombo==='空'&&SZM().ming[ocombo])story.push(`Votre ${V} n’a pas d’étoile principale : on le lit donc à travers le palais opposé, où ${ocombo.includes('·')?'siègent':'siège'} ${comboTxt(ocombo)}. Vous ressemblez à « ${SZM().ming[ocombo].title} », mais votre environnement et votre entourage vous façonnent davantage.`);}
+   const bo=(body+6)%12,bc=comboOf(bp.majorStars.length?bp:pal[bo]);const BF=t=>fit(t,bp,pal[bo].majorStars);
+   if(bp.name==='命宮')story.push(`Votre palais du Corps coïncide avec le ${V} : votre nature innée reste le centre de gravité de toute votre vie, et plus vous avancez, plus vous devenez vous-même.`);
+   else{let frag='';
+     if(bp.name==='財帛'&&SZW()&&SZW().wealth[bc])frag=` Vous y êtes « ${SZW().wealth[bc].title} ». ${firstSent(BF(SZW().wealth[bc].story))}${brNote(bp)}`;
+     else if(bp.name==='官祿'&&SZW()&&SZW().career[bc])frag=` Vous y êtes « ${SZW().career[bc].title} ». ${firstSent(BF(SZW().career[bc].story))}${brNote(bp)}`;
+     else if(bp.name==='夫妻'&&SZS()&&SZS()[bc])frag=' '+firstSent(BF(SZS()[bc].pattern));
+     else if(SZM()&&SZM().ming[bc])frag=` ${bc==='空'?'Sans étoile principale, il emprunte celles du palais opposé':`On y trouve ${comboTxt(bc)}`}, dans l’esprit de « ${SZM().ming[bc].title} ».`;
+     const lm=has(body,'天馬')&&(has(body,'祿存')||[...bp.majorStars,...bp.minorStars].some(s=>s.mutagen==='祿'));
+     story.push(`Mais au fil de la vie, votre centre de gravité se déplace peu à peu vers ${DOM[bp.name]}. Votre palais du Corps se trouve dans le ${pn(bp.name)}.${frag}${lm?' Ce palais forme aussi la configuration Lu Ma Jiao Chi : plus vous bougez, plus l’argent vient, et vos déplacements finissent par payer.':''}`);}
+   if(SZW()){const ci=idx('官祿'),wi=idx('財帛');
+     const say=(i,key,lab)=>{const c=comboOf(pal[i]);if(c!=='空')return SZW()[key][c]?`${lab}, vous êtes « ${SZW()[key][c].title} »`:'';const oc=comboOf(pal[(i+6)%12]);return SZW()[key][oc]?`${lab}, votre ${pn(pal[i].name)} n’a pas d’étoile principale ; à travers ${comboTxt(oc)}, dans le palais opposé, vous ressemblez à « ${SZW()[key][oc].title} »`:'';};
+     const parts=[say(ci,'career','au travail'),say(wi,'wealth','avec l’argent')].filter(Boolean);if(parts.length){workLine=cap(parts.join(' ; '))+'.';story.push(workLine);}}
+   if(birthMut['忌']){const jp=pal[birthMut['忌'].i].name;story.push(`Ce qui compte le plus pour vous toute votre vie, et où vous butez le plus souvent, c’est ${DOM[jp]}. ${MZ(birthMut['忌'].star,'忌')} se trouve dans le ${pn(jp)}. ${JI[jp]} Ce n’est pas de la malchance, c’est la leçon de vie qui mérite le plus votre attention.`);}
+   if(decInfo&&decTitle)story.push(`Aujourd’hui, vous êtes dans le chapitre de vos ${decInfo.range} ans, dont le thème est « ${decTitle} ». ${decStory}`);
+   if(yearInfo)story.push(`En ${yearInfo.yr}, le ${V} de l’année tombe dans votre ${yearInfo.pal} natal${yearInfo.meet?', et il coïncide avec celui de la décennie : en bien comme en mal, tout ce qui arrive cette année pèse double':''}.`);}
+  if(story.length)o.unshift(h3('Votre histoire','z-story'),...story.map(p));
   /* version essentielle */
   const b=[];
+  if(story.length){b.push(h3('Votre histoire'));b.push(...story.slice(0,2).map(p));if(decInfo&&decTitle)b.push(p(`Aujourd’hui, vous êtes dans le chapitre de vos ${decInfo.range} ans : « ${decTitle} ».`));}
   b.push(h3('L’essentiel de votre thème Zi Wei'));
   const msrc=mp.majorStars.length?mp.majorStars:opp.majorStars;
-  const bItems=[pt(`${cap(V)} (${msrc.map(x=>S(x.name)).join(', ')||'—'}${mp.majorStars.length?'':', empruntées au palais opposé'})`,msrc.map(x=>M[x.name]?M[x.name][2]:'').filter(Boolean).join(' ')),
+  const bItems=story.length?[]:[pt(`${cap(V)} (${msrc.map(x=>S(x.name)).join(', ')||'—'}${mp.majorStars.length?'':', empruntées au palais opposé'})`,msrc.map(x=>M[x.name]?M[x.name][2]:'').filter(Boolean).join(' ')),
     pt(`Palais du Corps dans le ${pn(bp.name)}`,bp.name==='命宮'?'votre nature innée est aussi votre centre de gravité : être vous-même est l’essentiel.':`avec l’âge, vous accorderez de plus en plus d’importance ${DOMA(bp.name)}.`)];
+  if(story.length&&workLine)bItems.push(pt('Travail et argent',lcf(workLine)));
   const pn2=pats.map(x=>(x.match(/<b>(.*?)<\/b>/)||[])[1]).filter(Boolean);
   if(pn2.length)bItems.push(pt('Configurations',pn2.join(' ; ')+' (détails dans la partie avancée).'));
   if(birthMut['忌'])bItems.push(pt(`Leçon de vie (${MZ(birthMut['忌'].star,'忌')} dans le ${pn(pal[birthMut['忌'].i].name)})`,JI[pal[birthMut['忌'].i].name]));
@@ -519,11 +618,11 @@ function readHD(H,Z){
   const [l1,l2]=H.profile,pk=`${l1}/${l2}`;
   o.push(h3('Lecture Human Design'));
   o.push(p(`Vous êtes de type ${T.n}, de profil ${pk}, avec une ${lcf(A.n)} (${lcf(D[0])}). Votre vie est un voyage ${H.type==='projector'?'où il s’agit de comprendre les autres, puis d’attendre d’être vu et invité':H.type==='manifestor'?'fait d’initiatives et d’impact sur le monde':H.type==='reflector'?'où vous reflétez votre environnement et où la clarté vient peu à peu':'rempli d’expériences, de prises de conscience et d’action'}.`));
+  {const ta=SHD()&&SHD().typeAuth[`${H.type}|${H.authority}`];if(ta){o.push(p(ta.story));o.push(scene(ta.scene));}}
   o.push(h4(`${T.n} (${T.en})`));
   o.push(ul([T.txt,pt('Stratégie',T.strategy),pt('Signature (ce que vous ressentez quand vous vivez juste)',T.sig),pt('Thème du non-soi (le signal d’alerte quand vous déviez)',T.ns)]));
   o.push(h4(A.n));o.push(p(A.txt));
-  o.push(h4(`Profil ${pk}`));
-  o.push(p(Z.profiles[pk]||''));
+  {const pr=SHD()&&SHD().profiles[pk];o.push(h4(`Profil ${pk}${pr?` : « ${pr.title} »`:''}`));o.push(p(pr?pr.summary:(Z.profiles[pk]||'')));}
   o.push(h4(D[0]));o.push(p(D[1]));
   const tips=[...T.tips,`${A.n} : ${({emotional:'freinez avant d’agir sur un coup de tête ; pour une décision importante, dormez au moins une nuit dessus.',sacral:'faites confiance à la réaction immédiate de votre corps, sans lui chercher de justification.',splenic:'votre première intuition est la plus juste ; n’attendez pas d’avoir tout compris.','ego-m':'avant de dire « je veux », vérifiez que vous le voulez vraiment, puis prévenez les personnes concernées.','ego-p':'une fois invité, demandez-vous « qu’est-ce que j’y gagne ? » et ne vous engagez que si cela en vaut la peine.',self:'parlez avec des personnes de confiance et écoutez ce que vous dites : la direction est dans vos mots.',mental:'choisissez quelques personnes de confiance comme caisse de résonance et exprimez vos idées dans le bon cadre.',lunar:'pour une décision importante, attendez un cycle lunaire (environ 28 jours) en parlant avec des personnes variées.'})[H.authority]}`];
   o.push(h4('Conseils pratiques'));o.push(ul(tips));
@@ -531,7 +630,10 @@ function readHD(H,Z){
   o.push(h3('Les deux lignes de votre profil','h-lines'));
   for(const [ln,label] of [[l1,'conscient'],[l2,'inconscient']]){const L=Z.lines[ln];
     o.push(p(`<b>Ligne ${ln} (${label}) : ${L.n}</b> — ${L.k}. ${L.d}`));
-    o.push(ul([pt('Au quotidien',L.e)]));}
+    const SL=SHD()&&SHD().lines[ln];
+    if(SL)o.push(ul([pt('Le malentendu fréquent',SL.misread),pt('Le bon état d’esprit',SL.mindset)]));
+    o.push((SL?SL.examples:[L.e]).map(scene).join(''));}
+  {const pr=SHD()&&SHD().profiles[pk];if(pr){o.push(h4(`Le cycle du profil ${pk}`));o.push(p(pr.loop));o.push(h4('En amour'));o.push(p(pr.love));o.push(h4('Au travail et dans l’entrepreneuriat'));o.push(p(pr.work));o.push(h4(`Conseils pour le profil ${pk}`));o.push(ul(pr.tips));}}
   const cr=crossName(H,Z);
   o.push(h3('Croix d’incarnation','h-cross'));
   o.push(p(`${cr.full}, portes ${H.cross.gates[0]}/${H.cross.gates[1]} | ${H.cross.gates[2]}/${H.cross.gates[3]}. ${Z.angles[H.cross.angle][1]}`));
@@ -539,13 +641,22 @@ function readHD(H,Z){
   const defd=['head','ajna','throat','g','heart','sacral','spleen','sp','root'];
   o.push(h3('Les neuf centres','h-centers'));
   o.push(h4('Centres définis'));
-  o.push(H.defined.length?ul(defd.filter(c=>H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].d))):p('Aucun centre défini.'));
+  o.push(H.defined.length?ul(defd.filter(c=>H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].d+(SHD()&&SHD().centersDefined[c]?scene(SHD().centersDefined[c]):'')))):p('Aucun centre défini.'));
   o.push(h4('Centres ouverts'));
-  o.push(ul(defd.filter(c=>!H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].u))));
+  o.push(ul(defd.filter(c=>!H.defined.includes(c)).map(c=>pt(Z.centers[c].n,Z.centers[c].u+(SHD()&&SHD().centersOpen[c]?scene(SHD().centersOpen[c]):'')))));
   o.push(h3('Canaux','h-channels'));
-  o.push(H.channels.length?ul(H.channels.map(([a,b])=>{const c=Z.channels[`${a}-${b}`];return pt(`${a}-${b} ${c[0]} (${c[1]})`,c[2]);})):p('Aucun canal complet.'));
+  o.push(H.channels.length?ul(H.channels.map(([a,b])=>{const c=Z.channels[`${a}-${b}`];return pt(`${a}-${b} ${c[0]} (${c[1]})`,c[2]+(SHD()&&SHD().channels[`${a}-${b}`]?scene(SHD().channels[`${a}-${b}`]):''));})):p('Aucun canal complet.'));
   o.push(h3('Autres conseils pratiques','h-tips'));
-  o.push(ul([`Ligne ${l1} : ${({1:'faites d’abord vos recherches à fond : votre sécurité vient du savoir.',2:'gardez du temps seul pour laisser votre talent grandir naturellement.',3:'autorisez-vous à tomber dans les pièges : chaque erreur est une donnée de terrain.',4:'entretenez bien votre réseau de proches : c’est là que se trouvent vos occasions.',5:'restez lucide sur les attentes des autres : vous n’avez pas à sauver tout le monde.',6:'traversez patiemment les trois étapes de votre vie et vivez de façon authentique.'})[l1]}`,...(l2!==l1?[`Ligne ${l2} : ${({1:'pour ce qui compte, posez d’abord des bases solides avant d’agir.',2:'quand on remarque votre talent, ne vous dérobez pas.',3:'un échec n’est qu’une donnée, pas un verdict.',4:'les occasions viennent souvent de vos connaissances : entretenez vos relations.',5:'quand on attend quelque chose de vous, vérifiez que vous voulez vraiment aider avant d’accepter, et posez clairement vos limites.',6:'donnez-vous le temps de prendre du recul : la sagesse vient de l’observation.'})[l2]}`]:[])]));
+  o.push(ul([`Ligne ${l1} : ${({1:'faites d’abord vos recherches à fond : votre sécurité vient du savoir.',2:'gardez du temps seul pour laisser votre talent grandir naturellement.',3:'autorisez-vous à vous tromper : chaque « ça ne marche pas » devient un repère pour vos choix futurs.',4:'entretenez bien votre réseau de proches : c’est là que se trouvent vos occasions.',5:'restez lucide sur les attentes des autres : vous n’avez pas à sauver tout le monde.',6:'traversez patiemment les trois étapes de votre vie et vivez de façon authentique.'})[l1]}`,...(l2!==l1?[`Ligne ${l2} : ${({1:'pour ce qui compte, posez d’abord des bases solides avant d’agir.',2:'quand on remarque votre talent, ne vous dérobez pas.',3:'un échec n’est qu’une donnée, pas un verdict.',4:'les occasions viennent souvent de vos connaissances : entretenez vos relations.',5:'quand on attend quelque chose de vous, vérifiez que vous voulez vraiment aider avant d’accepter, et posez clairement vos limites.',6:'donnez-vous le temps de prendre du recul : la sagesse vient de l’observation.'})[l2]}`]:[])]));
+  /* votre histoire (assemblage par règles) */
+  {const hs=[],ta=SHD()&&SHD().typeAuth[`${H.type}|${H.authority}`],pr=SHD()&&SHD().profiles[pk];
+   hs.push(`Vous êtes de type ${T.n}. ${firstSent(T.txt)}${ta?' '+ta.story:''}`);
+   if(pr)hs.push(`Le scénario de votre vie : « ${pr.title} ». ${pr.summary} ${pr.loop}`);
+   hs.push(`${H.definition==='none'?'Vous n’avez aucune définition':`Vous avez une ${lcf(D[0])}`}. ${D[1]}`);
+   if(H.channels.length&&SHD()){const cs=H.channels.slice(0,2).filter(([a,b])=>SHD().channels[`${a}-${b}`]).map(([a,b])=>`${Z.channels[`${a}-${b}`][0]} : ${SHD().channels[`${a}-${b}`]}`);const nC=H.channels.length;hs.push(`${nC>1?`${nC} canaux fonctionnent`:'Un canal fonctionne'} chez vous en permanence, comme ${nC>1?'des circuits':'un circuit'} de talent toujours sous tension.${cs.length?' '+cs.join(' '):''}`);}
+   if(SHD()){const oc=['sp','throat','heart','g','head','ajna','root','spleen','sacral'].find(c=>!H.defined.includes(c));if(oc&&SHD().centersOpen[oc])hs.push(`Là où l’extérieur vous influence le plus, c’est votre ${lcf(Z.centers[oc].n)}, qui est ouvert. ${SHD().centersOpen[oc]}`);}
+   hs.push(`Enfin, le grand thème de votre vie, c’est la ${lcf(cr.full)}. ${Z.angles[H.cross.angle][1]}`);
+   o.unshift(h3('Votre histoire','h-story'),...hs.map(p));}
   return{basic,adv:o.join('')};
 }
 function crossName(H,Z){
@@ -557,6 +668,6 @@ function crossName(H,Z){
   return{full:`${ang} ${deA(fr)}${c[1]?' '+c[1]:''} (${c[0]}${c[1]?' '+c[1]:''})`,zh:nm,fr:nm,en:c[0]};
 }
 
-root.Readings=root.Readings||{};root.Readings.fr={west:readWest,zw:readZW,hd:readHD,crossName};
+root.Readings=root.Readings||{};root.Readings.fr={west:readWest,zw:readZW,hd:readHD,crossName,fit};
 
 })(typeof window!=='undefined'?window:globalThis);

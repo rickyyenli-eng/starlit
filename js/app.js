@@ -161,13 +161,13 @@ function showPalace(){
   const d=palDesc(p.name);
   const lead=p.majorStars.length?F.main(F.list(p.majorStars.map(s=>starName(s.name)))):F.empty(palName(opp.name),F.list(opp.majorStars.map(s=>starName(s.name)))||'—');
   let st='';
-  if(LG==='zh'){const ZO=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];const cb=p.majorStars.map(s=>s.name).sort((x,y)=>ZO.indexOf(x)-ZO.indexOf(y)).join('·')||'空';
+  if(LG==='zh'||hasTr()){const SF=LG==='zh'?'':'_'+LG.toUpperCase(),G=n=>window['STORY_'+n+SF],q=t=>LG==='zh'||LG==='ja'?`「${t}」`:`“${t}”`,FIT=LG==='zh'?Readings.zh.fit:StoryFit.fit;const ZO=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];const cb=p.majorStars.map(s=>s.name).sort((x,y)=>ZO.indexOf(x)-ZO.indexOf(y)).join('·')||'空';
     const n=p.name;let e=null,txt='';
-    if(n==='命宮'&&window.STORY_ZW_MING){e=STORY_ZW_MING.ming[cb];if(e)txt=e.image+e.story;}
-    else if(n==='夫妻'&&window.STORY_ZW_SPOUSE){e=STORY_ZW_SPOUSE[cb];if(e)txt=e.partner+e.pattern;}
-    else if((n==='財帛'||n==='官祿')&&window.STORY_ZW_WORK){e=STORY_ZW_WORK[n==='財帛'?'wealth':'career'][cb];if(e)txt=e.story;}
-    else if(window.STORY_ZW_PAL&&STORY_ZW_PAL[n]){e=STORY_ZW_PAL[n][cb];if(e)txt=e.story;}
-    if(e)st=`<div class="block story"><h4>「${e.title}」</h4><p>${Readings.zh.fit(txt,p,Z.palaces[(selZ+6)%12].majorStars)}</p>${e.scenes.map(x=>`<p class="scene">${x}</p>`).join('')}</div>`;}
+    if(n==='命宮'&&G('ZW_MING')){e=G('ZW_MING').ming[cb];if(e)txt=e.image+(LG==='zh'||LG==='ja'?'':' ')+e.story;}
+    else if(n==='夫妻'&&G('ZW_SPOUSE')){e=G('ZW_SPOUSE')[cb];if(e)txt=e.partner+(LG==='zh'||LG==='ja'?'':' ')+e.pattern;}
+    else if((n==='財帛'||n==='官祿')&&G('ZW_WORK')){e=G('ZW_WORK')[n==='財帛'?'wealth':'career'][cb];if(e)txt=e.story;}
+    else if(G('ZW_PAL')&&G('ZW_PAL')[n]){e=G('ZW_PAL')[n][cb];if(e)txt=e.story;}
+    const om=Z.palaces[(selZ+6)%12].majorStars;if(e)st=`<div class="block story"><h4>${q(e.title)}</h4><p>${FIT(txt,p,om)}</p>${e.scenes.map(x=>`<p class="scene">${FIT(x,p,om)}</p>`).join('')}</div>`;}
   $('#z-detail').innerHTML=`<div><div class="eyebrow">${U.picked}</div><h2>${palName(p.name)}<span class="muted" style="font-size:15px;font-weight:400">　${p.heavenlyStem}${p.earthlyBranch}</span></h2></div>
   <p class="say">${d} ${lead}</p>${st}
   <div class="chips">${p.isBodyPalace?`<span class="chip acc">${U.bodyHere}</span>`:''}${dec?`<span class="chip hold">${U.decNow}</span>`:''}${yr?`<span class="chip bad">${U.yrNow}</span>`:''}<span class="chip mono">${F.decAges(p.decadal.range.join('–'))}</span></div>
@@ -195,6 +195,11 @@ function zwSummary(){
 }
 
 /* ===================== 語言切換 ===================== */
+const LANG_FILES=['story-west','story-west-asc','story-zw-ming','story-zw-spouse','story-zw-work','story-zw-pal-a','story-zw-pal-b','story-zw-pal-c','story-zw-pal-d','story-hd'];
+const loaded={zh:Promise.resolve()};
+function loadLang(lg){if(loaded[lg])return loaded[lg];
+  const one=src=>new Promise(r=>{const sc=document.createElement('script');sc.src=src;sc.onload=sc.onerror=()=>r();document.head.appendChild(sc);});
+  return loaded[lg]=Promise.all([...LANG_FILES.map(f=>`js/${f}.${lg}.js`),`js/themes-${lg}.js`].map(one));}
 function primer(id,arr){$(id).innerHTML=arr.map(([b,t])=>`<div><b>${b}</b><span>${t??L.mut.map((m,j)=>`${mutBadge(MUT_KEYS[j])} ${m[3]}`).join('　')}</span></div>`).join('');}
 function applyLang(lg){
   LG=I18N[lg]?lg:'zh';L=I18N[LG];
@@ -204,12 +209,12 @@ function applyLang(lg){
   primer('#w-primer',L.ui.wPrimer);primer('#z-primer',L.ui.zPrimer);primer('#h-primer',L.ui.hPrimer);
   $('#langs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LG));
   if(errKey)showErr(errKey);
-  if(W&&Z)renderAll();
+  const want=LG;loadLang(LG).then(()=>{if(W&&Z&&LG===want)renderAll();});
   try{localStorage.setItem('starlit-lang',LG);}catch(e){}
 }
 
 /* ===================== 啟動 ===================== */
-function renderAll(){drawWheel();showPlanet();westSummary();drawZW();showPalace();zwSummary();hdSummary();drawBody();showHD();renderReadings();if(DLG.tab&&$('#dlg').open)openDetail(DLG.tab,DLG.i);}
+function renderAll(){aiRender();drawWheel();showPlanet();westSummary();drawZW();showPalace();zwSummary();hdSummary();drawBody();showHD();renderReadings();if(DLG.tab&&$('#dlg').open)openDetail(DLG.tab,DLG.i);}
 const TABS=['west','zw','hd','mix'];
 function tab(which){TABS.forEach(t=>{$('#t-'+t).setAttribute('aria-selected',t===which);$('#p-'+t).hidden=t!==which;});try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
 
@@ -225,11 +230,11 @@ function boot(){
   fillCities();
   $('#f-city').addEventListener('change',onCity);
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
-  applyLang(LG);
+  applyLang(LG);aiInit();
   $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
-    try{await Promise.race([sweReady,new Promise(r=>setTimeout(r,15000))]);}catch(err){}
+    try{await Promise.race([Promise.all([sweReady,loadLang(LG)]),new Promise(r=>setTimeout(r,15000))]);}catch(err){}
     btn.disabled=false;
-    const v=readForm();if(compute(v)){selW='Sun';renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
+    const v=readForm();if(compute(v)){selW='Sun';aiText='';const ao=$('#ai-box .ai-out');if(ao){ao.innerHTML='';$('#ai-box .ai-status').textContent='';}renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
   document.querySelectorAll('.copyread').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
   document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>openDetail(b.closest('.pane').id.slice(2),0)));

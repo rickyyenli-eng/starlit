@@ -459,6 +459,7 @@ function readZW(Z,ctx){
   if(adv.length){o.push(h3('避險建議','z-advice'));o.push(ul(adv));}
   /* 你的故事（規則串接） */
   const story=[];
+  let workLine='';
   {const ms=SZM()&&SZM().ming[mcombo];
    if(ms){story.push(fit(ms.image+ms.story,pal[ming])+brNote(pal[ming]));if(mcombo==='空'&&SZM().ming[ocombo])story.push(`你的命宮沒有主星，所以要借對宮的${comboTxt(ocombo)}來看：你會像「${SZM().ming[ocombo].title}」，但更容易被環境和身邊的人塑造。`);}
    const bc=comboOf(bp.majorStars.length?bp:pal[(body+6)%12]);
@@ -472,7 +473,7 @@ function readZW(Z,ctx){
      story.push(`但人生走到中段，你的重心會慢慢移到「${DOM[bp.name]}」。身宮落在${pn(bp.name)}，${frag}${lm?'這裡還形成祿馬交馳，愈動愈有財，越奔波越有收穫。':''}`);}
    if(SZW()){const ci=idx('官祿'),wi=idx('財帛');
      const say=(i,key,lab)=>{const c=comboOf(pal[i]);if(c!=='空')return `${lab}，你是「${SZW()[key][c].title}」`;const oc=comboOf(pal[(i+6)%12]);return `${lab}，${pn(pal[i].name)}沒有主星，借對宮的${comboTxt(oc)}來看，你像「${SZW()[key][oc].title}」`;};
-     story.push(`${say(ci,'career','工作上')}；${say(wi,'wealth','用錢上')}。`);}
+     workLine=`${say(ci,'career','工作上')}；${say(wi,'wealth','用錢上')}。`;story.push(workLine);}
    if(birthMut['忌']){const jp=pal[birthMut['忌'].i].name;story.push(`而你一生最在意、也最常卡住的，是「${DOM[jp]}」。${birthMut['忌'].star}化忌落在${pn(jp)}：${JI[jp]}這不是壞運，而是這輩子最值得用心修的一門課。`);}
    if(decInfo&&decTitle)story.push(`現在，你走到 ${decInfo.range} 歲這一章，主題是「${decTitle}」。${decStory}`);
    if(yearInfo)story.push(`${yearInfo.yr} 年的流年命宮落在本命${yearInfo.pal}${yearInfo.meet?'，又和大限命宮重疊，這一年的好壞都會加倍放大':''}。`);}
@@ -484,7 +485,7 @@ function readZW(Z,ctx){
   const msrc=mp.majorStars.length?mp.majorStars:opp.majorStars;
   const bItems=story.length?[]:[pt(`命宮（${msrc.map(x=>x.name).join('、')||'—'}${mp.majorStars.length?'':'，借對宮'}）`,msrc.map(x=>M[x.name]?M[x.name][2]:'').join('')),
     pt(`身宮在${pn(bp.name)}`,bp.name==='命宮'?'先天個性就是後天重心，做自己最重要。':`人生中後期會越來越看重「${DOM[bp.name]}」。`)];
-  if(story.length&&story[2])bItems.push(pt('工作與用錢',story[2].replace(/。$/,'')+'。'));
+  if(workLine)bItems.push(pt('工作與用錢',workLine.replace(/。$/,'')+'。'));
   const pn2=pats.map(x=>(x.match(/<b>(.*?)<\/b>/)||[])[1]).filter(Boolean);
   if(pn2.length)bItems.push(pt('命盤格局',pn2.join('、')+'（細節見進階）。'));
   if(birthMut["忌"])bItems.push(pt(`一生功課（${birthMut['忌'].star}化忌在${pn(pal[birthMut['忌'].i].name)}）`,JI[pal[birthMut['忌'].i].name]));
