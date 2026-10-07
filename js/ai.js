@@ -37,7 +37,7 @@ function aiChartData(){
   o.push('Open centers: '+Object.keys(X.centers).filter(c=>!H.defined.includes(c)).map(c=>X.centers[c]).join(', '));
   const hds=(window.HDS&&HDS.en)||null;
   o.push('Channels: '+(H.channels.map(([a,b])=>`${a}-${b}${hds&&hds.channels[`${a}-${b}`]?' '+hds.channels[`${a}-${b}`][0]:''}`).join('; ')||'none'));
-  try{const cr=Readings.zh.crossName(H,HDZ);o.push(`Incarnation cross: ${cr.en||cr.full}`);}catch(e){}
+  try{const cr=Readings.zh.crossName(H,HDZ);o.push(`Incarnation cross: ${X.angles[H.cross.angle]}, ${cr.en||cr.full} (gates ${(H.cross.gates||[]).join('/')})`);}catch(e){}
   o.push('Personality (conscious): '+Engine.HD_BODIES.map(b=>`${b} ${H.P[b].gate}.${H.P[b].line}`).join(', '));
   o.push('Design (unconscious): '+Engine.HD_BODIES.map(b=>`${b} ${H.D[b].gate}.${H.D[b].line}`).join(', '));
   try{const R=Themes.core.build(W,Z,HD,Engine),T=Themes.zh.TAGS;o.push('','# Starlit 三盤合參 tendency tags (systems agreeing)');
