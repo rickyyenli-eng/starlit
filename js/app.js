@@ -239,7 +239,7 @@ function splitSections(html){return html.split('<h3').filter(x=>x.trim()).map(x=
 /* 分類：同一類的段落放在同一頁（依中文詳解的標題比對） */
 const GROUPS={
  west:[['catW1',['w-more']],['catW2',['w-houses','@table','w-rulers']],['catW3',['w-dignity','w-balance']],['catW4',['w-aspects','w-patterns']],['catW5',['w-node','w-transits']]],
- zw:[['catZ1',['z-info','z-patterns','z-core']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palaces']],['catZ4',['z-decade','z-year','z-next','z-advice','@tool']],['catZ5',['z-love']]],
+ zw:[['catZ0',['z-story']],['catZ1',['z-info','z-patterns','z-core']],['catZ6',['z-work']],['catZ5',['z-love']],['catZ4',['z-map','z-decade','z-year','z-next','z-advice','@tool']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palaces']]],
  hd:[['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]]};
 function openDetail(tab,i){
   const U=L.ui;DLG.tab=tab;const raw=splitSections(ADV[tab]||'');
