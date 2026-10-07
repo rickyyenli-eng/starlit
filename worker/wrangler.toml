@@ -4,7 +4,7 @@ compatibility_date = "2026-10-01"
 workers_dev = true
 keep_vars = true
 
-# 每日次數限制：建好 KV namespace 後，把下面兩行的 # 拿掉並填入 id
-# [[kv_namespaces]]
-# binding = "RL"
-# id = "填入 KV namespace 的 ID"
+# 每日次數限制（每人每天 DAILY_LIMIT 次，見 worker.js）
+[[kv_namespaces]]
+binding = "RL"
+id = "590c5ceefc12441f8826c5f6f4fb46be"
