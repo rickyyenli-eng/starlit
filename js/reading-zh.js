@@ -5,7 +5,7 @@ const h3=(t,k)=>`<h3${k?` data-k="${k}"`:''}>${t}</h3>`, h4=t=>`<h4>${t}</h4>`, 
 const ul=items=>`<ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul>`;
 const pt=(title,text)=>`<b>${title}</b>：${text}`;
 const norm=x=>((x%360)+360)%360;
-const STW=()=>globalThis.STORY_WEST,SZM=()=>globalThis.STORY_ZW_MING,SZS=()=>globalThis.STORY_ZW_SPOUSE,SZW=()=>globalThis.STORY_ZW_WORK,SHD=()=>globalThis.STORY_HD;
+const STA=()=>globalThis.STORY_WEST_ASC,STW=()=>globalThis.STORY_WEST,SZM=()=>globalThis.STORY_ZW_MING,SZS=()=>globalThis.STORY_ZW_SPOUSE,SZW=()=>globalThis.STORY_ZW_WORK,SHD=()=>globalThis.STORY_HD;
 const ZORDER=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
 const comboOf=p=>p.majorStars.map(s=>s.name).sort((a,b)=>ZORDER.indexOf(a)-ZORDER.indexOf(b)).join('·')||'空';
 const comboTxt=c=>c==='空'?'無主星':c.replace(/·/g,'、');
@@ -131,6 +131,7 @@ function readWest(W,E){
   else mix=`同時兼具${els.map(e=>ELQ[e]).join(els.length===2?'與':'、')}的${opp?'獨特矛盾體':'多面性格'}`;
   o.push(h3('星座解析'));
   o.push(p(`這個星盤組合（太陽${SG[sun]}、上升${SG[asc]}、月亮${SG[moon]}、金星${SG[ven]}）是一個外在${OUTER[asc]}、內心${INNER[moon]}，${mix}。`));
+  if(STA())o.push(p(STA().ascSun[asc][sun]));
   if(STW())o.push(p(STW().sunMoon[sun][moon]));
   let n=1;const basic=o;
   for(const k of ['ASC','Sun','Moon','Venus','Mercury','Mars']){
@@ -186,6 +187,18 @@ function readWest(W,E){
   o.push(h3('目前的行運','w-transits'));
   o.push(ul(tr.map(t=>{const hit=t.hits.map(x=>`${ASP[x.t][0]}本命${PN[x.n]}（容許度 ${x.orb.toFixed(1)}°，${HIT_TONE[x.tone]}）`).join('；');
     return pt(`${PN[t.k]}行經${SG[signOf(t.lon)]}座、本命第 ${t.house} 宮`,`${HOUSE[t.house-1]}方面：${TRANSIT[t.k]}${hit?`目前${hit}。`:''}`);})));
+  /* 你的故事（規則串接） */
+  const ws=[];
+  if(STA())ws.push(`先從外面看起：${STA().ascSun[asc][sun]}`);
+  if(STW())ws.push(`再往內看：${STW().sunMoon[sun][moon]}`);
+  if(STW()){const mars=s('Mars'),strip=t=>t.replace(/^例如/,'');ws.push(`談感情時，金星${SG[ven]}的你常是這樣：${strip(STW().scenes.Venus[ven])}遇到衝突或想爭取什麼時，火星${SG[mars]}的你則會：${strip(STW().scenes.Mars[mars])}`);}
+  {const dom=EL.filter(e=>cnt[e]===Math.max(...EL.map(x=>cnt[x])));const miss=EL.filter(e=>cnt[e]===0);
+   ws.push(`把整張盤攤開來看，你的命主星${PN[ar]}落在第 ${P[ar].house} 宮，人生的重心常被拉到「${HOUSE[P[ar].house-1]}」。十大行星裡${dom.map(e=>ELN[e]).join('、')}元素最多，${dom.map(e=>ELQ[e]).join('與')}是你的底色${miss.length?`；${miss.map(e=>ELN[e]).join('、')}元素卻一顆都沒有，那是你需要刻意補上的能力`:''}。`);}
+  {const a=keyAsp[0];const t=a&&STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t];
+   if(t)ws.push(`你盤裡最緊密的一組相位是${PN[a.a]}${ASP[a.t][0]}${PN[a.b]}（容許度 ${a.orb.toFixed(1)}°），它在你身上很明顯：${t}`);}
+  {const hit=tr.filter(x=>['Saturn','Uranus','Neptune','Pluto'].includes(x.k)).flatMap(x=>x.hits.filter(h=>['Sun','Moon','ASC'].includes(h.n)).map(h=>({...h,k:x.k}))).sort((a,b)=>a.orb-b.orb)[0];
+   if(hit)ws.push(`而這幾年，${PN[hit.k]}正在${ASP[hit.t][0]}你的本命${PN[hit.n]}（${HIT_TONE[hit.tone]}）。${{Saturn:'這是一段要你面對現實、把基礎打穩的時期，辛苦但會留下真正屬於你的成果。',Uranus:'你會想打破原本的框架，生活可能出現突然的轉彎，順著好奇心走往往有驚喜。',Neptune:'你對人生的想像正在改變，靈感變多，但也容易看不清，重要決定多查證。',Pluto:'這是一段深層蛻變的時期，舊的自己會慢慢退場，新的力量正在長出來。'}[hit.k]}`);}
+  if(ws.length)o.unshift(h3('你的故事','w-story'),...ws.map(p));
   return{basic:basic.join(''),adv:o.join('')};
 }
 function patterns(W,E){
@@ -575,7 +588,16 @@ function readHD(H,Z){
   o.push(h3('通道','h-channels'));
   o.push(H.channels.length?ul(H.channels.map(([a,b])=>{const c=Z.channels[`${a}-${b}`];return pt(`${a}-${b} ${c[0]}（${c[1]}）`,c[2]+(SHD()&&SHD().channels[`${a}-${b}`]?scene(SHD().channels[`${a}-${b}`]):''));})):p('沒有完整的通道。'));
   o.push(h3('更多生活建議','h-tips'));
-  o.push(ul([`${l1} 爻：${({1:'先把功課做足，安全感來自知識。',2:'保留獨處時間，讓天賦自然長出來。',3:'允許自己踩坑，把每一次錯誤當成實戰數據。',4:'經營好身邊的人際網絡，機會就在其中。',5:'對外在的期待保持覺察，不需要拯救每一個人。',6:'耐心走過人生的三個階段，活出真實的樣子。'})[l1]}`,...(l2!==l1?[`${l2} 爻：${({1:'重要的事先打好基礎再出手。',2:'別人看見你的天賦時，不必推辭。',3:'失敗只是數據，不是定論。',4:'機會常來自熟人，好好維繫關係。',5:'被期待時先確認自己真的想幫，再答應，並說清楚底線。',6:'給自己時間沉澱，從旁觀中找到智慧。'})[l2]}`]:[])]));
+  o.push(ul([`${l1} 爻：${({1:'先把功課做足，安全感來自知識。',2:'保留獨處時間，讓天賦自然長出來。',3:'允許自己犯錯，每一次「這樣不行」都是之後判斷的依據。',4:'經營好身邊的人際網絡，機會就在其中。',5:'對外在的期待保持覺察，不需要拯救每一個人。',6:'耐心走過人生的三個階段，活出真實的樣子。'})[l1]}`,...(l2!==l1?[`${l2} 爻：${({1:'重要的事先打好基礎再出手。',2:'別人看見你的天賦時，不必推辭。',3:'失敗只是數據，不是定論。',4:'機會常來自熟人，好好維繫關係。',5:'被期待時先確認自己真的想幫，再答應，並說清楚底線。',6:'給自己時間沉澱，從旁觀中找到智慧。'})[l2]}`]:[])]));
+  /* 你的故事（規則串接） */
+  {const hs=[],ta=SHD()&&SHD().typeAuth[`${H.type}|${H.authority}`],pr=SHD()&&SHD().profiles[pk];
+   hs.push(`你是${T.n}。${firstSent(T.txt)}${ta?ta.story:''}`);
+   if(pr)hs.push(`你的人生劇本是「${pr.title}」。${pr.summary}${pr.loop}`);
+   hs.push(`你是${D[0]}：${D[1]}`);
+   if(H.channels.length&&SHD()){const cs=H.channels.slice(0,2).map(([a,b])=>`${Z.channels[`${a}-${b}`][0]}：${SHD().channels[`${a}-${b}`]}`);hs.push(`你身上固定運作的天賦線路有 ${H.channels.length} 條。${cs.join('')}`);}
+   if(SHD()){const oc=['sp','throat','heart','g','head','ajna','root','spleen','sacral'].find(c=>!H.defined.includes(c));if(oc)hs.push(`你最容易被外界影響的地方，是空白的${Z.centers[oc].n}。${SHD().centersOpen[oc]}`);}
+   hs.push(`而你這一生的大主題，是${cr.full}。${Z.angles[H.cross.angle][1]}`);
+   o.unshift(h3('你的故事','h-story'),...hs.map(p));}
   return{basic,adv:o.join('')};
 }
 function crossName(H,Z){

@@ -238,9 +238,9 @@ const DLG={tab:null,i:0,secs:[]};const ADV={};
 function splitSections(html){return html.split('<h3').filter(x=>x.trim()).map(x=>{const gt=x.indexOf('>'),end=x.indexOf('</h3>');const km=x.slice(0,gt).match(/data-k="([^"]+)"/);const full=x.slice(gt+1,end).replace(/<[^>]+>/g,'');return{key:km?km[1]:'',full,html:x.slice(end+5)};});}
 /* 分類：同一類的段落放在同一頁（依中文詳解的標題比對） */
 const GROUPS={
- west:[['catW1',['w-more']],['catW2',['w-houses','@table','w-rulers']],['catW3',['w-dignity','w-balance']],['catW4',['w-aspects','w-patterns']],['catW5',['w-node','w-transits']]],
+ west:[['catW0',['w-story']],['catW1',['w-more']],['catW2',['w-houses','@table','w-rulers']],['catW3',['w-dignity','w-balance']],['catW4',['w-aspects','w-patterns']],['catW5',['w-node','w-transits']]],
  zw:[['catZ0',['z-story']],['catZ1',['z-info','z-patterns','z-core']],['catZ6',['z-work']],['catZ5',['z-love']],['catZ4',['z-map','z-decade','z-year','z-next','z-advice','@tool']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palaces']]],
- hd:[['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]]};
+ hd:[['catH0',['h-story']],['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]]};
 function openDetail(tab,i){
   const U=L.ui;DLG.tab=tab;const raw=splitSections(ADV[tab]||'');
   const special={'@table':{full:U.wTable,html:westTable()},'@tool':{full:U.toolZw,html:'<div class="zbar" id="dz-bar"></div><div class="zw" id="dz-grid"></div>',after:()=>zToolbar($('#dz-bar'),$('#dz-grid')),tool:1},'@gates':{full:U.toolHd,html:'<div class="hdcols">'+hdCols()+'</div>',tool:1}};
