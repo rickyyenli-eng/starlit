@@ -1,0 +1,10 @@
+# Cloudflare Worker（AI 中繼站）設定。網站本身由 GitHub Pages 提供，這裡只部署 worker/worker.js。
+name = "starlit-ai"
+main = "worker/worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# 每日次數限制：建好 KV namespace 後，把下面三行的 # 拿掉並填入 id
+# [[kv_namespaces]]
+# binding = "RL"
+# id = "填入 KV namespace 的 ID"
