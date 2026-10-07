@@ -276,6 +276,15 @@ button.copyread:hover{border-color:var(--accent)}
 .card.hd .big.sm{font-size:16px;line-height:1.5}
 .card .big.accent{color:var(--accent)} .card .big.seal{color:var(--seal)}
 .card.wide{grid-column:1/-1}
+button.card.mix{font:inherit;text-align:left;color:inherit;cursor:pointer}
+button.card.mix:hover,button.card.mix:focus-visible{border-color:var(--accent)}
+.card.mix .big{font-size:20px;line-height:1.4}
+.card.mix .agree{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.card.mix .agree i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.card.mix .agree i.on{background:var(--accent)}
+.card.mix .go2{font-size:13px;font-weight:700;color:var(--accent);margin-top:auto}
+.mixintro{color:var(--muted);font-size:14.5px;margin:14px 0 14px}
+#m-sum{grid-template-columns:repeat(auto-fit,minmax(196px,1fr))}
 .hdstage{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:start}
 @media (max-width:560px){.hdstage{grid-template-columns:1fr 1fr}.hdstage .bodywrap{grid-column:1/-1;grid-row:1}}
 svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
@@ -329,6 +338,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
     <button role="tab" id="t-hd" aria-selected="false" aria-controls="p-hd" data-t="tabH"></button>
+    <button role="tab" id="t-mix" aria-selected="false" aria-controls="p-mix" data-t="tabM"></button>
   </nav></div>
 
   <section class="pane" id="p-west" role="tabpanel" aria-labelledby="t-west">
@@ -365,6 +375,12 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
     </div>
     <article class="reading" id="h-read"><div class="rhead"><h2 data-t="readTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="fullBtn"></button></article>
   </section>
+
+  <section class="pane" id="p-mix" role="tabpanel" aria-labelledby="t-mix" hidden>
+    <p class="mixintro" data-t="mixIntro"></p>
+    <div class="sum" id="m-sum"></div>
+    <article class="reading" id="m-read"><div class="rhead"><h2 data-t="mixTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="mixBtn"></button></article>
+  </section>
   </div>
 </div>
 
@@ -394,6 +410,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/story-zw-pal-c.js"></script>
 <script src="js/story-zw-pal-d.js"></script>
 <script src="js/reading-zh.js"></script>
+<script src="js/themes-zh.js"></script>
 <script src="js/hd-en.js"></script>
 <script src="js/hd-ja.js"></script>
 <script src="js/hd-fr.js"></script>

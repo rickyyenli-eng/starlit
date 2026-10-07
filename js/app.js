@@ -210,7 +210,7 @@ function applyLang(lg){
 
 /* ===================== 啟動 ===================== */
 function renderAll(){drawWheel();showPlanet();westSummary();drawZW();showPalace();zwSummary();hdSummary();drawBody();showHD();renderReadings();if(DLG.tab&&$('#dlg').open)openDetail(DLG.tab,DLG.i);}
-const TABS=['west','zw','hd'];
+const TABS=['west','zw','hd','mix'];
 function tab(which){TABS.forEach(t=>{$('#t-'+t).setAttribute('aria-selected',t===which);$('#p-'+t).hidden=t!==which;});try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
 
 /* Swiss Ephemeris：高精度星曆，載入失敗時自動改用 astronomy-engine */
@@ -248,7 +248,8 @@ function splitSections(html){return html.split('<h3').filter(x=>x.trim()).map(x=
 const GROUPS={
  west:[['catW0',['w-story']],['catW1',['w-more']],['catW2',['w-houses','@table','w-rulers']],['catW3',['w-dignity','w-balance']],['catW4',['w-aspects','w-patterns']],['catW5',['w-node','w-transits']]],
  zw:[['catZ0',['z-story']],['catZ1',['z-info','z-patterns','z-core']],['catZ6',['z-work']],['catZ5',['z-love']],['catZ4',['z-map','z-decade','z-year','z-next','z-advice','@tool']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palstory','z-palaces']]],
- hd:[['catH0',['h-story']],['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]]};
+ hd:[['catH0',['h-story']],['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]],
+ mix:[['catM1',['m-career']],['catM2',['m-wealth']],['catM3',['m-love']],['catM4',['m-health']],['catM5',['m-people']],['catM0',['m-how']]]};
 function openDetail(tab,i){
   const U=L.ui;DLG.tab=tab;const raw=splitSections(ADV[tab]||'');
   const special={'@table':{full:U.wTable,html:westTable()},'@tool':{full:U.toolZw,html:'<div class="zbar" id="dz-bar"></div><div class="zw" id="dz-grid"></div>',after:()=>zToolbar($('#dz-bar'),$('#dz-grid')),tool:1},'@gates':{full:U.toolHd,html:'<div class="hdcols">'+hdCols()+'</div>',tool:1}};
@@ -256,7 +257,7 @@ function openDetail(tab,i){
   const secs=GROUPS[tab].map(([key,keys])=>{const parts=[];keys.forEach(k=>{if(special[k]){parts.push(special[k]);return;}raw.forEach((x,j)=>{if(!used.has(j)&&x.key===k){used.add(j);parts.push(x);}});});return{title:U[key],parts};}).filter(g=>g.parts.length);
   const rest=raw.filter((x,j)=>!used.has(j));if(rest.length)secs[secs.length-1].parts.push(...rest);
   DLG.secs=secs;
-  $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]} ${U.dlgSuffix}`;
+  $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=tab==='mix'?U.tabM:`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]} ${U.dlgSuffix}`;
   $('#dlg-copy').textContent=U.copyAll;$('#dlg-prev').textContent=U.dlgPrev;$('#dlg-next').textContent=U.dlgNext;
   $('#dlg-nav').innerHTML=secs.map((x,k)=>`<button type="button" data-k="${k}">${x.title}</button>`).join('');
   $('#dlg-nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>showSection(+b.dataset.k)));
@@ -265,7 +266,7 @@ function openDetail(tab,i){
 }
 function showSection(k){
   if(k<0||k>=DLG.secs.length)return;DLG.i=k;const x=DLG.secs[k];
-  const note=!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
+  const note=DLG.tab==='mix'?(L.ui.mixNote?`<p class="readnote">${L.ui.mixNote}</p>`:''):!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   $('#dlg-body').innerHTML=`<article class="reading plain"><div class="body">${note}${x.parts.map(pt=>`<section class="dsec"><h3>${pt.full}</h3>${pt.html}</section>`).join('')}</div></article>`;
   x.parts.forEach(pt=>pt.after&&pt.after());
   $('#dlg-body').scrollTop=0;
@@ -292,7 +293,16 @@ function renderReadings(){
   const note=!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   const put=(id,tab,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;ADV[tab]=r.adv;};
   put('#w-read','west',()=>RD().west(W,Engine));put('#z-read','zw',()=>RD().zw(Z,readingCtx()));put('#h-read','hd',()=>RD().hd(HD,HDL()));
+  renderMix();
   document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
+}
+function renderMix(){
+  const U=L.ui;let r;try{r=Themes.zh.mix(W,Z,HD,Engine);}catch(e){console.error(e);$('#m-sum').innerHTML='';$('#m-read .body').innerHTML='<p class="err">—</p>';ADV.mix='';return;}
+  const note=U.mixNote?`<p class="readnote">${U.mixNote}</p>`:'';
+  $('#m-read .body').innerHTML=note+r.basic;ADV.mix=r.adv;
+  const cat=['catM1','catM2','catM3','catM4','catM5'];
+  $('#m-sum').innerHTML=r.cards.map((c,i)=>`<button type="button" class="card mix" data-i="${i}"><span class="q">${U[cat[i]]}</span><span class="big">${c.labels.join(c.tension?' ⇄ ':'・')}</span><span class="agree">${[0,1,2].map(k=>`<i class="${k<c.agree?'on':''}"></i>`).join('')} ${c.agree>=2?c.agree+U.mixAgree:U.mixSplit}</span><p>${c.line}</p><span class="go2">${U.mixOpen} →</span></button>`).join('');
+  $('#m-sum').querySelectorAll('.card.mix').forEach(b=>b.addEventListener('click',()=>openDetail('mix',+b.dataset.i)));
 }
 function copyReading(btn){
   const art=btn.closest('.reading');const el=art.querySelector('.body');const txt=el.innerText;
