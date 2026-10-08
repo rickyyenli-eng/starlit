@@ -42,6 +42,8 @@ function aiChartData(){
   o.push('Design (unconscious): '+Engine.HD_BODIES.map(b=>`${b} ${H.D[b].gate}.${H.D[b].line}`).join(', '));
   try{const R=Themes.core.build(W,Z,HD,Engine),T=Themes.zh.TAGS;o.push('','# Starlit 三盤合參 tendency tags (systems agreeing)');
     for(const th of ['career','wealth','love','health','people'])o.push(`${th}: `+R[th].ranked.slice(0,4).map(x=>`${T[th][x.tag][0]} (${[...x.sys].join('+')})`).join(', '));}catch(e){}
+  try{const n=new Date().getFullYear(),ys=Highlights.zh.years(W,Z,HD,Engine,n-3,n+5);o.push('','# 逐年走向（流年命宮落本命宮位、流年化祿/化忌落宮、木星/土星行運宮位、重大節點；虛歲）');
+    ys.forEach(x=>{const lu=x.muts.find(m=>m.k==='祿'),ji=x.muts.find(m=>m.k==='忌');o.push(`${x.y} ${x.stem}（虛歲 ${x.age}）：流年命宮在本命${x.yp}${x.overlap?'（與大限命宮重疊）':''}；${lu?lu.star+'化祿入'+lu.pal:''}；${ji?ji.star+'化忌入'+ji.pal:''}；Jupiter house ${x.jup}；Saturn house ${x.sat}${x.ms.length?'；節點 '+x.ms.map(m=>m.k+(m.pal?':'+m.pal:'')).join(','):''}`);});}catch(e){}
   return o.join('\n');
 }
 

@@ -288,6 +288,36 @@ button.card.mix:hover,button.card.mix:focus-visible{border-color:var(--accent)}
 .go2btn{font:inherit;font-weight:700;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
 .go2btn:hover{filter:brightness(1.08)}
 .ai-status{font-size:13.5px;min-height:1em}
+.hl{margin:0 0 26px}
+.hl>h2{font-family:var(--f-display);font-size:22px;margin:0 0 12px}
+.hl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.hl-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.hl-card h3{font-family:var(--f-display);font-size:19px;margin:0;line-height:1.4}
+.hl-card p{margin:0;font-size:14.5px;line-height:1.75}
+.hl-k{font-size:12.5px;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+.hl-why{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:auto;padding-top:6px;border-top:1px dashed var(--line)}
+.hl-why span{font-size:12px;color:var(--muted);font-weight:700}
+.hl-why i{font-style:normal;font-size:12px;color:var(--muted);background:var(--sunk);border-radius:6px;padding:2px 7px}
+.tl{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.tl-head h3{font-family:var(--f-display);font-size:19px;margin:0 0 4px}
+.tl-head p{font-size:13px;margin:0 0 10px}
+.tl-y{border-top:1px solid var(--line)}
+.tl-y summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:11px 2px;cursor:pointer;list-style:none}
+.tl-y summary::-webkit-details-marker{display:none}
+.tl-y summary::after{content:'＋';margin-left:auto;color:var(--muted)}
+.tl-y[open] summary::after{content:'－'}
+.tl-yr{font-family:var(--f-display);font-weight:700;font-size:17px;min-width:3.2em}
+.tl-age{font-size:12.5px;color:var(--muted);min-width:7.5em}
+.tl-h{font-size:14.5px;font-weight:600}
+.tl-y.past .tl-yr,.tl-y.past .tl-h{color:var(--muted)}
+.tl-y.cur{background:var(--accent-soft);border-radius:10px;border-top-color:transparent;padding:0 10px}
+.tl-y.cur .tl-yr::after{content:' ●';color:var(--accent);font-size:11px;vertical-align:middle}
+.tone{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--sunk);color:var(--muted)}
+.tone.up{background:var(--good-soft);color:var(--good)}
+.tone.hard{background:var(--seal-soft);color:var(--seal)}
+.tl-y ul{margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.75}
+.tl-y li{margin:3px 0}
+.tl-past{font-size:13px;color:var(--accent);margin:0 0 4px}
 .mixintro{color:var(--muted);font-size:14.5px;margin:14px 0 14px}
 #m-sum{grid-template-columns:repeat(auto-fit,minmax(196px,1fr))}
 .hdstage{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:start}
@@ -339,6 +369,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
   <div class="err" id="err" hidden></div>
 
   <div id="result" class="result" hidden>
+  <section class="hl" id="hl" aria-labelledby="hl-title"><h2 id="hl-title" data-t="hlTitle"></h2><div id="hl-body"></div></section>
   <div class="tabrow"><nav class="tabs" role="tablist">
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
@@ -422,6 +453,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/reading-zh.js"></script>
 <script src="js/themes-core.js"></script>
 <script src="js/themes-zh.js"></script>
+<script src="js/timeline-zh.js"></script>
 <script src="js/hd-en.js"></script>
 <script src="js/hd-ja.js"></script>
 <script src="js/hd-fr.js"></script>

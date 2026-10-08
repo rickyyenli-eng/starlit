@@ -298,8 +298,12 @@ function renderReadings(){
   const note=!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   const put=(id,tab,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;ADV[tab]=r.adv;};
   put('#w-read','west',()=>RD().west(W,Engine));put('#z-read','zw',()=>RD().zw(Z,readingCtx()));put('#h-read','hd',()=>RD().hd(HD,HDL()));
-  renderMix();
+  renderMix();renderHL();
   document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
+}
+function renderHL(){
+  const el=$('#hl-body');if(!el)return;const P=window.Highlights&&(Highlights[LG]||Highlights.zh);
+  try{el.innerHTML=(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine);}catch(e){console.error(e);el.innerHTML='';}
 }
 function renderMix(){
   const U=L.ui;const ml=Themes[LG]&&Themes[LG].TAGS?LG:'zh';let r;try{r=Themes.mix(ml,W,Z,HD,Engine);}catch(e){console.error(e);$('#m-sum').innerHTML='';$('#m-read .body').innerHTML='<p class="err">—</p>';ADV.mix='';return;}
