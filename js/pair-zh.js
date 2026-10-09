@@ -75,7 +75,7 @@ function hdCombo(A,B,E){
 
 function render(P,E){
   /* P={A:{W,Z,HD,name},B:{W,Z,HD,name}} */
-  const A=P.A,B=P.B,nb=(B.name||'').trim()||'TA',na='你';
+  const A=P.A,B=P.B,esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),nb=esc((B.name||'').trim().slice(0,20))||'TA',na='你';
   const chN=k=>{const Hz=(typeof HDZ!=='undefined'?HDZ:root.HDZ);return Hz&&Hz.channels[k]?Hz.channels[k][0]:k;};
   const syn=synastry(A.W,B.W,E),syn2=synastry(B.W,A.W,E);
   const ov=overlays(A.W,B.W,E),ov2=overlays(B.W,A.W,E);
@@ -87,11 +87,13 @@ function render(P,E){
   const M={attract:[],sync:[],stable:[],friction:[]};
   const pn=(who,k)=>`${who}的${PL[k]}`;
   syn.forEach(s=>{const t=`${pn(na,s.a)}${s.n}${pn(nb,s.b)}`;
-    if(s.c==='hard'){M.friction.push(t);if(s.key==='Mars-Venus')M.attract.push(t);return;}
-    if(['Mars-Venus','Sun-Venus','ASC-Venus'].includes(s.key)||(s.key==='Mars-Sun'&&s.c==='conj'))M.attract.push(t);
+    if(s.c==='hard'){if(s.key==='Mars-Venus')M.attract.push(t);else M.friction.push(t);return;}
+    if(['Mars-Sun','Mars-Moon','Mars-Mars'].includes(s.key)&&s.c!=='hard'){M.attract.push(t);return;}
+    if(['Mars-Venus','Sun-Venus','ASC-Venus'].includes(s.key))M.attract.push(t);
     if(['Moon-Sun','Moon-Moon','Mercury-Mercury','Moon-Venus','ASC-Moon','ASC-Sun','Sun-Sun'].includes(s.key))M.sync.push(t);
     if(['Saturn-Sun','Moon-Saturn','Saturn-Venus','Venus-Venus'].includes(s.key))M.stable.push(t);});
-  hd.em.forEach(k=>M.attract.push(`人類圖電磁通道 ${k}`));hd.comp.forEach(k=>M.sync.push(`人類圖共同通道 ${k}`));hd.cmp.forEach(x=>M.friction.push(`人類圖妥協通道 ${x.k}`));
+  /* 人類圖通道數量多時不讓它主導分數：每類最多計 2 項 */
+  hd.em.slice(0,2).forEach(k=>M.attract.push(`人類圖電磁通道 ${k}`));hd.comp.slice(0,2).forEach(k=>M.sync.push(`人類圖共同通道 ${k}`));hd.cmp.slice(0,2).forEach(x=>M.friction.push(`人類圖妥協通道 ${x.k}`));hd.dom.slice(0,1).forEach(x=>M.stable.push(`人類圖主導通道 ${x.k}`));
   if(zAB.lu&&['命宮','夫妻','福德'].includes(zAB.lu.pal))M.attract.push(`${nb}的生年化祿進你的${zAB.lu.pal==='命宮'?'命宮':zAB.lu.pal+'宮'}`);
   if(zBA.lu&&['命宮','夫妻','福德'].includes(zBA.lu.pal))M.attract.push(`你的生年化祿進${nb}的${zBA.lu.pal==='命宮'?'命宮':zBA.lu.pal+'宮'}`);
   if(zAB.ji&&['命宮','夫妻'].includes(zAB.ji.pal))M.friction.push(`${nb}的生年化忌進你的${zAB.ji.pal==='命宮'?'命宮':zAB.ji.pal+'宮'}`);
@@ -100,8 +102,9 @@ function render(P,E){
   if(zBA.match.length)M.attract.push(`你的命宮主星（${zBA.match.join('、')}）正是${nb}夫妻宮的星`);
   if(zr[0]==='he'||zr[0]==='san')M.stable.push(zr[0]==='he'?'生肖六合':'生肖三合');if(zr[0]==='chong')M.friction.push('生肖相沖');
   ov.forEach(o=>{if(o.k==='Venus'&&[1,5,7,8].includes(o.h))M.attract.push(`${pn(nb,'Venus')}落在你的${H[o.h]}`);if(o.k==='Moon'&&[4,7].includes(o.h))M.stable.push(`${pn(nb,'Moon')}落在你的${H[o.h]}`);});
+  ov2.forEach(o=>{if(o.k==='Venus'&&[1,5,7,8].includes(o.h))M.attract.push(`${pn(na,'Venus')}落在${nb}的${H[o.h]}`);if(o.k==='Moon'&&[4,7].includes(o.h))M.stable.push(`${pn(na,'Moon')}落在${nb}的${H[o.h]}`);});
   /* 門檻依 400 組隨機配對的分布校正（約四分位） */
-  const TH={attract:[4,6,8],sync:[1,2,4],stable:[1,2,3],friction:[5,7,9]};
+  const TH={attract:[4,6,8],sync:[1,2,4],stable:[2,3,4],friction:[4,6,8]};
   const lvk=(k)=>{const n=M[k].length,t=TH[k];return n>=t[2]?3:n>=t[1]?2:n>=t[0]?1:0;};
   const LV=['不明顯','有一些','明顯','很強'],LVF=['不多','有一些','不少','很多'];
   const MN={attract:['吸引力','彼此的火花與化學反應'],sync:['默契','聊不聊得來、懂不懂對方'],stable:['穩定度','能不能走得長久、給彼此安全感'],friction:['摩擦點','容易卡住、需要磨合的地方']};
@@ -109,7 +112,7 @@ function render(P,E){
   /* 總結 */
   const strong=Object.entries(MN).filter(([k])=>k!=='friction').map(([k,[t]])=>[t,lvk(k)]).sort((a,b)=>b[1]-a[1]);
   const fr=lvk('friction');
-  let sum=`<p>把你和${nb}的三張盤放在一起看，你們最明顯的是<b>${strong[0][0]}</b>${strong[1][1]>=2?`，其次是<b>${strong[1][0]}</b>`:''}。`;
+  let sum=strong[0][1]===0?`<p>把你和${nb}的三張盤放在一起看，吸引力、默契、穩定度都沒有特別突出的指標，這段關係的樣子比較取決於你們怎麼經營，而不是先天的牽引。`:`<p>把你和${nb}的三張盤放在一起看，你們最明顯的是<b>${strong[0][0]}</b>${strong[1][1]>=2?`，其次是<b>${strong[1][0]}</b>`:''}。`;
   sum+=fr>=2?`摩擦點也不少，這不是壞事：很多長久的關係都是吵出來的，關鍵是知道會卡在哪裡。</p>`:`摩擦點不多，相處起來比較省力。</p>`;
   const top=[...syn].slice(0,2);
   if(top.length)sum+=`<p>${top.map(s=>SYN[s.key][s.c]).join('')}</p>`;

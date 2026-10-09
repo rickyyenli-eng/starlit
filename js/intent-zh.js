@@ -18,7 +18,6 @@ function yearScore(x,r){
   x.muts.forEach(m=>{if(m.pal!==r.pal)return;
     if(m.k==='祿'){s+=2;why.push(`${m.star}化祿進${PN(r.pal)}`);}
     if(m.k==='權'){s+=1;why.push(`${m.star}化權進${PN(r.pal)}`);}
-    if(m.k==='科'){s+=0.5;why.push(`${m.star}化科進${PN(r.pal)}`);}
     if(m.k==='忌'){s-=2;warn.push(`${m.star}化忌進${PN(r.pal)}`);}});
   if(r.jupGood.includes(x.jup)){s+=1;why.push(`木星走你的${H[x.jup]}`);}
   if(r.satTest.includes(x.sat)){s-=0.5;warn.push(`土星在你的${H[x.sat]}`);}
@@ -29,7 +28,7 @@ const STATUS={
  crush:{ask:'這段曖昧能不能往前走？',good:'適合把關係說清楚、往前推一步的年份',tip:'如果你已經等很久了，挑一個輕鬆的場合把心意講清楚，比繼續猜更好。'},
  dating:{ask:'這段關係的下一步？',good:'適合談同居、見家長、結婚這類下一步的年份',tip:'重要的決定放在順的年份談，比較容易談出共識。'},
  married:{ask:'怎麼把婚姻經營得更好？',good:'關係甜度上升、適合一起規劃的年份',tip:'順的年份一起安排旅行或共同目標；卡的年份多留一點耐心，少翻舊帳。'},
- broke:{ask:'怎麼放下、什麼時候會有新的開始？',good:'比較容易出現新緣分的年份',tip:'先把自己照顧好。復合與否，盤只能告訴你時機，不能替你決定；你值得一段讓你安心的關係。'},
+ broke:{ask:'怎麼放下、什麼時候會有新的開始？',good:'比較容易出現新緣分的年份',tip:'先把自己照顧好：睡好、吃好、找信任的朋友說說話，給自己一段不用急著做決定的時間。要不要回頭由你決定，盤不能替你決定；你值得一段讓你安心的關係。'},
  none:{ask:'感情會怎麼走？',good:'感情機會比較多的年份',tip:''}};
 const JOB={
  student:{ask:'該往哪個方向走？',good:'適合衝刺考試、決定方向的年份',tip:'在學階段先多試，盤裡的優勢會告訴你哪些事你做起來特別不費力。'},
@@ -48,16 +47,16 @@ function render(ctx,W,Z,HD,E){
   const palStory=(name,pick)=>{const i=Z.palaces.findIndex(p=>p.name===name),p=Z.palaces[i],src=p.majorStars.length?p:Z.palaces[(i+6)%12];const e=pick(comboOf(src));return e?{e,p,opp:Z.palaces[(i+6)%12]}:null;};
   const tags=th=>R?R[th].ranked.filter(x=>x.sys.size>=2).slice(0,2).map(x=>`「${T[th][x.tag][0]}」`).join('和'):'';
   const yearList=(rule)=>{const sc=ys.map(x=>({x,...yearScore(x,rule)}));
-    let good=sc.filter(a=>a.s>=1.5);if(!good.length)good=sc.filter(a=>a.s>=1);good=good.sort((a,b)=>b.s-a.s).slice(0,3).sort((a,b)=>a.x.y-b.x.y);
-    const bad=sc.filter(a=>a.s<=-1.5).slice(0,2);return{good,bad};};
-  const chips=(list,cls)=>list.map(a=>`<div class="ans-y ${cls}"><b>${a.x.y}</b><span>${(cls==='bad'?a.warn:a.why).join('、')}</span></div>`).join('');
+    let good=sc.filter(a=>a.s>=1.5),weak=false;if(!good.length){good=sc.filter(a=>a.s>=1);weak=true;}good=good.sort((a,b)=>b.s-a.s).slice(0,3).sort((a,b)=>a.x.y-b.x.y);
+    const bad=sc.filter(a=>a.s<=-1.5).slice(0,2);return{good,bad,weak};};
+  const chips=(list,cls)=>list.map(a=>`<div class="ans-y ${cls}"><b>${a.x.y}</b><span>${(cls==='bad'?a.warn:a.why).join('、')}${cls==='good'&&a.warn.length?`<em class="ans-warn">；但同年${a.warn.join('、')}，好壞並存</em>`:''}</span></div>`).join('');
   let h='',title='',more=null;
   if(ctx.intent==='love'){
     const st=STATUS[ctx.status]||STATUS.none;title=`感情：${st.ask}`;
     const sp=palStory('夫妻',c=>root.STORY_ZW_SPOUSE&&STORY_ZW_SPOUSE[c]);
     if(sp)h+=`<p><b>你在感情裡的樣子：「${sp.e.title}」。</b>${fit(firstSent(sp.e.partner),sp.p,sp.opp.majorStars)}${tags('love')?`三盤一起看，你是${tags('love')}的人。`:''}</p>`;
     const {good,bad}=yearList(RULE.love);
-    h+=`<h4>${st.good}</h4>${good.length?chips(good,'good'):'<p class="muted">接下來幾年沒有特別集中的感情年，緣分比較平均地分散，重點在你自己主動。</p>'}`;
+    const {weak:wl}=yearList(RULE.love);h+=`<h4>${st.good}${wl&&good.length?'（相對）':''}</h4>${good.length?chips(good,'good'):'<p class="muted">接下來幾年沒有特別集中的感情年，緣分比較平均地分散，重點在你自己主動。</p>'}`;
     if(bad.length)h+=`<h4>需要多一點耐心的年份</h4>${chips(bad,'bad')}`;
     if(st.tip)h+=`<p class="ans-tip">${st.tip}</p>`;
     more=['mix',2];
@@ -68,7 +67,7 @@ function render(ctx,W,Z,HD,E){
     if(ws)h+=`<p><b>${isW?'你的工作型態':'你的賺錢方式'}：「${ws.e.title}」。</b>${fit(firstSent(ws.e.story),ws.p,ws.opp.majorStars)}${tags(isW?'career':'wealth')?`三盤一起看，你是${tags(isW?'career':'wealth')}的類型。`:''}</p>`;
     if(isW&&ws&&ws.e.fields)h+=`<p class="muted">適合的方向：${ws.e.fields}</p>`;
     const {good,bad}=yearList(isW?RULE.work:RULE.money);
-    h+=`<h4>${isW?jb.good:'收入與機會比較順的年份'}</h4>${good.length?chips(good,'good'):'<p class="muted">接下來幾年沒有特別集中的年份，穩穩累積比等時機更重要。</p>'}`;
+    const {weak:ww}=yearList(isW?RULE.work:RULE.money);h+=`<h4>${isW?jb.good:'收入與機會比較順的年份'}${ww&&good.length?'（相對）':''}</h4>${good.length?chips(good,'good'):'<p class="muted">接下來幾年沒有特別集中的年份，穩穩累積比等時機更重要。</p>'}`;
     if(bad.length)h+=`<h4>${isW?'要先守、先累積的年份':'收支要保守的年份'}</h4>${chips(bad,'bad')}`;
     const tip=isW?jb.tip:'順的年份把多出來的收入先存一部分；保守的年份不碰高風險投資，先準備好半年的預備金。';
     if(tip)h+=`<p class="ans-tip">${tip}</p>`;

@@ -11,7 +11,7 @@ const AI_TXT={
 function aiChartData(focus){
   if(focus==='pair'&&PB){let zb=null;try{zb=PB.Z.horoscope(new Date());}catch(e){}
     let m='';try{const r=Pair.zh.render({A:{W,Z,HD},B:PB},Engine);m='\n\n# Starlit 合盤指標\n'+Object.entries(r.M).map(([k,v])=>`${k}: ${v.join('；')||'—'}`).join('\n');}catch(e){}
-    return '# A（讀者本人）\n'+aiChartFor(W,Z,HD,ZH,true)+'\n\n# B（對方'+(PB.name?'：'+PB.name:'')+'）\n'+aiChartFor(PB.W,PB.Z,PB.HD,zb,false)+m;}
+    return '# A（讀者本人）\n'+aiChartFor(W,Z,HD,ZH,true)+'\n\n# B（對方）\n'+aiChartFor(PB.W,PB.Z,PB.HD,zb,false)+m;}
   return aiChartFor(W,Z,HD,ZH,true);
 }
 function aiChartFor(W,Z,HD,ZH,withCtx){

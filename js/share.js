@@ -12,7 +12,7 @@ function shareURL(){
   if(v.city&&CITIES.find(c=>c[0]===v.city&&c[4]!=null))q.set('c',v.city);else{q.set('lat',v.lat);q.set('lon',v.lon);q.set('tz',v.tz);}
   if(v.dst)q.set('dst','1');
   if(CTX.intent)q.set('i',CTX.intent);if(CTX.status)q.set('s',CTX.status);if(CTX.job)q.set('j',CTX.job);
-  if(PBV){q.set('pd',PBV.date);q.set('pt',PBV.time);q.set('pg',PBV.g==='男'?'m':'f');q.set('pc',PBV.city);if(PBV.name)q.set('pn',PBV.name);}
+  if(PBV){q.set('pd',PBV.date);if(PBV.dst)q.set('pdst','1');q.set('pt',PBV.time);q.set('pg',PBV.g==='男'?'m':'f');q.set('pc',PBV.city);if(PBV.name)q.set('pn',PBV.name);}
   q.set('lang',LG);
   return location.origin+location.pathname+'?'+q.toString();
 }
@@ -35,8 +35,8 @@ function shareRestore(){
   if(q.get('c')){$('#f-city').value=q.get('c');onCity();}else{$('#f-city').value='';$('#f-lat').value=q.get('lat')||'';$('#f-lon').value=q.get('lon')||'';$('#f-tz').value=q.get('tz')||'';$('.adv').open=true;}
   $('#f-dst').checked=q.get('dst')==='1';
   CTX.intent=q.get('i');CTX.status=q.get('s');CTX.job=q.get('j');
-  if(q.get('pd')){$('#p-date').value=q.get('pd');$('#p-time').value=q.get('pt')||'';$('#p-name').value=q.get('pn')||'';$('#p-city').value=q.get('pc')||'';
-    const pr=document.querySelector(`input[name=pg][value="${q.get('pg')==='m'?'男':'女'}"]`);if(pr)pr.checked=true;SH_PAIR=true;}
+  if(q.get('pd')){$('#p-date').value=q.get('pd');$('#p-time').value=q.get('pt')||'';$('#p-name').value=(q.get('pn')||'').slice(0,20);$('#p-city').value=q.get('pc')||'';
+    if($('#p-dst'))$('#p-dst').checked=q.get('pdst')==='1';const pr=document.querySelector(`input[name=pg][value="${q.get('pg')==='m'?'男':'女'}"]`);if(pr)pr.checked=true;SH_PAIR=true;}
   return true;
 }
 let SH_PAIR=false;
@@ -52,7 +52,8 @@ function printReport(){
     raw.forEach((x,j)=>{if(!used.has(j))h+=`<h4>${x.full}</h4>${x.html}`;});return h;};
   const clone=sel=>{const el=document.querySelector(sel);return el?el.outerHTML:'';};
   const tabs=[['west','tabW','#w-sum','#wheel','#w-read'],['zw','tabZ','#z-sum','#zw','#z-read'],['hd','tabH','#h-sum','#body','#h-read'],['mix','tabM','#m-sum',null,'#m-read']];
-  let h=`<header class="pr-head"><h1>${T.printTitle}</h1><p>${T.born}：${v.date} ${v.time}・${city}・${v.g==='男'?U.male:U.female}${PBV?`　｜　${T.pair}：${PBV.name||''} ${PBV.date} ${PBV.time}`:''}</p></header>`;
+  const esc=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let h=`<header class="pr-head"><h1>${T.printTitle}</h1><p>${T.born}：${v.date} ${v.time}・${city}・${v.g==='男'?U.male:U.female}${PBV?`　｜　${T.pair}：${esc(PBV.name)} ${esc(PBV.date)} ${esc(PBV.time)}`:''}</p></header>`;
   h+=`<section class="pr-sec"><h2>${U.hlTitle}</h2>${$('#hl-body').innerHTML}</section>`;
   for(const [tab,tk,sum,chart,read] of tabs){
     h+=`<section class="pr-sec"><h2>${U[tk]}</h2>${clone(sum)}${chart?`<div class="pr-chart">${clone(chart)}</div>`:''}<div class="reading plain"><div class="body">${document.querySelector(read+' .body').innerHTML}${sec(tab)}</div></div></section>`;}

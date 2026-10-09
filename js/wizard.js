@@ -74,7 +74,7 @@ function wizShow(){
     <label class="wz-check"><input type="checkbox" id="wz-unsure"${v.unsure?' checked':''}> ${T.unsure}</label>
     <div id="wz-scw"${v.unsure?'':' hidden'}><select class="wz-in" id="wz-sc">${T.shichen.map((t,i)=>`<option value="${i}"${v.sc===i?' selected':''}>${t}</option>`).join('')}</select><p class="wz-note">${T.unsureNote}</p></div>`;
   if(s==='gender')ctl=opt({'女':L.ui.female,'男':L.ui.male},'g');
-  if(s==='city'){const li={zh:0,en:1,ja:2,fr:3}[LG];ctl=`<select class="wz-in" id="wz-city"><option value="">${L.ui.pick}</option>${CITIES.map(c=>`<option value="${c[0]}"${v.city===c[0]?' selected':''}>${c[li]}</option>`).join('')}<option value="__other">${T.otherCity}</option></select>`;}
+  if(s==='city'){const li={zh:0,en:1,ja:2,fr:3}[LG];ctl=`<select class="wz-in" id="wz-city"><option value="">${L.ui.pick}</option>${CITIES.filter(c=>c[4]!=null).map(c=>`<option value="${c[0]}"${v.city===c[0]?' selected':''}>${c[li]}</option>`).join('')}<option value="__other">${T.otherCity}</option></select>`;}
   if(s==='status')ctl=opt(T.status,'status');
   if(s==='job')ctl=opt(T.job,'job');
   const last=WZ.i===WZ.steps.length-1;
@@ -97,7 +97,7 @@ function wizRead(){const B=$('#wiz-body'),v=WZ.v,g=id=>B.querySelector(id);
   if(g('#wz-sc'))v.sc=+g('#wz-sc').value;
   if(g('#wz-city'))v.city=g('#wz-city').value;}
 function wizOk(){const s=WZ.steps[WZ.i],v=WZ.v;wizRead();
-  if(s==='intent')return !!v.intent;if(s==='date')return !!v.date;if(s==='time')return v.unsure||!!v.time;
+  if(s==='intent')return !!v.intent;if(s==='date'){const yy=+String(v.date||'').slice(0,4);return !!v.date&&yy>=1900&&yy<=2100;}if(s==='time')return v.unsure||!!v.time;
   if(s==='gender')return !!v.g;if(s==='city')return !!v.city;if(s==='status')return !!v.status;if(s==='job')return !!v.job;return true;}
 function wizValid(){const n=$('#wiz-body .wz-next');if(n)n.disabled=!wizOk();}
 function wizNext(){

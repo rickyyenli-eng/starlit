@@ -41,6 +41,7 @@ function showErr(k){errKey=k;const e=$('#err');if(k){e.textContent=L.ui[k];e.hid
 function compute(v){
   showErr(null);
   if(!v.date||!v.time){showErr('errTime');return false;}
+  {const yy=+v.date.slice(0,4);if(!(yy>=1900&&yy<=2100)){showErr('errRange');return false;}}
   if(!v.g){showErr('errGender');return false;}
   if([v.lat,v.lon,v.tz].some(isNaN)){showErr('errPlace');return false;}
   const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
@@ -61,15 +62,15 @@ function compute(v){
 function computeChart(v){
   const c=CITIES.find(x=>x[0]===v.city);if(!c||c[4]==null)return null;
   const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
-  const stdMs=Date.UTC(y,m-1,d,hh,mm),utc=new Date(stdMs-c[6]*3600e3);
+  const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0),utc=new Date(stdMs-c[6]*3600e3);
   const sd=new Date(stdMs),sh=sd.getUTCHours(),ti=sh===23?12:Math.floor((sh+1)/2);
   const Zb=iztro.astro.bySolar(`${sd.getUTCFullYear()}-${sd.getUTCMonth()+1}-${sd.getUTCDate()}`,ti,v.g,true,'zh-TW');Zb._ti=ti;Zb._std=sd;
   return{W:westChart(utc,c[4],c[5]),Z:Zb,HD:Engine.humanDesign(utc),name:v.name};
 }
 let PB=null,PBV=null;
-function pairSubmit(e){e.preventDefault();const v={name:$('#p-name').value,date:$('#p-date').value,time:$('#p-time').value,g:(document.querySelector('input[name=pg]:checked')||{}).value,city:$('#p-city').value};
+function pairSubmit(e){e.preventDefault();const v={name:$('#p-name').value,date:$('#p-date').value,time:$('#p-time').value,g:(document.querySelector('input[name=pg]:checked')||{}).value,city:$('#p-city').value,dst:$('#p-dst')?$('#p-dst').checked:false};
   const er=$('#p-err');er.hidden=true;
-  const bad=!v.date||!v.time?'errTime':!v.g?'errGender':!v.city?'errPlace':null;
+  const yy=+String(v.date).slice(0,4);const bad=!v.date||!v.time?'errTime':!(yy>=1900&&yy<=2100)?'errRange':!v.g?'errGender':!v.city?'errPlace':null;
   if(bad){er.textContent=L.ui[bad];er.hidden=false;return;}
   try{PB=computeChart(v);PBV=v;}catch(err){console.error(err);PB=null;}
   if(!PB){er.textContent=L.ui.errPlace;er.hidden=false;}

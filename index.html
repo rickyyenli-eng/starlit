@@ -307,9 +307,11 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 .wz-q h2{font-family:var(--f-display);font-size:26px;margin:0 0 18px;color:#fff;line-height:1.35}
 .wz-opts{display:grid;gap:10px}
 .wz-opt{font:inherit;font-size:16px;padding:14px;border-radius:12px;border:1px solid #ffffff2e;background:#ffffff0d;color:#eef1fb;cursor:pointer;text-align:center}
-.wz-opt:hover,.wz-opt[aria-pressed=true]{border-color:#9fb3ff;background:#9fb3ff26}
+.wz-opt[aria-pressed=true]{border-color:#9fb3ff;background:#9fb3ff26}
+@media (hover:hover){.wz-opt:hover{border-color:#9fb3ff;background:#9fb3ff26}}
 .wz-in{font:inherit;font-size:18px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid #ffffff38;background:#ffffff12;color:#fff;color-scheme:dark;box-sizing:border-box}
 .wz-in option{color:#111;background:#fff}
+.wz-check input{width:auto;flex:0 0 auto}
 .wz-check{display:flex;gap:8px;align-items:center;margin:12px 0 10px;color:#cfd6f5;font-size:14.5px}
 .wz-note{font-size:13px;color:#aeb8de;margin:8px 0 0}
 .wz-nav{display:flex;gap:10px;margin-top:22px}
@@ -324,6 +326,7 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 .ans-y b{font-family:var(--f-display);font-size:16px;min-width:3em}
 .ans-y.good b{color:var(--good)}.ans-y.bad b{color:var(--seal)}
 .ans-y span{color:var(--muted)}
+.ans-warn{font-style:normal;color:var(--hold)}
 .ans-tip{background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:14px}
 .ans-more{font:inherit;font-weight:700;align-self:flex-start;background:none;border:0;color:var(--accent);cursor:pointer;padding:4px 0}
 .pairf{margin:4px 0 16px}
@@ -352,6 +355,7 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
   #print .zw{break-inside:avoid}
   #print .hl-card,#print .card,#print .tl-y{break-inside:avoid}
   #print .sharebar,#print button,#print .chat{display:none!important}
+  #print summary{list-style:none}#print summary::after{content:none!important}
   #print .reading{border:0;padding:0;background:none}
   @page{margin:14mm}
 }
@@ -365,6 +369,7 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 .chat-q{font-weight:700;margin:0 0 4px}
 .chat-a{margin:0;line-height:1.8;white-space:pre-wrap}
 .chat-foot{font-size:12px;margin:6px 0 0}
+@media (max-width:640px){.tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs button{white-space:nowrap;flex:0 0 auto}}
 .hl{margin:0 0 26px}
 .hl>h2{font-family:var(--f-display);font-size:22px;margin:0 0 12px}
 .hl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
@@ -511,6 +516,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
         <label><input type="radio" name="pg" value="男"><span data-t="male"></span></label></div></div>
       <div class="field"><label for="p-city" data-t="city"></label><select id="p-city"></select></div>
       <div class="field"><button class="go" type="submit" data-t="pairGo"></button></div>
+      <label class="check"><input type="checkbox" id="p-dst"><span data-t="dst"></span></label>
     </form>
     <div class="err" id="p-err" hidden></div>
     <div id="pair-out" hidden>

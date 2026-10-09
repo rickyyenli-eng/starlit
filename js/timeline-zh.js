@@ -33,11 +33,29 @@ const JI={
 const JUP=['自信與能見度提升，適合開始新計畫','收入或資源增加的機會','學習、寫作、短途移動變多','家庭、居住空間有好的變化','戀愛、創作、玩樂的運氣好','工作流程與健康習慣容易改善','合作與伴侶關係帶來機會','共同資源、投資或深層轉變有收穫','進修、出國、拓展視野','事業曝光與升遷機會','朋友圈擴大，團體帶來機會','適合休息、沉澱與內在修復'];
 const SAT=['對自己的要求變高，是重新定義自己的時期','要認真面對金錢與自我價值','溝通與學習需要更踏實','家庭與居住的責任加重','感情與創作要經得起考驗','工作量與健康需要管理','伴侶與合作關係進入考驗與承諾','面對共同財務、親密關係的深層課題','信念與方向需要重新檢視','事業上扛起更大的責任，付出會被看見','朋友圈篩選，留下真正同路的人','收尾舊的循環，為下一輪做準備'];
 const H=['','第一宮','第二宮','第三宮','第四宮','第五宮','第六宮','第七宮','第八宮','第九宮','第十宮','第十一宮','第十二宮'];
-const GOOD=['命宮','財帛','官祿','遷移','福德'],HARD=['命宮','財帛','官祿','疾厄'];
+const GOOD=['命宮','財帛','官祿','遷移','福德'],HARD=['命宮','財帛','官祿','疾厄','遷移'];
 const ZO=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
 const comboOf=p=>p.majorStars.map(s=>s.name).sort((a,b)=>ZO.indexOf(a)-ZO.indexOf(b)).join('·')||'空';
 const firstSent=t=>{const k=String(t||'').indexOf('。');return k>0?t.slice(0,k+1):String(t||'');};
 const sep=(a,b)=>{const d=Math.abs(((a-b)%360+360)%360);return d>180?360-d:d;};
+
+/* 一整年每 6 天取樣：木星、土星停留最久的宮位與入宮月份；回歸／對分的精確月份 */
+const SCAN=new WeakMap(),HC=new WeakMap();
+function horoY(Z,y){let m=HC.get(Z);if(!m){m={};HC.set(Z,m);}if(!(y in m)){try{m[y]=Z.horoscope(new Date(Date.UTC(y,6,1)));}catch(e){m[y]=null;}}return m[y];}
+function yearScan(W,E,y){
+  let m=SCAN.get(W);if(!m){m={};SCAN.set(W,m);}if(m[y])return m[y];
+  const AS=root.Astronomy,norm=E.norm,signed=(a,b)=>((a-b)%360+540)%360-180;
+  const T={satReturn:['Saturn',W.pos.Saturn.lon],satOpp:['Saturn',norm(W.pos.Saturn.lon+180)],jupReturn:['Jupiter',W.pos.Jupiter.lon],uraOpp:['Uranus',norm(W.pos.Uranus.lon+180)]};
+  const res={house:{},ingress:{},hits:{}};const prev={};const cnt={Jupiter:{},Saturn:{}};let last={};
+  const t0=Date.UTC(y,0,1),t1=Date.UTC(y+1,0,1);
+  for(let t=t0-6*86400000;t<t1;t+=6*86400000){const pre=t<t0;const at=AS.MakeTime(new Date(t)),mon=new Date(t).getUTCMonth()+1;
+    const lon={Jupiter:E.lonOf('Jupiter',at),Saturn:E.lonOf('Saturn',at),Uranus:E.lonOf('Uranus',at)};
+    if(!pre)for(const k of ['Jupiter','Saturn']){const h=E.houseOf(lon[k],W.houses);cnt[k][h]=(cnt[k][h]||0)+1;if(last[k]&&last[k]!==h)(res.ingress[k]=res.ingress[k]||[]).push({h,mon});last[k]=h;}
+    for(const [key,[pl,tg]] of Object.entries(T)){const d=signed(lon[pl],tg);if(prev[key]!==undefined&&Math.sign(d)!==Math.sign(prev[key])&&Math.abs(d)<5&&Math.abs(prev[key])<5){const tc=t-6*86400000*Math.abs(d)/(Math.abs(d)+Math.abs(prev[key])),mc=new Date(tc).getUTCMonth()+1;if(tc>=t0){const ms=res.hits[key]=res.hits[key]||[];if(!ms.includes(mc))ms.push(mc);}}prev[key]=d;}}
+  for(const k of ['Jupiter','Saturn'])res.house[k]=+Object.entries(cnt[k]).sort((a,b)=>b[1]-a[1])[0][0];
+  /* 年初恰好落在精確點附近（上一年最後一次取樣與今年第一次取樣跨越）也算 */
+  m[y]=res;return res;
+}
 
 /* 逐年資料（語言無關，供文字層使用） */
 function years(W,Z,HD,E,from,to){
@@ -45,20 +63,16 @@ function years(W,Z,HD,E,from,to){
   const findStar=n=>Z.palaces.findIndex(p=>[...p.majorStars,...p.minorStars].some(s=>s.name===n));
   const out=[];let prevDec=null;
   for(let y=from-1;y<=to;y++){
-    let H;try{H=Z.horoscope(new Date(Date.UTC(y,6,1)));}catch(e){H=null;}
+    const H=horoY(Z,y);
     const dec=H&&H.decadal&&H.decadal.name!=='童限'?H.decadal.index:-1;
     if(y<from){prevDec=dec;continue;}
     const yr=H?H.yearly:null;
     const muts=yr?(yr.mutagen||[]).map((s,j)=>({star:s,k:'祿權科忌'[j],pal:(()=>{const i=findStar(s);return i>=0?Z.palaces[i].name:null;})()})):[];
-    const mid=new Date(Date.UTC(y,6,1));
-    let tr=[];try{tr=E.transits(W,mid);}catch(e){}
-    const jup=tr.find(t=>t.k==='Jupiter'),sat=tr.find(t=>t.k==='Saturn'),ura=tr.find(t=>t.k==='Uranus');
+    let sc0=null;try{sc0=yearScan(W,E,y);}catch(e){}
+    const jup=sc0?{house:sc0.house.Jupiter,ing:sc0.ingress.Jupiter||[]}:null,sat=sc0?{house:sc0.house.Saturn,ing:sc0.ingress.Saturn||[]}:null;
     const ms=[];
     if(dec>=0&&prevDec!==null&&dec!==prevDec)ms.push({k:'decade',pal:Z.palaces[dec].name,range:Z.palaces[dec].decadal.range,combo:comboOf(Z.palaces[dec].majorStars.length?Z.palaces[dec]:Z.palaces[(dec+6)%12])});
-    if(sat&&sep(sat.lon,W.pos.Saturn.lon)<10)ms.push({k:'satReturn'});
-    else if(sat&&Math.abs(sep(sat.lon,W.pos.Saturn.lon)-180)<8)ms.push({k:'satOpp'});
-    if(jup&&sep(jup.lon,W.pos.Jupiter.lon)<12)ms.push({k:'jupReturn'});
-    if(ura&&Math.abs(sep(ura.lon,W.pos.Uranus.lon)-180)<5)ms.push({k:'uraOpp'});
+    if(sc0)for(const k of ['satReturn','satOpp','jupReturn','uraOpp'])if(sc0.hits[k]){let first=true;try{const pv=yearScan(W,E,y-1);if(pv.hits[k])first=false;}catch(e){}ms.push({k,months:sc0.hits[k],first});}
     const age=y-birthY+1;/* 虛歲，與紫微大限一致 */
     if(HD&&HD.profile.includes(6)&&(age===31||age===51))ms.push({k:'hd6',age:age-1});
     /* 估算順逆（規則透明，見說明） */
@@ -66,11 +80,13 @@ function years(W,Z,HD,E,from,to){
     muts.forEach(m=>{if(!m.pal)return;if(m.k==='祿')sc+=GOOD.includes(m.pal)?2:1;if(m.k==='權'&&['命宮','官祿','財帛'].includes(m.pal))sc+=1;if(m.k==='忌')sc-=HARD.includes(m.pal)?2:1;});
     if(jup&&[1,2,5,9,10,11].includes(jup.house))sc+=1;
     if(sat&&[1,4,7,10].includes(sat.house))sc-=1;
-    if(ms.some(m=>m.k==='satReturn'))sc-=1;
+    if(ms.some(m=>m.k==='satReturn'&&m.first))sc-=1;
     const yp=yr?Z.palaces[yr.index].name:null,overlap=yr&&dec>=0&&yr.index===dec;
+    /* 化忌落在流年命宮或流年遷移（沖流年命）再扣 1 */
+    {const ji=muts.find(m=>m.k==='忌'&&m.pal);if(ji&&yr){const yi=yr.index,ji_i=Z.palaces.findIndex(p=>p.name===ji.pal);if(ji_i===yi||ji_i===(yi+6)%12)sc-=1;}}
     if(overlap)sc*=1.5;
-    const tone=sc>=2?'up':sc<=-1?'hard':'even';
-    out.push({y,age,stem:yr?yr.heavenlyStem+yr.earthlyBranch:'',yp,overlap,muts,jup:jup&&jup.house,sat:sat&&sat.house,ms,score:sc,tone,dec:dec>=0?Z.palaces[dec].name:null});
+    const tone=sc>=1.5?'up':sc<=-1?'hard':'even';
+    out.push({y,age,stem:yr?yr.heavenlyStem+yr.earthlyBranch:'',yp,overlap,muts,jup:jup&&jup.house,sat:sat&&sat.house,jupIng:jup?jup.ing:[],satIng:sat?sat.ing:[],ms,score:sc,tone,dec:dec>=0?Z.palaces[dec].name:null});
     prevDec=dec;
   }
   return out;
@@ -91,8 +107,8 @@ function top3(W,Z,HD,E){
     items.push({kicker:'你的核心',title:`「${me.title}」`,body:fit(firstSent(me.story),mp,Z.palaces[(mi+6)%12].majorStars),
       why:[`命宮${mp.majorStars.length?'':'（無主星，借對宮）'} ${src.majorStars.map(s=>s.name+(s.brightness?'〔'+s.brightness+'〕':'')+(s.mutagen?'化'+s.mutagen:'')).join('、')}`,`太陽${I18N.zh.signs[Math.floor(E.norm(W.pos.Sun.lon)/30)][0]}、上升${I18N.zh.signs[Math.floor(E.norm(W.asc)/30)][0]}`,`人類圖 ${I18N.zh.hd.types[HD.type]}、${HD.profile.join('/')}`]});}
   /* 3. 現在這一章 */
-  let H=null;try{H=Z.horoscope(new Date());}catch(e){}
-  if(H&&H.decadal&&H.decadal.name!=='童限'){const dp=Z.palaces[H.decadal.index],dsrc=dp.majorStars.length?dp:Z.palaces[(H.decadal.index+6)%12];
+  const H=horoY(Z,new Date().getFullYear());
+  if(H&&H.decadal&&H.decadal.name!=='童限'&&H.decadal.index>=0&&Z.palaces[H.decadal.index]){const dp=Z.palaces[H.decadal.index],dsrc=dp.majorStars.length?dp:Z.palaces[(H.decadal.index+6)%12];
     const de=root.STORY_ZW_MING&&STORY_ZW_MING.decade[comboOf(dsrc)];const yp=Z.palaces[H.yearly.index].name;
     items.push({kicker:`現在這一章（虛歲 ${dp.decadal.range.join('–')}）`,title:de?`「${de.title}」`:`重心在${DOM[dp.name]}`,
       body:(de?firstSent(de.story):'')+`今年（${new Date().getFullYear()}）流年命宮走到${PN(yp)}：${firstSent(FOCUS[yp])}`,
@@ -109,10 +125,11 @@ function render(W,Z,HD,E){
   const card=x=>`<div class="hl-card"><div class="hl-k">${x.kicker}</div><h3>${x.title}</h3><p>${x.body}</p><div class="hl-why"><span>依據</span>${x.why.map(w=>`<i>${w}</i>`).join('')}</div></div>`;
   const msTxt=m=>{
     if(m.k==='decade'){const de=root.STORY_ZW_MING&&STORY_ZW_MING.decade[m.combo];return `<b>進入新的十年大限（虛歲 ${m.range.join('–')}，${PN(m.pal)}）</b>${de?`：「${de.title}」。${firstSent(de.story)}`:'。'}`;}
-    if(m.k==='satReturn')return '<b>土星回歸</b>：大約每 29 年一次的人生大考，會逼你面對真正想要的生活，捨棄不適合的東西。';
-    if(m.k==='satOpp')return '<b>土星對分本命土星</b>：人生中段的檢查點，過去的選擇會被拿出來重新評估。';
-    if(m.k==='jupReturn')return '<b>木星回歸</b>：大約每 12 年一次的新循環起點，適合開新局、擴大格局。';
-    if(m.k==='uraOpp')return '<b>天王星對分</b>：常說的「中年轉折」，想突破、想改變的念頭特別強，適合做一件一直想做的事。';
+    const mo=m.months?`（約 ${m.months.join('、')} 月${m.first?'':'，延續上一年'}）`:'';
+    if(m.k==='satReturn')return `<b>土星回歸${mo}</b>：大約每 29 年一次的人生大考，會逼你面對真正想要的生活，捨棄不適合的東西。`;
+    if(m.k==='satOpp')return `<b>土星對分本命土星${mo}</b>：人生中段的檢查點，過去的選擇會被拿出來重新評估。`;
+    if(m.k==='jupReturn')return `<b>木星回歸${mo}</b>：大約每 12 年一次的新循環起點，適合開新局、擴大格局。`;
+    if(m.k==='uraOpp')return `<b>天王星對分${mo}</b>：常說的「中年轉折」，想突破、想改變的念頭特別強，適合做一件一直想做的事。`;
     if(m.k==='hd6')return m.age===30?'<b>人類圖 6 爻：上屋頂</b>：大約 30 歲開始從親身試錯轉為觀察與沉澱的階段。':'<b>人類圖 6 爻：下屋頂</b>：大約 50 歲開始用一路走來的經驗成為別人的榜樣。';
     return '';};
   const row=x=>{
@@ -124,14 +141,15 @@ function render(W,Z,HD,E){
     if(x.yp)li.push(`<b>流年命宮走到${PN(x.yp)}${x.overlap?'（又與大限命宮重疊，好壞都放大）':''}</b>：${FOCUS[x.yp]}`);
     if(lu)li.push(`<b>${lu.star}化祿進${PN(lu.pal)}</b>：${LU[lu.pal]}`);
     if(ji)li.push(`<b>${ji.star}化忌進${PN(ji.pal)}</b>：${JI[ji.pal]}`);
-    if(x.jup)li.push(`<b>木星走你的${H[x.jup]}</b>：${JUP[x.jup-1]}。`);
-    if(x.sat)li.push(`<b>土星在你的${H[x.sat]}</b>：${SAT[x.sat-1]}。`);
+    const ing=a=>a&&a.length?`（${a.map(i=>`${i.mon} 月進入${H[i.h]}`).join('、')}）`:'';
+    if(x.jup)li.push(`<b>木星這一年主要走你的${H[x.jup]}</b>${ing(x.jupIng)}：${JUP[x.jup-1]}。`);
+    if(x.sat)li.push(`<b>土星這一年主要在你的${H[x.sat]}</b>${ing(x.satIng)}：${SAT[x.sat-1]}。`);
     return `<details class="tl-y${past?' past':''}${cur?' cur':''}"${cur?' open':''}><summary><span class="tl-yr">${x.y}</span><span class="tl-age">${x.stem}・虛歲 ${x.age}</span><span class="tone ${tn[1]}">${tn[0]}</span><span class="tl-h">${head}</span></summary>
       ${past?'<p class="tl-past">回頭對照：這一年你是不是經歷過這些？</p>':''}<ul>${li.map(s=>`<li>${s}</li>`).join('')}</ul></details>`;};
   return `<div class="hl-cards">${t3.map(card).join('')}</div>
-   <div class="tl"><div class="tl-head"><h3>人生走向</h3><p class="muted">從 ${now-3} 到 ${now+5} 年。過去的年份可以拿來對照，看看準不準；「順勢／平穩／要用力」是依流年四化落宮與木星、土星行運估算的整體感受，不代表好壞定論。</p></div>
+   <div class="tl"><div class="tl-head"><h3>人生走向</h3><p class="muted">從 ${now-3} 到 ${now+5} 年。過去的年份可以拿來對照，看看準不準；「順勢／平穩／要用力」是依流年四化落宮與木星、土星行運估算的整體感受（目前沒有納入大限四化與生年四化的疊併），不代表好壞定論。</p></div>
    ${ys.map(row).join('')}</div>`;
 }
 root.Highlights=root.Highlights||{};
-root.Highlights.zh={render,years,top3};
+root.Highlights.zh={render,years,top3,horoY};
 })(typeof globalThis!=='undefined'?globalThis:this);
