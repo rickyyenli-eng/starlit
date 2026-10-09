@@ -288,6 +288,44 @@ button.card.mix:hover,button.card.mix:focus-visible{border-color:var(--accent)}
 .go2btn{font:inherit;font-weight:700;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
 .go2btn:hover{filter:brightness(1.08)}
 .ai-status{font-size:13.5px;min-height:1em}
+.ask{margin:6px 0 18px}
+.ask h2{font-family:var(--f-display);font-size:24px;margin:0 0 4px}
+.ask p{color:var(--muted);font-size:14.5px;margin:0 0 12px}
+.ask-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ask-chips button{font:inherit;font-weight:700;font-size:15px;padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.ask-chips button:hover,.ask-chips button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+dialog.wiz{border:0;padding:0;width:min(560px,100vw);max-width:100vw;max-height:100dvh;border-radius:22px;background:radial-gradient(120% 90% at 50% 0%,#1b2550 0%,#0c1024 60%,#070912 100%);color:#eef1fb;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
+.wiz-in{position:relative;min-height:min(560px,92dvh);display:flex;flex-direction:column;padding:22px 24px 24px;background-image:radial-gradient(1px 1px at 20% 30%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 70% 18%,#fff6 50%,transparent 51%),radial-gradient(1.5px 1.5px at 85% 60%,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 35% 75%,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 55% 45%,#fff4 50%,transparent 51%)}
+.wiz-x{position:absolute;top:14px;right:14px;color:#cfd6f5!important;background:transparent!important}
+#wiz-body{display:flex;flex-direction:column;flex:1}
+.wz-dots{display:flex;gap:6px;justify-content:center;margin:2px 0 0}
+.wz-dots i{width:7px;height:7px;border-radius:50%;background:#ffffff30}
+.wz-dots i.on{background:#9fb3ff}
+.wz-q{margin-top:auto;padding-top:60px}
+.wz-kick{font-style:italic;color:#aeb8de;margin:0 0 6px;font-size:14.5px}
+.wz-q h2{font-family:var(--f-display);font-size:26px;margin:0 0 18px;color:#fff;line-height:1.35}
+.wz-opts{display:grid;gap:10px}
+.wz-opt{font:inherit;font-size:16px;padding:14px;border-radius:12px;border:1px solid #ffffff2e;background:#ffffff0d;color:#eef1fb;cursor:pointer;text-align:center}
+.wz-opt:hover,.wz-opt[aria-pressed=true]{border-color:#9fb3ff;background:#9fb3ff26}
+.wz-in{font:inherit;font-size:18px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid #ffffff38;background:#ffffff12;color:#fff;color-scheme:dark;box-sizing:border-box}
+.wz-in option{color:#111;background:#fff}
+.wz-check{display:flex;gap:8px;align-items:center;margin:12px 0 10px;color:#cfd6f5;font-size:14.5px}
+.wz-note{font-size:13px;color:#aeb8de;margin:8px 0 0}
+.wz-nav{display:flex;gap:10px;margin-top:22px}
+.wz-nav button{font:inherit;font-weight:700;border-radius:12px;padding:13px 16px;cursor:pointer;border:1px solid #ffffff38}
+.wz-back{background:transparent;color:#cfd6f5;flex:0 0 auto}
+.wz-next{flex:1;background:#9fb3ff;color:#0c1024;border-color:transparent!important}
+.wz-nav button:disabled{opacity:.4;cursor:default}
+@media (max-width:600px){dialog.wiz{width:100vw;height:100dvh;border-radius:0}.wiz-in{min-height:100dvh}}
+.hl-card.ans{grid-column:1/-1;border-color:var(--accent);border-width:1.5px}
+.hl-card.ans h4{font-size:14px;margin:8px 0 2px;color:var(--accent)}
+.ans-y{display:flex;gap:10px;align-items:baseline;font-size:14px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.ans-y b{font-family:var(--f-display);font-size:16px;min-width:3em}
+.ans-y.good b{color:var(--good)}.ans-y.bad b{color:var(--seal)}
+.ans-y span{color:var(--muted)}
+.ans-tip{background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:14px}
+.ans-more{font:inherit;font-weight:700;align-self:flex-start;background:none;border:0;color:var(--accent);cursor:pointer;padding:4px 0}
 .hl{margin:0 0 26px}
 .hl>h2{font-family:var(--f-display);font-size:22px;margin:0 0 12px}
 .hl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
@@ -346,6 +384,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <div class="wrap">
   <div class="langs" role="group" aria-label="Language" id="langs"></div>
 
+  <section class="ask" id="ask"></section>
   <form class="birth" id="birth" novalidate>
     <div class="field"><label for="f-date" data-t="date"></label><input id="f-date" type="date" required min="1900-01-01" max="2100-12-31"></div>
     <div class="field"><label for="f-time" data-t="time"></label><input id="f-time" type="time" required></div>
@@ -424,6 +463,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
   </div>
 </div>
 
+<dialog id="wiz" class="wiz" aria-label="Starlit"><div class="wiz-in"><button type="button" class="dlg-x wiz-x" id="wiz-x">×</button><div id="wiz-body"></div></div></dialog>
 <dialog id="dlg" class="dlg" aria-labelledby="dlg-title">
   <div class="dlg-in">
     <header class="dlg-head"><div class="dlg-t"><div class="eyebrow" id="dlg-eyebrow"></div><h2 id="dlg-title"></h2></div>
@@ -454,12 +494,14 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/themes-core.js"></script>
 <script src="js/themes-zh.js"></script>
 <script src="js/timeline-zh.js"></script>
+<script src="js/intent-zh.js"></script>
 <script src="js/hd-en.js"></script>
 <script src="js/hd-ja.js"></script>
 <script src="js/hd-fr.js"></script>
 <script src="js/reading-en.js"></script>
 <script src="js/reading-ja.js"></script>
 <script src="js/reading-fr.js"></script>
+<script src="js/wizard.js"></script>
 <script src="js/ai.js"></script>
 <script src="js/app.js"></script>
 </body>

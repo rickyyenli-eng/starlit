@@ -209,6 +209,7 @@ function applyLang(lg){
   primer('#w-primer',L.ui.wPrimer);primer('#z-primer',L.ui.zPrimer);primer('#h-primer',L.ui.hPrimer);
   $('#langs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LG));
   if(errKey)showErr(errKey);
+  if(typeof askRender==='function')askRender();
   const want=LG;loadLang(LG).then(()=>{if(W&&Z&&LG===want)renderAll();});
   try{localStorage.setItem('starlit-lang',LG);}catch(e){}
 }
@@ -230,7 +231,7 @@ function boot(){
   fillCities();
   $('#f-city').addEventListener('change',onCity);
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
-  applyLang(LG);aiInit();
+  applyLang(LG);aiInit();wizInit();
   $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
     try{await Promise.race([Promise.all([sweReady,loadLang(LG)]),new Promise(r=>setTimeout(r,15000))]);}catch(err){}
     btn.disabled=false;
@@ -303,7 +304,8 @@ function renderReadings(){
 }
 function renderHL(){
   const el=$('#hl-body');if(!el)return;const P=window.Highlights&&(Highlights[LG]||Highlights.zh);
-  try{el.innerHTML=(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine);}catch(e){console.error(e);el.innerHTML='';}
+  try{const ans=intentCard();el.innerHTML=(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans);
+    el.querySelectorAll('.ans-more').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.tab,+b.dataset.i)));}catch(e){console.error(e);el.innerHTML='';}
 }
 function renderMix(){
   const U=L.ui;const ml=Themes[LG]&&Themes[LG].TAGS?LG:'zh';let r;try{r=Themes.mix(ml,W,Z,HD,Engine);}catch(e){console.error(e);$('#m-sum').innerHTML='';$('#m-read .body').innerHTML='<p class="err">—</p>';ADV.mix='';return;}

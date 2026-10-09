@@ -12,6 +12,7 @@ function aiChartData(){
   const E=I18N.en,o=[];
   const sgn=l=>E.signs[Math.floor(Engine.norm(l)/30)][0];
   const deg=l=>{const x=Engine.norm(l)%30;return `${Math.floor(x)}°${String(Math.floor((x%1)*60)).padStart(2,'0')}′`;};
+  if(CTX.intent||CTX.status||CTX.job){const W2=WIZ_TXT.zh;o.push('# 使用者情境（請針對這個問題與狀態來寫）');if(CTX.intent)o.push('最想知道：'+W2.intents[CTX.intent]);if(CTX.status)o.push('感情狀態：'+W2.status[CTX.status]);if(CTX.job)o.push('工作狀態：'+W2.job[CTX.job]);o.push('');}
   o.push('# Western astrology (tropical, Placidus'+(W.equal?' → equal houses at high latitude':'')+')');
   PK.forEach(k=>{const q=W.pos[k];o.push(`${k}: ${sgn(q.lon)} ${deg(q.lon)}, house ${q.house}${q.retro?', retrograde':''}`);});
   if(W.pos.Node)o.push(`North Node: ${sgn(W.pos.Node.lon)} ${deg(W.pos.Node.lon)}, house ${W.pos.Node.house}`);
@@ -70,7 +71,7 @@ function aiRender(){
   box.hidden=false;const T=AI_TXT[LG]||AI_TXT.zh;
   box.querySelector('h2').textContent=T.title;box.querySelector('.ai-intro').textContent=T.intro;
   box.querySelector('.ai-flab').textContent=T.focus;
-  const sel=box.querySelector('#ai-focus'),cur=sel.value||'all';
+  const sel=box.querySelector('#ai-focus'),cur=sel.value||({love:'love',work:'career',money:'wealth',year:'year'}[CTX.intent])||'all';
   sel.innerHTML=Object.entries(T.opts).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');sel.value=cur;
   const go=box.querySelector('#ai-go');go.textContent=aiCtl?T.stop:(aiText?T.again:T.go);
   box.querySelector('#ai-copy').textContent=T.copy;
