@@ -100,12 +100,15 @@ function render(P,E){
   if(zBA.match.length)M.attract.push(`你的命宮主星（${zBA.match.join('、')}）正是${nb}夫妻宮的星`);
   if(zr[0]==='he'||zr[0]==='san')M.stable.push(zr[0]==='he'?'生肖六合':'生肖三合');if(zr[0]==='chong')M.friction.push('生肖相沖');
   ov.forEach(o=>{if(o.k==='Venus'&&[1,5,7,8].includes(o.h))M.attract.push(`${pn(nb,'Venus')}落在你的${H[o.h]}`);if(o.k==='Moon'&&[4,7].includes(o.h))M.stable.push(`${pn(nb,'Moon')}落在你的${H[o.h]}`);});
-  const lv=n=>n>=4?3:n>=2?2:n>=1?1:0,LV=['不明顯','有一些','明顯','很強'];
+  /* 門檻依 400 組隨機配對的分布校正（約四分位） */
+  const TH={attract:[4,6,8],sync:[1,2,4],stable:[1,2,3],friction:[5,7,9]};
+  const lvk=(k)=>{const n=M[k].length,t=TH[k];return n>=t[2]?3:n>=t[1]?2:n>=t[0]?1:0;};
+  const LV=['不明顯','有一些','明顯','很強'],LVF=['不多','有一些','不少','很多'];
   const MN={attract:['吸引力','彼此的火花與化學反應'],sync:['默契','聊不聊得來、懂不懂對方'],stable:['穩定度','能不能走得長久、給彼此安全感'],friction:['摩擦點','容易卡住、需要磨合的地方']};
-  const cards=Object.entries(MN).map(([k,[t,d]])=>{const n=M[k].length,l=lv(n);return `<div class="card pair-m ${k}"><span class="q">${t}</span><span class="big">${LV[l]}</span><span class="agree">${[0,1,2].map(i=>`<i class="${i<l?'on':''}"></i>`).join('')} ${n} 項依據</span><p>${d}</p></div>`;}).join('');
+  const cards=Object.entries(MN).map(([k,[t,d]])=>{const n=M[k].length,l=lvk(k);return `<div class="card pair-m ${k}"><span class="q">${t}</span><span class="big">${(k==='friction'?LVF:LV)[l]}</span><span class="agree">${[0,1,2].map(i=>`<i class="${i<l?'on':''}"></i>`).join('')} ${n} 項依據</span><p>${d}</p></div>`;}).join('');
   /* 總結 */
-  const strong=Object.entries(MN).filter(([k])=>k!=='friction').map(([k,[t]])=>[t,lv(M[k].length)]).sort((a,b)=>b[1]-a[1]);
-  const fr=lv(M.friction.length);
+  const strong=Object.entries(MN).filter(([k])=>k!=='friction').map(([k,[t]])=>[t,lvk(k)]).sort((a,b)=>b[1]-a[1]);
+  const fr=lvk('friction');
   let sum=`<p>把你和${nb}的三張盤放在一起看，你們最明顯的是<b>${strong[0][0]}</b>${strong[1][1]>=2?`，其次是<b>${strong[1][0]}</b>`:''}。`;
   sum+=fr>=2?`摩擦點也不少，這不是壞事：很多長久的關係都是吵出來的，關鍵是知道會卡在哪裡。</p>`:`摩擦點不多，相處起來比較省力。</p>`;
   const top=[...syn].slice(0,2);
@@ -129,10 +132,10 @@ function render(P,E){
     adv+=`<h4>${t}（${L.length}）</h4><p class="muted">${d}</p><ul>${L.map(x=>{const k=typeof x==='string'?x:x.k;const who=typeof x==='string'?'':`（${x.who==='A'?'你':nb}有完整通道）`;return `<li><b>${k} ${chN(k)}</b>${who}</li>`;}).join('')}</ul>`;}
   adv+=`<h3 data-k="p-tips">給你們的建議</h3><ul>`;
   const tips=[];
-  if(M.friction.length>=2)tips.push('摩擦點多的組合，吵架時先處理情緒、再處理事情。約好一個「暫停」的暗號。');
-  if(lv(M.attract.length)>=2)tips.push('吸引力強是你們的本錢，記得在忙碌的日子裡保留只屬於兩個人的時間。');
-  if(lv(M.sync.length)<=1)tips.push('默契需要培養：固定一起做一件小事（散步、做飯、看劇），比偶爾的大活動更有用。');
-  if(lv(M.stable.length)<=1)tips.push('穩定感要靠約定：把對未來的期待（錢、住哪、要不要小孩）早一點講清楚。');
+  if(fr>=2)tips.push('摩擦點多的組合，吵架時先處理情緒、再處理事情。約好一個「暫停」的暗號。');
+  if(lvk('attract')>=2)tips.push('吸引力強是你們的本錢，記得在忙碌的日子裡保留只屬於兩個人的時間。');
+  if(lvk('sync')<=1)tips.push('默契需要培養：固定一起做一件小事（散步、做飯、看劇），比偶爾的大活動更有用。');
+  if(lvk('stable')<=1)tips.push('穩定感要靠約定：把對未來的期待（錢、住哪、要不要小孩）早一點講清楚。');
   tips.push(TYPE_TIP[B.HD.type].replace(/他/g,nb));
   adv+=tips.map(t=>`<li>${t}</li>`).join('')+'</ul>';
   return{cards,basic:sum,adv,M};

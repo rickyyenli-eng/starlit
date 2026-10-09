@@ -17,7 +17,8 @@ function aiChartData(focus){
 function aiChartFor(W,Z,HD,ZH,withCtx){
   const facts=[];try{const ly=Z.rawDates.lunarDate.lunarYear,now=new Date().getFullYear();facts.push(`今年 ${now} 年，虛歲 ${now-ly+1}`);
     if(ZH&&ZH.decadal&&ZH.decadal.index>=0){const dp=Z.palaces[ZH.decadal.index];facts.push(`目前大限：虛歲 ${dp.decadal.range.join('-')}，大限命宮在本命${dp.name}`);}else facts.push('目前仍在童限');
-    if(ZH)facts.push(`今年流年命宮在本命${Z.palaces[ZH.yearly.index].name}`);
+    if(ZH)facts.push(`今年流年命宮在本命${Z.palaces[ZH.yearly.index].name}，流年四化 ${(ZH.yearly.mutagen||[]).map((x,j)=>x+'化'+'祿權科忌'[j]).join(' ')}`);
+    try{const ny=Z.horoscope(new Date(Date.UTC(now+1,6,1)));facts.push(`明年 ${now+1} 年流年命宮在本命${Z.palaces[ny.yearly.index].name}，流年四化 ${(ny.yearly.mutagen||[]).map((x,j)=>x+'化'+'祿權科忌'[j]).join(' ')}`);}catch(e){}
     facts.push(`人類圖類型：${I18N.zh.hd.types[HD.type]}（${I18N.en.hd.types[HD.type]}），權威：${I18N.zh.hd.auth[HD.authority]}`);}catch(e){}
   const head=facts.length?'# KEY FACTS (authoritative; do not infer these from other lines)\n'+facts.join('\n')+'\n\n':'';
   return head+aiChartBody(W,Z,HD,ZH,withCtx);
@@ -145,7 +146,7 @@ async function chatSend(mode,q){
     const rd=r.body.getReader(),dec=new TextDecoder();let buf='',txt='';
     for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
       while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line.startsWith('data:'))continue;let ev;try{ev=JSON.parse(line.slice(5));}catch(e){continue;}
-        if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.text){txt+=ev.delta.text;a.textContent=txt;}}}
+        if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.text){txt+=ev.delta.text;a.textContent=txt.replace(/\*\*/g,'');}}}
     if(!txt)a.textContent=A.err;else if(mode==='ask')document.querySelector('#chat-q').value='';
   }catch(e){a.textContent=A.err;}finally{chatBusy=false;}
 }
