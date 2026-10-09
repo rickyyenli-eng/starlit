@@ -49,22 +49,25 @@ function compute(v){
   const utc=new Date(stdMs-v.tz*3600e3);
   W=westChart(utc,v.lat,v.lon);
   HD=Engine.humanDesign(utc);selH=null;
-  const sd=new Date(stdMs),sh=sd.getUTCHours();
-  const ti=sh===23?12:Math.floor((sh+1)/2);
-  Z=iztro.astro.bySolar(`${sd.getUTCFullYear()}-${sd.getUTCMonth()+1}-${sd.getUTCDate()}`,ti,v.g,true,'zh-TW');
+  const sd=new Date(stdMs);
+  Z=zwBySolar(sd,v.g);
   try{ZH=Z.horoscope(new Date());if(ZH&&ZH.decadal.name==='童限')ZH={...ZH,decadal:{...ZH.decadal,index:-1}};}catch(e){ZH=null;}
-  Z._ti=ti;Z._std=sd;
   selZ=Z.palaces.findIndex(p=>p.name==='命宮');
   return true;
 }
 
+/* 紫微排盤：晚子時（23:00–24:00）依專家採用的派別「算隔天」，以隔天日期＋早子時排盤 */
+function zwBySolar(sd,g){
+  const sh=sd.getUTCHours(),late=sh===23,d=late?new Date(sd.getTime()+86400000):sd;
+  const z=iztro.astro.bySolar(`${d.getUTCFullYear()}-${d.getUTCMonth()+1}-${d.getUTCDate()}`,late?0:Math.floor((sh+1)/2),g,true,'zh-TW');
+  z._ti=late?12:Math.floor((sh+1)/2);z._late=late;z._std=sd;return z;
+}
 /* 任一人的三張盤（合盤用） */
 function computeChart(v){
   const c=CITIES.find(x=>x[0]===v.city);if(!c||c[4]==null)return null;
   const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
   const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0),utc=new Date(stdMs-c[6]*3600e3);
-  const sd=new Date(stdMs),sh=sd.getUTCHours(),ti=sh===23?12:Math.floor((sh+1)/2);
-  const Zb=iztro.astro.bySolar(`${sd.getUTCFullYear()}-${sd.getUTCMonth()+1}-${sd.getUTCDate()}`,ti,v.g,true,'zh-TW');Zb._ti=ti;Zb._std=sd;
+  const sd=new Date(stdMs),Zb=zwBySolar(sd,v.g);
   return{W:westChart(utc,c[4],c[5]),Z:Zb,HD:Engine.humanDesign(utc),name:v.name};
 }
 let PB=null,PBV=null;
@@ -159,7 +162,7 @@ function drawZW(g=$('#zw'),mode='natal'){
   const fe=Z.fiveElementsClass,feTxt=L.fiveElNames?F.fiveEl(L.fiveElNames[fe[0]],NUM[fe[1]],fe):F.fiveEl(null,null,fe);
   const pillars=[cd.yearly,cd.monthly,cd.daily,cd.hourly].map(x=>x.join('')).join(' ');
   h+=`<div class="center"><div class="nm">${U.zwTitle}</div>
-   <div>${U.solar} ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${F.timeLbl(Z.time,BRANCH[ti],rng)}</div>
+   <div>${U.solar} ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${F.timeLbl(Z._late&&U.lateZi?U.lateZi:Z.time,BRANCH[ti],rng)}</div>
    <div>${U.lunar} ${F.lunarLbl(Z.lunarDate.replace(/腊/g,'臘').replace(/闰/g,'閏'),rd.lunarYear,rd.lunarMonth,rd.lunarDay,rd.isLeap)}</div>
    <div>${U.pillars?U.pillars+' ':''}${pillars}</div>
    <div class="kl"><span>${feTxt}</span><span>${U.soul} ${starName(Z.soul)}</span><span>${U.body} ${starName(Z.body)}</span></div>
