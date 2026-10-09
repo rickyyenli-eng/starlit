@@ -41,7 +41,9 @@ const ZO=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰
 
 /* 人類圖 */
 const TYPE_N={generator:'生產者',mg:'顯示生產者',manifestor:'顯示者',projector:'投射者',reflector:'反映者'};
-const TYPE_TIP={generator:'用「問是非題」的方式和他溝通，讓他用身體回應，而不是要他立刻主動決定。',mg:'他動得很快、常一次做很多事。跟他約好「行動前先講一聲」，可以少很多誤會。',manifestor:'他需要先知道、再行動的自由。不要控制他，請他行動前告知你。',projector:'他需要被看見、被邀請。真心邀請他的意見，他會給你很準的建議。',reflector:'他需要時間（大約一個月）才能做重大決定，不要催他。他會反映你們關係的真實狀態。'};
+const TYPE_TIP={generator:'用「問是非題」的方式和他溝通，讓他用身體回應，而不是要他立刻主動決定。',mg:'他動得很快、常一次做很多事。跟他約好「行動前先講一聲」，可以少很多誤會。',manifestor:'他需要自由發起事情的空間。不要控制他，也請他在行動前先告知會受影響的人。',projector:'他需要被看見、被邀請。真心邀請他的意見，他會給你很準的建議。',reflector:'他需要時間（大約一個月）才能做重大決定，不要催他。他會反映你們關係的真實狀態。'};
+/* 對方怎麼和「你」相處（以你的類型來寫） */
+const TYPE_TIP_YOU={generator:'NB 可以用「問是非題」的方式和你溝通，讓你用身體回應，而不是要你立刻主動決定。',mg:'你動得很快、常一次做很多事。和 NB 約好「行動前先講一聲」，可以少很多誤會。',manifestor:'你需要自由發起事情的空間。NB 不需要控制你，你在行動前先告知 NB 就好。',projector:'你需要被看見、被邀請。NB 真心邀請你的意見時，你的建議會很準。',reflector:'你需要時間（大約一個月）才能做重大決定，NB 不要催你。你會反映這段關係的真實狀態。'};
 const CH_KIND={em:['電磁連結','一人一半、合起來才完整的通道：這是吸引力和火花的來源，也是最容易「卡到」的地方。'],comp:['陪伴','兩人都有的通道：你們在這方面很像，相處自在，有共同語言。'],dom:['主導','只有一方有、另一方完全沒有：這方面一方會帶著另一方走，另一方會被深深影響。'],cmp:['妥協','一方有完整通道、另一方只有一半：這方面容易有一方覺得要配合對方。']};
 
 function synastry(A,B,E){
@@ -130,7 +132,7 @@ function render(P,E){
   adv+=`</ul><h4>他是不是你夫妻宮寫的那種人？</h4><ul><li>你的夫妻宮主星：${zAB.spouseA.join('、')||'—'}；${nb}的命宮主星：${zAB.mingB.join('、')||'—'}。${zAB.match.length?`<b>重疊了 ${zAB.match.join('、')}</b>，${nb}很像你命中描述的伴侶樣子。`:'沒有重疊，對方的個性不是你夫妻宮的典型樣子，這段關係會帶你認識另一種人。'}</li>
     <li>${nb}的夫妻宮主星：${zBA.spouseA.join('、')||'—'}；你的命宮主星：${zBA.mingB.join('、')||'—'}。${zBA.match.length?`<b>重疊了 ${zBA.match.join('、')}</b>，你很像${nb}命中描述的伴侶。`:'沒有重疊。'}</li></ul>
     <h4>生肖</h4><p>你屬${ANI[animal(A.Z)]}、${nb}屬${ANI[animal(B.Z)]}（以農曆年計）。${zr[1]}<span class="muted">（民俗說法，參考就好。）</span></p>`;
-  adv+=`<h3 data-k="p-hd">人類圖合盤</h3><p>你是${TYPE_N[A.HD.type]}、${nb}是${TYPE_N[B.HD.type]}。</p><ul><li><b>和${nb}相處</b>：${TYPE_TIP[B.HD.type].replace(/他/g,nb)}</li><li><b>${nb}和你相處</b>：${TYPE_TIP[A.HD.type].replace(/他/g,'你')}</li></ul>`;
+  adv+=`<h3 data-k="p-hd">人類圖合盤</h3><p>你是${TYPE_N[A.HD.type]}、${nb}是${TYPE_N[B.HD.type]}。</p><ul><li><b>和${nb}相處</b>：${TYPE_TIP[B.HD.type].replace(/他/g,nb)}</li><li><b>${nb}和你相處</b>：${TYPE_TIP_YOU[A.HD.type].replace(/ ?NB ?/g,nb)}</li></ul>`;
   for(const kind of ['em','comp','dom','cmp']){const L=hd[kind];if(!L.length)continue;const [t,d]=CH_KIND[kind];
     adv+=`<h4>${t}（${L.length}）</h4><p class="muted">${d}</p><ul>${L.map(x=>{const k=typeof x==='string'?x:x.k;const who=typeof x==='string'?'':`（${x.who==='A'?'你':nb}有完整通道）`;return `<li><b>${k} ${chN(k)}</b>${who}</li>`;}).join('')}</ul>`;}
   adv+=`<h3 data-k="p-tips">給你們的建議</h3><ul>`;

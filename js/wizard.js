@@ -16,7 +16,7 @@ const WIZ_TXT={
   unsure:'不確定時間，只知道大概時段',unsureNote:'會用該時辰的中間時間排盤，上升星座可能不準。',
   status:{single:'單身',crush:'曖昧中',dating:'戀愛中',married:'已婚',broke:'剛分手',none:'不想說'},
   job:{student:'學生',seeking:'正在找工作',employee:'上班族',founder:'創業／接案',change:'想轉換跑道',none:'不想說'},
-  otherCity:'其他地點（用表單自訂經緯度）',shichen:['子時 23–01','丑時 01–03','寅時 03–05','卯時 05–07','辰時 07–09','巳時 09–11','午時 11–13','未時 13–15','申時 15–17','酉時 17–19','戌時 19–21','亥時 21–23']},
+  otherCity:'其他地點（用表單自訂經緯度）',shichen:['早子時 00–01','丑時 01–03','寅時 03–05','卯時 05–07','辰時 07–09','巳時 09–11','午時 11–13','未時 13–15','申時 15–17','酉時 17–19','戌時 19–21','亥時 21–23','晚子時 23–24（算隔天）']},
  en:{askTitle:'What would you like to know first?',askSub:'Pick a question and I’ll walk you through it step by step. Or fill in the form below directly.',
   intents:{all:'Who I am',love:'Love',work:'Work',money:'Money',year:'This year'},
   back:'Back',next:'Next',done:'Read my charts',close:'Close',
@@ -26,7 +26,7 @@ const WIZ_TXT={
   unsure:'Not sure of the exact time, only a rough window',unsureNote:'The middle of that two-hour window will be used; your rising sign may be off.',
   status:{single:'Single',crush:'Something’s starting',dating:'In a relationship',married:'Married',broke:'Just broke up',none:'Prefer not to say'},
   job:{student:'Student',seeking:'Looking for work',employee:'Employed',founder:'Own business / freelance',change:'Thinking of a career change',none:'Prefer not to say'},
-  otherCity:'Somewhere else (set coordinates in the form)',shichen:['23:00–01:00','01:00–03:00','03:00–05:00','05:00–07:00','07:00–09:00','09:00–11:00','11:00–13:00','13:00–15:00','15:00–17:00','17:00–19:00','19:00–21:00','21:00–23:00']},
+  otherCity:'Somewhere else (set coordinates in the form)',shichen:['00:00–01:00 (early Zi)','01:00–03:00','03:00–05:00','05:00–07:00','07:00–09:00','09:00–11:00','11:00–13:00','13:00–15:00','15:00–17:00','17:00–19:00','19:00–21:00','21:00–23:00','23:00–24:00 (late Zi, counted as next day)']},
  ja:{askTitle:'まず何を知りたいですか？',askSub:'質問を選ぶと、一つずつ案内しながらチャートを作ります。慣れている方は下のフォームに直接入力できます。',
   intents:{all:'自分のこと',love:'恋愛',work:'仕事',money:'お金',year:'今年の運勢'},
   back:'戻る',next:'次へ',done:'チャートを作る',close:'閉じる',
@@ -36,7 +36,7 @@ const WIZ_TXT={
   unsure:'正確な時刻はわからず、だいたいの時間帯だけわかる',unsureNote:'その時間帯の中間の時刻で作成します。アセンダントがずれる可能性があります。',
   status:{single:'シングル',crush:'いい感じの人がいる',dating:'交際中',married:'既婚',broke:'最近別れた',none:'答えない'},
   job:{student:'学生',seeking:'求職中',employee:'会社員',founder:'起業／フリーランス',change:'転職を考えている',none:'答えない'},
-  otherCity:'その他の場所（フォームで緯度経度を指定）',shichen:['23–01時','01–03時','03–05時','05–07時','07–09時','09–11時','11–13時','13–15時','15–17時','17–19時','19–21時','21–23時']},
+  otherCity:'その他の場所（フォームで緯度経度を指定）',shichen:['00–01時（早子）','01–03時','03–05時','05–07時','07–09時','09–11時','11–13時','13–15時','15–17時','17–19時','19–21時','21–23時','23–24時（夜子・翌日扱い）']},
  fr:{askTitle:'Que voulez-vous savoir en premier ?',askSub:'Choisissez une question, je vous guide étape par étape. Ou remplissez directement le formulaire ci-dessous.',
   intents:{all:'Qui je suis',love:'L’amour',work:'Le travail',money:'L’argent',year:'Cette année'},
   back:'Retour',next:'Suivant',done:'Lire mes thèmes',close:'Fermer',
@@ -46,7 +46,7 @@ const WIZ_TXT={
   unsure:'Je ne connais pas l’heure exacte, seulement une plage',unsureNote:'Le milieu de cette plage de deux heures sera utilisé ; l’ascendant peut être inexact.',
   status:{single:'Célibataire',crush:'Quelque chose commence',dating:'En couple',married:'Marié(e)',broke:'Rupture récente',none:'Je préfère ne pas dire'},
   job:{student:'Étudiant(e)',seeking:'En recherche d’emploi',employee:'Salarié(e)',founder:'Entrepreneur / indépendant',change:'Envie de reconversion',none:'Je préfère ne pas dire'},
-  otherCity:'Ailleurs (coordonnées dans le formulaire)',shichen:['23h–01h','01h–03h','03h–05h','05h–07h','07h–09h','09h–11h','11h–13h','13h–15h','15h–17h','17h–19h','19h–21h','21h–23h']}};
+  otherCity:'Ailleurs (coordonnées dans le formulaire)',shichen:['00h–01h (Zi précoce)','01h–03h','03h–05h','05h–07h','07h–09h','09h–11h','11h–13h','13h–15h','15h–17h','17h–19h','19h–21h','21h–23h','23h–24h (Zi tardif, compté au lendemain)']}};
 const WT=()=>WIZ_TXT[LG]||WIZ_TXT.zh;
 
 /* ---------- D：問題入口 ---------- */
@@ -83,7 +83,8 @@ function wizShow(){
    <div class="wz-nav"><button type="button" class="wz-back"${WZ.i===0?' disabled':''}>${T.back}</button><button type="button" class="wz-next">${last?T.done:T.next}</button></div>`;
   $('#wiz-x').setAttribute('aria-label',T.close);
   const B=$('#wiz-body');
-  B.querySelectorAll('.wz-opt').forEach(b=>b.addEventListener('click',()=>{v[b.dataset.k]=b.dataset.v;wizNext();}));
+  /* 上一次點選項後 400ms 內的點擊忽略，避免雙擊把下一題也選掉 */
+  B.querySelectorAll('.wz-opt').forEach(b=>b.addEventListener('click',()=>{const t=Date.now();if(t-(WZ.lastTap||0)<400)return;WZ.lastTap=t;v[b.dataset.k]=b.dataset.v;wizNext();}));
   B.querySelector('.wz-back').addEventListener('click',()=>{if(WZ.i>0){WZ.i--;wizShow();}});
   B.querySelector('.wz-next').addEventListener('click',wizNext);
   const un=B.querySelector('#wz-unsure');if(un)un.addEventListener('change',()=>{v.unsure=un.checked;B.querySelector('#wz-time').hidden=un.checked;B.querySelector('#wz-scw').hidden=!un.checked;wizValid();});
@@ -102,7 +103,7 @@ function wizOk(){const s=WZ.steps[WZ.i],v=WZ.v;wizRead();
 function wizValid(){const n=$('#wiz-body .wz-next');if(n)n.disabled=!wizOk();}
 function wizNext(){
   if(!wizOk())return;const v=WZ.v;
-  if(WZ.steps[WZ.i]==='city'&&v.city==='__other'){CTX.intent=v.intent;CTX.status=null;CTX.job=null;wizFill(true);wizClose();$('.adv').open=true;$('#f-lat').focus();return;}
+  if(WZ.steps[WZ.i]==='city'&&v.city==='__other'){CTX.intent=v.intent;CTX.status=null;CTX.job=null;wizFill(true);wizClose();askRender();$('.adv').open=true;$('#f-lat').focus();return;}
   if(WZ.i<WZ.steps.length-1){WZ.i++;wizShow();return;}
   CTX.intent=v.intent;CTX.status=v.status==='none'?null:v.status;CTX.job=v.job==='none'?null:v.job;
   wizFill(false);wizClose();askRender();
@@ -111,7 +112,7 @@ function wizNext(){
 }
 function wizFill(partial){const v=WZ.v;
   if(v.date)$('#f-date').value=v.date;
-  const mids=['23:30','02:00','04:00','06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00'];
+  const mids=['00:30','02:00','04:00','06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','23:30'];
   if(v.unsure)$('#f-time').value=mids[v.sc];else if(v.time)$('#f-time').value=v.time;
   if(v.g){const r=document.querySelector(`input[name=g][value="${v.g}"]`);if(r)r.checked=true;}
   if(v.city&&v.city!=='__other'){$('#f-city').value=v.city;onCity();}else if(partial){$('#f-city').value='';}

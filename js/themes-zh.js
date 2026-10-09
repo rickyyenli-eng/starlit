@@ -89,7 +89,7 @@ people:{
   asc:s=>`上升在${sign(s)}`,
   hdType:t=>`類型是${TYPE[t]}`,
   hdCh:k=>`有 ${k} ${chName(k)}通道`,
-  hdLine:(pf,j,ln)=>`人生角色 ${pf} 的${j?'潛意識':'意識'}爻是 ${ln} 爻（${LINE[ln]}）`,
+  hdLine:(pf,j,ln)=>`人生角色 ${pf} 的${j?'潛意識':'意識'}爻是 ${ln} 爻（${(HZ()&&HZ().lines&&HZ().lines[ln]&&HZ().lines[ln].n)||LINE[ln]}）`,
   emoAuth:()=>'情緒型權威，需要等情緒波穩定再決定',
   heartDef:()=>'意志力中心有定義',
   heartOpenMoney:()=>'意志力中心空白，容易低估自己的價值或過度承諾',

@@ -285,7 +285,7 @@ button.card.mix:hover,button.card.mix:focus-visible{border-color:var(--accent)}
 .card.mix .go2{font-size:13px;font-weight:700;color:var(--accent);margin-top:auto}
 .reading.ai .ai-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:4px 0 8px}
 .reading.ai select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
-.go2btn{font:inherit;font-weight:700;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
+.go2btn{font:inherit;font-weight:700;background:var(--accent);color:var(--panel);border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
 .go2btn:hover{filter:brightness(1.08)}
 .ai-status{font-size:13.5px;min-height:1em}
 .ask{margin:6px 0 18px}
@@ -344,6 +344,13 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 @media print{
   body.printing>*:not(#print){display:none!important}
   body.printing{background:#fff}
+  :root,:root:not([data-theme="light"]),:root[data-theme="dark"]{
+  --bg:#EDF0F5; --panel:#FFFFFF; --sunk:#F5F7FA; --ink:#1B2136; --muted:#5A6177; --line:#D3D9E3;
+  --accent:#2C47A3; --accent-soft:#E2E8F7; --seal:#B23D2C; --seal-soft:#F6E3DF;
+  --good:#2C7A57; --good-soft:#DFF0E7; --hold:#A0681E; --hold-soft:#F5EAD6;
+  --fire:#C4532F; --earth:#8C6B26; --air:#2F7EA6; --water:#4A4FB0;
+  --hd-yellow:#F2D27A; --hd-green:#9CCB8E; --hd-brown:#C9A27A; --hd-red:#E58F7E; --hd-p:#1B2136; --hd-d:#C23B2B;
+  color-scheme:light}
   body.printing #print{display:block}
   #print{color:#111;font-size:12pt}
   #print .pr-head h1{font-size:22pt;margin:0 0 4px}
@@ -367,12 +374,13 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 .chat-row input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--sunk);color:var(--ink)}
 .chat-item{border-top:1px dashed var(--line);padding:10px 0}
 .chat-q{font-weight:700;margin:0 0 4px}
-.chat-a{margin:0;line-height:1.8;white-space:pre-wrap}
+.chat-a{margin:0;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-q,.ai-out{overflow-wrap:anywhere}
 .chat-foot{font-size:12px;margin:6px 0 0}
 @media (max-width:640px){.tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs button{white-space:nowrap;flex:0 0 auto}}
 .hl{margin:0 0 26px}
 .hl>h2{font-family:var(--f-display);font-size:22px;margin:0 0 12px}
-.hl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.hl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
 .hl-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .hl-card h3{font-family:var(--f-display);font-size:19px;margin:0;line-height:1.4}
 .hl-card p{margin:0;font-size:14.5px;line-height:1.75}
@@ -531,7 +539,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <dialog id="dlg" class="dlg" aria-labelledby="dlg-title">
   <div class="dlg-in">
     <header class="dlg-head"><div class="dlg-t"><div class="eyebrow" id="dlg-eyebrow"></div><h2 id="dlg-title"></h2></div>
-      <div class="dlg-act"><button type="button" class="copyread" id="dlg-copy"></button><button type="button" class="dlg-x" id="dlg-x" aria-label="close">×</button></div></header>
+      <div class="dlg-act"><button type="button" class="copyread" id="dlg-copy"></button><button type="button" class="dlg-x" id="dlg-x" aria-label="×">×</button></div></header>
     <nav class="dlg-nav" id="dlg-nav"></nav>
     <div class="dlg-body" id="dlg-body"></div>
     <footer class="dlg-foot"><button type="button" class="dlg-step" id="dlg-prev"></button><span class="mono muted" id="dlg-count"></span><button type="button" class="dlg-step" id="dlg-next"></button></footer>

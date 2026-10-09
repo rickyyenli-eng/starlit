@@ -19,6 +19,9 @@ function yearScore(x,r){
     if(m.k==='祿'){s+=2;why.push(`${m.star}化祿進${PN(r.pal)}`);}
     if(m.k==='權'){s+=1;why.push(`${m.star}化權進${PN(r.pal)}`);}
     if(m.k==='忌'){s-=2;warn.push(`${m.star}化忌進${PN(r.pal)}`);}});
+  x.muts.forEach(m=>{if(m.ypal!==r.pal||m.pal===r.pal)return;
+    if(m.k==='祿'){s+=1;why.push(`${m.star}化祿進流年${PN(r.pal)}`);}
+    if(m.k==='忌'){s-=1.5;warn.push(`${m.star}化忌進流年${PN(r.pal)}`);}});
   if(r.jupGood.includes(x.jup)){s+=1;why.push(`木星走你的${H[x.jup]}`);}
   if(r.satTest.includes(x.sat)){s-=0.5;warn.push(`土星在你的${H[x.sat]}`);}
   return{s,why,warn};
@@ -40,9 +43,10 @@ const JOB={
 
 function render(ctx,W,Z,HD,E){
   if(!ctx||!ctx.intent||ctx.intent==='all')return '';
-  const now=new Date().getFullYear();
-  const ys=Highlights.zh.years(W,Z,HD,E,now,now+8);
+  const now=Highlights.zh.curYear(Z);
+  const ys=Highlights.zh.years(W,Z,HD,E,now,now+8);if(!ys.length)return '';
   let R=null;try{R=Themes.core.build(W,Z,HD,E);}catch(e){}
+  {const ag=ys[0].age;if(ag<15&&['love','work','money'].includes(ctx.intent))return `<div class="hl-card ans"><div class="hl-k">你想知道的</div><h3>現在還在成長階段</h3><p>這張盤目前虛歲 ${ag}，感情、工作和收入的時機，要等長大一點再看才有意義。現在更值得看的是上面的核心特質，以及下面「人生走向」裡學業、家庭與興趣的部分。</p></div>`;}
   const T=Themes.zh.TAGS,fit=root.Readings&&Readings.zh.fit?Readings.zh.fit:(t=>t);
   const palStory=(name,pick)=>{const i=Z.palaces.findIndex(p=>p.name===name),p=Z.palaces[i],src=p.majorStars.length?p:Z.palaces[(i+6)%12];const e=pick(comboOf(src));return e?{e,p,opp:Z.palaces[(i+6)%12]}:null;};
   const tags=th=>R?R[th].ranked.filter(x=>x.sys.size>=2).slice(0,2).map(x=>`「${T[th][x.tag][0]}」`).join('和'):'';

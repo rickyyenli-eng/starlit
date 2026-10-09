@@ -8,6 +8,7 @@ const AI_TXT={
  fr:{title:'Demander à l’IA de raconter votre histoire',intro:'Confiez vos thèmes Zi Wei, astrologique et Human Design à l’IA pour une lecture personnelle pleine de scènes du quotidien. Chaque version est différente.',focus:'Thème',opts:{pair:'Nous deux',all:'Toute la vie',career:'Carrière',wealth:'Argent',love:'Amour',year:'Cette année et la suivante'},go:'Raconter mon histoire',busy:'L’IA écrit…',stop:'Arrêter',again:'Réécrire',err:'Connexion impossible pour le moment. Réessayez plus tard.',limit:n=>`Vous avez utilisé vos ${n} lectures du jour. Revenez demain.`,note:'Texte généré par l’IA à partir de vos thèmes, à titre indicatif.',copy:'Copier'}};
 
 /* ---------- 盤面摘要（給 AI 的事實資料，不含姓名或出生地） ---------- */
+function zwStage(Z){const by=Z.rawDates.lunarDate.lunarYear,ag=Highlights.zh.curYear(Z)-by+1,last=Math.max(...Z.palaces.map(p=>p.decadal.range[1]));return ag<1?'尚未出生（沒有大限與流年）':ag>last?`虛歲 ${ag}，十二個大限已走完`:'目前仍在童限（第一個大限尚未開始）';}
 function aiChartData(focus){
   if(focus==='pair'&&PB){let zb=null;try{zb=PB.Z.horoscope(new Date());}catch(e){}
     let m='';try{const r=Pair.zh.render({A:{W,Z,HD},B:PB},Engine);m='\n\n# Starlit 合盤指標\n'+Object.entries(r.M).map(([k,v])=>`${k}: ${v.join('；')||'—'}`).join('\n');}catch(e){}
@@ -15,8 +16,8 @@ function aiChartData(focus){
   return aiChartFor(W,Z,HD,ZH,true);
 }
 function aiChartFor(W,Z,HD,ZH,withCtx){
-  const facts=[];try{const ly=Z.rawDates.lunarDate.lunarYear,now=new Date().getFullYear();facts.push(`今年 ${now} 年，虛歲 ${now-ly+1}`);
-    if(ZH&&ZH.decadal&&ZH.decadal.index>=0){const dp=Z.palaces[ZH.decadal.index];facts.push(`目前大限：虛歲 ${dp.decadal.range.join('-')}，大限命宮在本命${dp.name}`);}else facts.push('目前仍在童限');
+  const facts=[];try{const ly=Z.rawDates.lunarDate.lunarYear,now=Highlights.zh.curYear(Z);facts.push(`今年 ${now} 年，虛歲 ${now-ly+1}`);
+    if(ZH&&ZH.decadal&&ZH.decadal.index>=0){const dp=Z.palaces[ZH.decadal.index];facts.push(`目前大限：虛歲 ${dp.decadal.range.join('-')}，大限命宮在本命${dp.name}`);}else facts.push(zwStage(Z));
     if(ZH)facts.push(`今年流年命宮在本命${Z.palaces[ZH.yearly.index].name}，流年四化 ${(ZH.yearly.mutagen||[]).map((x,j)=>x+'化'+'祿權科忌'[j]).join(' ')}`);
     try{const ny=Z.horoscope(new Date(Date.UTC(now+1,6,1)));facts.push(`明年 ${now+1} 年流年命宮在本命${Z.palaces[ny.yearly.index].name}，流年四化 ${(ny.yearly.mutagen||[]).map((x,j)=>x+'化'+'祿權科忌'[j]).join(' ')}`);}catch(e){}
     facts.push(`人類圖類型：${I18N.zh.hd.types[HD.type]}（${I18N.en.hd.types[HD.type]}），權威：${I18N.zh.hd.auth[HD.authority]}`);}catch(e){}
@@ -44,8 +45,8 @@ function aiChartBody(W,Z,HD,ZH,withCtx){
     o.push(`${p.name}${p.isBodyPalace?'（身宮）':''} ${p.heavenlyStem}${p.earthlyBranch}｜主星：${p.majorStars.map(st).join(' ')||'無（借對宮）'}｜輔星：${mi.join(' ')||'—'}${adj.length?'｜雜曜：'+adj.join(' '):''}｜大限 ${p.decadal.range.join('-')} 歲`);});
   if(ZH){const nm=i=>Z.palaces[i]?Z.palaces[i].name:'';
     if(ZH.decadal&&ZH.decadal.index>=0)o.push(`目前大限：${ZH.decadal.heavenlyStem}${ZH.decadal.earthlyBranch}，落本命${nm(ZH.decadal.index)}，大限四化 ${(ZH.decadal.mutagen||[]).map((s,j)=>s+'化'+'祿權科忌'[j]).join(' ')}`);
-    else o.push('目前仍在童限');
-    o.push(`今年（${new Date().getFullYear()}）流年：${ZH.yearly.heavenlyStem}${ZH.yearly.earthlyBranch}，流年命宮落本命${nm(ZH.yearly.index)}，流年四化 ${(ZH.yearly.mutagen||[]).map((s,j)=>s+'化'+'祿權科忌'[j]).join(' ')}`);}
+    else o.push(zwStage(Z));
+    o.push(`今年（${Highlights.zh.curYear(Z)}）流年：${ZH.yearly.heavenlyStem}${ZH.yearly.earthlyBranch}，流年命宮落本命${nm(ZH.yearly.index)}，流年四化 ${(ZH.yearly.mutagen||[]).map((s,j)=>s+'化'+'祿權科忌'[j]).join(' ')}`);}
   o.push('','# Human Design');
   const H=HD,X=E.hd;
   o.push(`Type: ${X.types[H.type]}; Strategy: ${X.strategy[H.type]}; Authority: ${X.auth[H.authority]}; Profile: ${H.profile.join('/')}; Definition: ${X.def?X.def[H.definition]||H.definition:H.definition}`);
@@ -58,7 +59,7 @@ function aiChartBody(W,Z,HD,ZH,withCtx){
   o.push('Design (unconscious): '+Engine.HD_BODIES.map(b=>`${b} ${H.D[b].gate}.${H.D[b].line}`).join(', '));
   try{const R=Themes.core.build(W,Z,HD,Engine),T=Themes.zh.TAGS;o.push('','# Starlit 三盤合參 tendency tags (systems agreeing)');
     for(const th of ['career','wealth','love','health','people'])o.push(`${th}: `+R[th].ranked.slice(0,4).map(x=>`${T[th][x.tag][0]} (${[...x.sys].join('+')})`).join(', '));}catch(e){}
-  try{const n=new Date().getFullYear(),ys=Highlights.zh.years(W,Z,HD,Engine,n-3,n+5);o.push('','# 逐年走向（流年命宮落本命宮位、流年化祿/化忌落宮、木星/土星行運宮位、重大節點；虛歲）');
+  try{const n=Highlights.zh.curYear(Z),ys=Highlights.zh.years(W,Z,HD,Engine,n-3,n+5);o.push('','# 逐年走向（流年命宮落本命宮位、流年化祿/化忌落宮、木星/土星行運宮位、重大節點；虛歲）');
     ys.forEach(x=>{const lu=x.muts.find(m=>m.k==='祿'),ji=x.muts.find(m=>m.k==='忌');o.push(`${x.y} ${x.stem}（虛歲 ${x.age}）：流年命宮在本命${x.yp}${x.overlap?'（與大限命宮重疊）':''}；${lu?lu.star+'化祿入'+lu.pal:''}；${ji?ji.star+'化忌入'+ji.pal:''}；Jupiter house ${x.jup}；Saturn house ${x.sat}${x.ms.length?'；節點 '+x.ms.map(m=>m.k+(m.pal?':'+m.pal:'')).join(','):''}`);});}catch(e){}
   return o.join('\n');
 }
@@ -79,7 +80,11 @@ function aiMd(md){
 }
 
 /* ---------- 介面 ---------- */
-let aiCtl=null,aiText='';
+let aiCtl=null,aiText='',aiGen=0;
+/* 換一張盤時呼叫：中止進行中的故事與聊天，讓舊回應作廢 */
+function aiReset(){aiGen++;if(aiCtl){try{aiCtl.abort();}catch(e){}aiCtl=null;}aiText='';chatGen++;if(chatCtl){try{chatCtl.abort();}catch(e){}chatCtl=null;}chatBusy=false;
+  const b=document.querySelector('#ai-box');if(b){b.querySelector('.ai-out').innerHTML='';b.querySelector('.ai-status').textContent='';b.querySelector('#ai-copy').hidden=true;}
+  const cl=document.querySelector('#chat .chat-log');if(cl)cl.innerHTML='';aiRender();}
 function aiRender(){
   const box=document.querySelector('#ai-box');if(!box)return;
   if(!AI_URL){box.hidden=true;return;}
@@ -90,24 +95,26 @@ function aiRender(){
   sel.innerHTML=Object.entries(T.opts).filter(([k])=>k!=='pair'||PB).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');sel.value=[...sel.options].some(o=>o.value===cur)?cur:'all';
   const go=box.querySelector('#ai-go');go.textContent=aiCtl?T.stop:(aiText?T.again:T.go);
   box.querySelector('#ai-copy').textContent=T.copy;
+  const st=box.querySelector('.ai-status');if(st&&st.textContent){st.textContent=aiCtl?T.busy:(aiText?T.note:st.textContent);}
 }
 async function aiRun(){
   const box=document.querySelector('#ai-box'),T=AI_TXT[LG]||AI_TXT.zh,out=box.querySelector('.ai-out'),st=box.querySelector('.ai-status');
   if(aiCtl){aiCtl.abort();return;}
-  aiCtl=new AbortController();aiText='';out.innerHTML='';st.textContent=T.busy;box.querySelector('#ai-copy').hidden=true;aiRender();
+  const gen=++aiGen;aiCtl=new AbortController();aiText='';out.innerHTML='';st.textContent=T.busy;box.querySelector('#ai-copy').hidden=true;aiRender();
   try{
     const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:aiCtl.signal,
       body:JSON.stringify({lang:LG,focus:box.querySelector('#ai-focus').value,chart:aiChartData(box.querySelector('#ai-focus').value)})});
-    if(!r.ok){let j={};try{j=await r.json();}catch(e){}st.textContent=r.status===429?T.limit(j.limit||5):T.err;return;}
+    if(gen!==aiGen)return;
+    if(!r.ok){let j={};try{j=await r.json();}catch(e){}st.textContent=r.status===429?(j.error==='busy'?T.busy:T.limit(j.limit||5)):T.err;return;}
     const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
     st.textContent=T.note;
-    for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+    for(;;){const {value,done}=await rd.read();if(done||gen!==aiGen)break;buf+=dec.decode(value,{stream:true});
       let i;while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
         if(!line.startsWith('data:'))continue;let ev;try{ev=JSON.parse(line.slice(5));}catch(e){continue;}
         if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.text){aiText+=ev.delta.text;out.innerHTML=aiMd(aiText);}
         if(ev.type==='error'){st.textContent=T.err;}}}
-  }catch(e){if(e.name!=='AbortError')st.textContent=T.err;}
-  finally{aiCtl=null;box.querySelector('#ai-copy').hidden=!aiText;aiRender();}
+  }catch(e){if(e.name!=='AbortError'&&gen===aiGen)st.textContent=T.err;}
+  finally{if(gen===aiGen){aiCtl=null;box.querySelector('#ai-copy').hidden=!aiText;aiRender();}}
 }
 function aiInit(){
   const box=document.querySelector('#ai-box');if(!box)return;
@@ -122,10 +129,15 @@ const CHAT_TXT={
  en:{title:'A word from the stars',sub:'Draw a short message for today, or ask one small question. Every answer is based on your charts.',note:'Give me a message',ask:'Ask',ph:'e.g. Is this a good year to change jobs? (max 120 characters)',persona:{gentle:'Gentle',direct:'Straight talk'},busy:'Thinking…',foot:'AI answers from your charts. For reflection only.'},
  ja:{title:'星とひとこと',sub:'今日のあなたへのひとことを引くか、小さな質問をひとつどうぞ。答えはすべてあなたのチャートにもとづきます。',note:'ひとことください',ask:'聞く',ph:'例：今年は転職に向いていますか？（120字以内）',persona:{gentle:'やさしく',direct:'はっきり'},busy:'考え中…',foot:'AI がチャートをもとに答えます。参考程度にどうぞ。'},
  fr:{title:'Un mot des étoiles',sub:'Tirez un petit message pour aujourd’hui, ou posez une petite question. Chaque réponse s’appuie sur vos thèmes.',note:'Un mot pour moi',ask:'Demander',ph:'ex. : Est-ce une bonne année pour changer de travail ? (120 caractères max)',persona:{gentle:'Avec douceur',direct:'Sans détour'},busy:'Je réfléchis…',foot:'Réponse de l’IA d’après vos thèmes, à titre indicatif.'}};
-let chatPersona='gentle',chatBusy=false;
+let chatPersona='gentle',chatBusy=false,chatGen=0,chatCtl=null;
 function chatRender(){
   const el=document.querySelector('#chat');if(!el)return;if(!AI_URL){el.hidden=true;return;}el.hidden=false;
-  const T=CHAT_TXT[LG]||CHAT_TXT.zh,keep=el.querySelector('.chat-log')?el.querySelector('.chat-log').innerHTML:'',q=el.querySelector('#chat-q')?el.querySelector('#chat-q').value:'';
+  const T=CHAT_TXT[LG]||CHAT_TXT.zh;
+  if(el.querySelector('.chat-log')){/* 已建好：只更新文字，不重建紀錄（避免串流中的回答脫離畫面） */
+    el.querySelector('.chat-h h3').textContent=T.title;el.querySelector(':scope>p.muted').textContent=T.sub;el.querySelector('#chat-note').textContent=T.note;
+    el.querySelector('#chat-f button').textContent=T.ask;el.querySelector('#chat-q').placeholder=T.ph;el.querySelector('.chat-foot').textContent=T.foot;
+    el.querySelectorAll('input[name=persona]').forEach(r=>{r.nextElementSibling.textContent=T.persona[r.value];});return;}
+  const keep='',q='';
   el.innerHTML=`<div class="chat-h"><h3>${T.title}</h3><div class="seg mini">${Object.entries(T.persona).map(([k,v])=>`<label><input type="radio" name="persona" value="${k}"${chatPersona===k?' checked':''}><span>${v}</span></label>`).join('')}</div></div>
    <p class="muted">${T.sub}</p>
    <div class="chat-row"><button type="button" class="go2btn" id="chat-note">${T.note}</button></div>
@@ -141,12 +153,14 @@ async function chatSend(mode,q){
   const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const item=document.createElement('div');item.className='chat-item';
   item.innerHTML=(q?`<p class="chat-q">${esc(q)}</p>`:'')+`<p class="chat-a">${T.busy}</p>`;log.prepend(item);const a=item.querySelector('.chat-a');
-  try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,q,persona:chatPersona,lang:LG,chart:aiChartData('all')})});
-    if(!r.ok){let j={};try{j=await r.json();}catch(e){}a.textContent=r.status===429?A.limit(j.limit||20):A.err;return;}
+  const gen=chatGen;chatCtl=new AbortController();
+  try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:chatCtl.signal,body:JSON.stringify({mode,q,persona:chatPersona,lang:LG,chart:aiChartData('all')})});
+    if(gen!==chatGen)return;
+    if(!r.ok){let j={};try{j=await r.json();}catch(e){}a.textContent=r.status===429?(j.error==='busy'?T.busy:A.limit(j.limit||20)):A.err;return;}
     const rd=r.body.getReader(),dec=new TextDecoder();let buf='',txt='';
-    for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+    for(;;){const {value,done}=await rd.read();if(done||gen!==chatGen)break;buf+=dec.decode(value,{stream:true});let i;
       while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line.startsWith('data:'))continue;let ev;try{ev=JSON.parse(line.slice(5));}catch(e){continue;}
         if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.text){txt+=ev.delta.text;a.textContent=txt.replace(/\*\*/g,'');}}}
     if(!txt)a.textContent=A.err;else if(mode==='ask')document.querySelector('#chat-q').value='';
-  }catch(e){a.textContent=A.err;}finally{chatBusy=false;}
+  }catch(e){if(gen===chatGen&&e.name!=='AbortError')a.textContent=A.err;}finally{if(gen===chatGen){chatBusy=false;chatCtl=null;}}
 }

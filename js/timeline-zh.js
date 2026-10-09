@@ -23,12 +23,16 @@ const FOCUS={
 const LU={
  '命宮':'整體人緣變好，別人比較願意幫你。','兄弟':'朋友或手足帶來好消息，合作容易談成。','夫妻':'感情甜度上升，伴侶或對象帶來好運。','子女':'投資、合夥、子女或作品方面有收穫。',
  '財帛':'錢的流動變順，容易有加薪、獎金或新收入。','疾厄':'身體狀態不錯，適合養成好習慣。','遷移':'出外有貴人，旅行或外地的機會特別好。','僕役':'同事、客戶、朋友帶來資源與機會。',
- '官祿':'工作順手，有表現與升遷的機會。','田宅':'家運順，適合置產、搬家或整理住處。','福德':'心情愉快，生活品質提升，享受多一點。','父母':'長輩或上司給你支持，考試文書順利。'};
+ '官祿':'工作順手，有表現與升遷的機會。','田宅':'家運順，適合整理住處、搬家或整理住處。','福德':'心情愉快，生活品質提升，享受多一點。','父母':'長輩或上司給你支持，考試文書順利。'};
 /* 流年化忌入某宮：要用力的地方 */
 const JI={
  '命宮':'容易對自己要求太高、想太多，記得留餘裕。','兄弟':'和朋友或手足之間可能有心結，借貸、作保要小心。','夫妻':'感情容易卡在溝通，少翻舊帳、多傾聽。','子女':'投資與合夥要保守，也可能為子女或學生操心。',
  '財帛':'收支起伏較大，不適合高風險投機，先把預備金準備好。','疾厄':'身體容易累積疲勞，固定作息、定期檢查。','遷移':'在外比較辛苦，交通、出差多注意，凡事保持低調。','僕役':'慎選合作對象，人際上容易被拖累或誤解。',
  '官祿':'工作壓力大，事情容易卡關，重大決定多請教人。','田宅':'家裡或房子的事讓你煩心，存錢要有紀律。','福德':'情緒容易內耗、睡不好，刻意安排放鬆時間。','父母':'和上司或長輩溝通不易，合約文件要看清楚。'};
+/* 15 歲（虛歲）以下改用成長版的說法 */
+const KID_FOCUS={'夫妻':'這一年和身邊親近的人互動是主題：好朋友、喜歡的同學，學著表達心意也學著尊重別人。','子女':'這一年適合發展興趣和作品：畫畫、音樂、運動、做東西，能量想往外延伸。','財帛':'這一年適合學習零用錢怎麼用、怎麼存，建立對錢的基本觀念。','遷移':'這一年適合往外走：旅行、營隊、轉學或搬家，在外面會長見識。','僕役':'這一年同學和朋友的影響很大，新的團體、社團會帶來很多學習。','官祿':'這一年學業是主軸：考試、比賽、選擇方向，努力容易被看見。','田宅':'這一年重心在家：搬家、換房間、家人的事，家裡的氣氛很重要。'};
+const KID_LU={'夫妻':'和好朋友的關係很好，容易遇到談得來的人。','財帛':'容易收到獎勵、紅包或獎學金，適合學著存下來。','官祿':'學業順手，考試、比賽有好表現。','僕役':'同學和朋友帶來幫助，團體生活愉快。','子女':'興趣和作品有收穫，適合多展現。','田宅':'家裡氣氛好，生活安定。'};
+const KID_JI={'夫妻':'和好朋友之間容易有小誤會，多說出自己的感受。','財帛':'零用錢容易花太快，學著記帳和分配。','官祿':'課業壓力比較大，安排好休息與讀書時間。','僕役':'同學之間容易有摩擦，遇到困擾記得告訴大人。','子女':'興趣上容易受挫，給自己多一點時間。','田宅':'家裡的事容易讓人心煩，多和家人溝通。','遷移':'出門在外多注意安全，跟著大人行動。'};
 /* 木星（約一年換一宮）、土星（約兩年半換一宮）行經本命宮位 */
 const JUP=['自信與能見度提升，適合開始新計畫','收入或資源增加的機會','學習、寫作、短途移動變多','家庭、居住空間有好的變化','戀愛、創作、玩樂的運氣好','工作流程與健康習慣容易改善','合作與伴侶關係帶來機會','共同資源、投資或深層轉變有收穫','進修、出國、拓展視野','事業曝光與升遷機會','朋友圈擴大，團體帶來機會','適合休息、沉澱與內在修復'];
 const SAT=['對自己的要求變高，是重新定義自己的時期','要認真面對金錢與自我價值','溝通與學習需要更踏實','家庭與居住的責任加重','感情與創作要經得起考驗','工作量與健康需要管理','伴侶與合作關係進入考驗與承諾','面對共同財務、親密關係的深層課題','信念與方向需要重新檢視','事業上扛起更大的責任，付出會被看見','朋友圈篩選，留下真正同路的人','收尾舊的循環，為下一輪做準備'];
@@ -41,6 +45,8 @@ const sep=(a,b)=>{const d=Math.abs(((a-b)%360+360)%360);return d>180?360-d:d;};
 
 /* 一整年每 6 天取樣：木星、土星停留最久的宮位與入宮月份；回歸／對分的精確月份 */
 const SCAN=new WeakMap(),HC=new WeakMap();
+/* 目前的「流年」以農曆年計：春節前仍算前一年 */
+function curYear(Z){const y=new Date().getFullYear();try{const hn=Z.horoscope(new Date()),hm=horoY(Z,y);if(hn&&hm&&hn.yearly.earthlyBranch!==hm.yearly.earthlyBranch)return y-1;}catch(e){}return y;}
 function horoY(Z,y){let m=HC.get(Z);if(!m){m={};HC.set(Z,m);}if(!(y in m)){try{m[y]=Z.horoscope(new Date(Date.UTC(y,6,1)));}catch(e){m[y]=null;}}return m[y];}
 function yearScan(W,E,y){
   let m=SCAN.get(W);if(!m){m={};SCAN.set(W,m);}if(m[y])return m[y];
@@ -67,13 +73,15 @@ function years(W,Z,HD,E,from,to){
     const dec=H&&H.decadal&&H.decadal.name!=='童限'?H.decadal.index:-1;
     if(y<from){prevDec=dec;continue;}
     const yr=H?H.yearly:null;
-    const muts=yr?(yr.mutagen||[]).map((s,j)=>({star:s,k:'祿權科忌'[j],pal:(()=>{const i=findStar(s);return i>=0?Z.palaces[i].name:null;})()})):[];
+    const muts=yr?(yr.mutagen||[]).map((s,j)=>{const i=findStar(s);return{star:s,k:'祿權科忌'[j],pal:i>=0?Z.palaces[i].name:null,ypal:i>=0&&yr.palaceNames?yr.palaceNames[i]:null};}):[];
     let sc0=null;try{sc0=yearScan(W,E,y);}catch(e){}
     const jup=sc0?{house:sc0.house.Jupiter,ing:sc0.ingress.Jupiter||[]}:null,sat=sc0?{house:sc0.house.Saturn,ing:sc0.ingress.Saturn||[]}:null;
     const ms=[];
     if(dec>=0&&prevDec!==null&&dec!==prevDec)ms.push({k:'decade',pal:Z.palaces[dec].name,range:Z.palaces[dec].decadal.range,combo:comboOf(Z.palaces[dec].majorStars.length?Z.palaces[dec]:Z.palaces[(dec+6)%12])});
-    if(sc0)for(const k of ['satReturn','satOpp','jupReturn','uraOpp'])if(sc0.hits[k]){let first=true;try{const pv=yearScan(W,E,y-1);if(pv.hits[k])first=false;}catch(e){}ms.push({k,months:sc0.hits[k],first});}
+    const ageY=y-birthY+1,MINAGE={satReturn:25,satOpp:10,jupReturn:10,uraOpp:30};
+    if(sc0)for(const k of ['satReturn','satOpp','jupReturn','uraOpp'])if(sc0.hits[k]&&ageY>=MINAGE[k]){let first=true;try{const pv=yearScan(W,E,y-1);if(pv.hits[k])first=false;}catch(e){}ms.push({k,months:sc0.hits[k],first});}
     const age=y-birthY+1;/* 虛歲，與紫微大限一致 */
+    if(age<1){prevDec=dec;continue;}
     if(HD&&HD.profile.includes(6)&&(age===31||age===51))ms.push({k:'hd6',age:age-1});
     /* 估算順逆（規則透明，見說明） */
     let sc=0;
@@ -107,19 +115,22 @@ function top3(W,Z,HD,E){
     items.push({kicker:'你的核心',title:`「${me.title}」`,body:fit(firstSent(me.story),mp,Z.palaces[(mi+6)%12].majorStars),
       why:[`命宮${mp.majorStars.length?'':'（無主星，借對宮）'} ${src.majorStars.map(s=>s.name+(s.brightness?'〔'+s.brightness+'〕':'')+(s.mutagen?'化'+s.mutagen:'')).join('、')}`,`太陽${I18N.zh.signs[Math.floor(E.norm(W.pos.Sun.lon)/30)][0]}、上升${I18N.zh.signs[Math.floor(E.norm(W.asc)/30)][0]}`,`人類圖 ${I18N.zh.hd.types[HD.type]}、${HD.profile.join('/')}`]});}
   /* 3. 現在這一章 */
-  const H=horoY(Z,new Date().getFullYear());
+  const CY=curYear(Z),H=horoY(Z,CY);
   if(H&&H.decadal&&H.decadal.name!=='童限'&&H.decadal.index>=0&&Z.palaces[H.decadal.index]){const dp=Z.palaces[H.decadal.index],dsrc=dp.majorStars.length?dp:Z.palaces[(H.decadal.index+6)%12];
     const de=root.STORY_ZW_MING&&STORY_ZW_MING.decade[comboOf(dsrc)];const yp=Z.palaces[H.yearly.index].name;
     items.push({kicker:`現在這一章（虛歲 ${dp.decadal.range.join('–')}）`,title:de?`「${de.title}」`:`重心在${DOM[dp.name]}`,
-      body:(de?firstSent(de.story):'')+`今年（${new Date().getFullYear()}）流年命宮走到${PN(yp)}：${firstSent(FOCUS[yp])}`,
+      body:(de?firstSent(de.story):'')+`今年（${CY}）流年命宮走到${PN(yp)}。${firstSent(FOCUS[yp])}`,
       why:[`大限命宮在本命${PN(dp.name)}（${dp.heavenlyStem}${dp.earthlyBranch}）`,`大限主星 ${dsrc.majorStars.map(s=>s.name).join('、')||'—'}`,`流年 ${H.yearly.heavenlyStem}${H.yearly.earthlyBranch}，流年命宮在${PN(yp)}`]});}
-  else items.push({kicker:'現在這一章',title:'還在童限',body:'第一個大限還沒開始，這段時間的走向主要看命宮與家庭環境。',why:[`第一個大限從 ${mp.decadal.range[0]} 歲開始`]});
+  else{const by=Z.rawDates.lunarDate.lunarYear,ag=CY-by+1,last=Math.max(...Z.palaces.map(p=>p.decadal.range[1]));
+    if(ag<1)items.push({kicker:'現在這一章',title:'還沒出生',body:'這個生日在未來，所以還沒有大限和流年可以看；本命盤的內容仍可參考。',why:[`農曆出生年 ${by}`]});
+    else if(ag>last)items.push({kicker:'現在這一章',title:'十二個大限都已走完',body:`虛歲 ${ag}，已經超過命盤上最後一個大限（${last} 歲），大限的說法就不再適用，可以只看本命與流年。`,why:[`最後一個大限到 ${last} 歲`]});
+    else items.push({kicker:'現在這一章',title:'還在童限',body:'第一個大限還沒開始，這段時間的走向主要看命宮與家庭環境。',why:[`第一個大限從 ${mp.decadal.range[0]} 歲開始`]});}
   return items;
 }
 
 const TONE={up:['順勢','up'],even:['平穩','even'],hard:['要用力','hard']};
 function render(W,Z,HD,E){
-  const now=new Date().getFullYear();
+  const now=curYear(Z);
   const t3=top3(W,Z,HD,E);
   const ys=years(W,Z,HD,E,now-3,now+5);
   const card=x=>`<div class="hl-card"><div class="hl-k">${x.kicker}</div><h3>${x.title}</h3><p>${x.body}</p><div class="hl-why"><span>依據</span>${x.why.map(w=>`<i>${w}</i>`).join('')}</div></div>`;
@@ -135,21 +146,23 @@ function render(W,Z,HD,E){
   const row=x=>{
     const past=x.y<now,cur=x.y===now,tn=TONE[x.tone];
     const lu=x.muts.find(m=>m.k==='祿'&&m.pal),ji=x.muts.find(m=>m.k==='忌'&&m.pal);
-    const head=x.ms.length&&x.ms[0].k==='decade'?`進入新大限：重心轉到${DOM[x.ms[0].pal]}`:x.yp?`重心在${DOM[x.yp]}`:'';
+    const dms=x.ms.find(m=>m.k==='decade'),dde=dms&&root.STORY_ZW_MING&&STORY_ZW_MING.decade[dms.combo];const head=dms?`進入新大限（${PN(dms.pal)}）${dde?`：「${dde.title}」`:''}`:x.yp?`重心在${DOM[x.yp]}`:'';
     const li=[];
     x.ms.forEach(m=>li.push(msTxt(m)));
-    if(x.yp)li.push(`<b>流年命宮走到${PN(x.yp)}${x.overlap?'（又與大限命宮重疊，好壞都放大）':''}</b>：${FOCUS[x.yp]}`);
-    if(lu)li.push(`<b>${lu.star}化祿進${PN(lu.pal)}</b>：${LU[lu.pal]}`);
-    if(ji)li.push(`<b>${ji.star}化忌進${PN(ji.pal)}</b>：${JI[ji.pal]}`);
-    const ing=a=>a&&a.length?`（${a.map(i=>`${i.mon} 月進入${H[i.h]}`).join('、')}）`:'';
+    const kid=x.age<15,F_=p=>kid&&KID_FOCUS[p]?KID_FOCUS[p]:FOCUS[p],L_=p=>kid&&KID_LU[p]?KID_LU[p]:LU[p],J_=p=>kid&&KID_JI[p]?KID_JI[p]:JI[p];
+    if(x.yp)li.push(`<b>流年命宮走到${PN(x.yp)}${x.overlap?'（又與大限命宮重疊，好壞都放大）':''}</b>：${F_(x.yp)}`);
+    const yl=m=>m.ypal&&m.ypal!==m.pal?`（也是今年的流年${PN(m.ypal)}，${DOM[m.ypal]}方面同樣受影響）`:'';
+    if(lu)li.push(`<b>${lu.star}化祿進${PN(lu.pal)}</b>${yl(lu)}：${L_(lu.pal)}`);
+    if(ji)li.push(`<b>${ji.star}化忌進${PN(ji.pal)}</b>${yl(ji)}：${J_(ji.pal)}`);
+    const ing=a=>{if(!a||!a.length)return '';const b=a.filter((i,k)=>!(a[k+1]&&a[k+1].mon===i.mon));return `（${b.map(i=>`${i.mon} 月進入${H[i.h]}`).join('、')}）`;};
     if(x.jup)li.push(`<b>木星這一年主要走你的${H[x.jup]}</b>${ing(x.jupIng)}：${JUP[x.jup-1]}。`);
-    if(x.sat)li.push(`<b>土星這一年主要在你的${H[x.sat]}</b>${ing(x.satIng)}：${SAT[x.sat-1]}。`);
+    if(x.sat)li.push(`<b>土星這一年主要在你的${H[x.sat]}</b>${ing(x.satIng)}${[1,4,7,10].includes(x.sat)?'（今年比較吃力的地方）':''}：${SAT[x.sat-1]}。`);
     return `<details class="tl-y${past?' past':''}${cur?' cur':''}"${cur?' open':''}><summary><span class="tl-yr">${x.y}</span><span class="tl-age">${x.stem}・虛歲 ${x.age}</span><span class="tone ${tn[1]}">${tn[0]}</span><span class="tl-h">${head}</span></summary>
       ${past?'<p class="tl-past">回頭對照：這一年你是不是經歷過這些？</p>':''}<ul>${li.map(s=>`<li>${s}</li>`).join('')}</ul></details>`;};
   return `<div class="hl-cards">${t3.map(card).join('')}</div>
-   <div class="tl"><div class="tl-head"><h3>人生走向</h3><p class="muted">從 ${now-3} 到 ${now+5} 年。過去的年份可以拿來對照，看看準不準；「順勢／平穩／要用力」是依流年四化落宮與木星、土星行運估算的整體感受（目前沒有納入大限四化與生年四化的疊併），不代表好壞定論。</p></div>
-   ${ys.map(row).join('')}</div>`;
+   <div class="tl"><div class="tl-head"><h3>人生走向</h3><p class="muted">從 ${ys.length?ys[0].y:now-3} 到 ${now+5} 年。過去的年份可以拿來對照，看看準不準；「順勢／平穩／要用力」是依流年四化落宮與木星、土星行運估算的整體感受（目前沒有納入大限四化與生年四化的疊併），不代表好壞定論。</p></div>
+   ${ys.length?ys.map(row).join(''):'<p class="muted">這段期間還沒出生，沒有流年可以看。</p>'}</div>`;
 }
 root.Highlights=root.Highlights||{};
-root.Highlights.zh={render,years,top3,horoY};
+root.Highlights.zh={render,years,top3,horoY,curYear};
 })(typeof globalThis!=='undefined'?globalThis:this);

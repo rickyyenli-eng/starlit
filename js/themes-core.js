@@ -63,7 +63,10 @@ function build(W,Z,HD,E){
     const combo=stars.map(s=>s.name).sort((a,b)=>ZO.indexOf(a)-ZO.indexOf(b));
     stars.forEach(s=>(ZW_STAR[th][s.name]||[]).forEach(t=>add('zw',t,'palStar',pal,borrowed,s.name,s.brightness||'')));
     P.minorStars.forEach(s=>{if(ZW_MINOR[th][s.name])add('zw',ZW_MINOR[th][s.name],'palMinor',pal,s.name);});
-    [...P.majorStars,...P.minorStars].forEach(s=>{if(s.mutagen&&ZW_MUT[th][s.mutagen])add('zw',ZW_MUT[th][s.mutagen],'palMut',pal,s.name,s.mutagen);});
+    [...P.majorStars,...P.minorStars].forEach(s=>{if(!s.mutagen||!ZW_MUT[th][s.mutagen])return;let tg=ZW_MUT[th][s.mutagen];
+      /* 財帛化祿依星性分正財／偏財：貪狼、破軍、廉貞化祿偏向機會財，其餘偏向穩健累積 */
+      if(th==='wealth'&&s.mutagen==='祿'&&!['貪狼','破軍','廉貞'].includes(s.name))tg='steady';
+      add('zw',tg,'palMut',pal,s.name,s.mutagen);});
     const inH=h=>E.PK.filter(k=>W.pos[k].house===h);
     if(th==='career'){const ms=signOf(W.mc);MC_SIGN[ms].forEach(t=>add('west',t,'mc',ms));inH(10).forEach(k=>add('west',H10[k],'inHouse',k,10));}
     if(th==='wealth'){const s2=signOf(W.houses[1]);add('west',H2_SIGN[s2],'cusp',2,s2);inH(2).forEach(k=>add('west',H2[k],'inHouse',k,2));inH(8).forEach(k=>add('west',H8[k],'inHouse',k,8));}

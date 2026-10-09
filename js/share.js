@@ -7,7 +7,7 @@ const SH_TXT={
 const ST=()=>SH_TXT[LG]||SH_TXT.zh;
 
 function shareURL(){
-  const v=readForm(),q=new URLSearchParams();
+  const v=LASTV||readForm(),q=new URLSearchParams();
   q.set('d',v.date);q.set('t',v.time);q.set('g',v.g==='男'?'m':'f');
   if(v.city&&CITIES.find(c=>c[0]===v.city&&c[4]!=null))q.set('c',v.city);else{q.set('lat',v.lat);q.set('lon',v.lon);q.set('tz',v.tz);}
   if(v.dst)q.set('dst','1');
@@ -34,7 +34,8 @@ function shareRestore(){
   const r=document.querySelector(`input[name=g][value="${q.get('g')==='m'?'男':'女'}"]`);if(r)r.checked=true;
   if(q.get('c')){$('#f-city').value=q.get('c');onCity();}else{$('#f-city').value='';$('#f-lat').value=q.get('lat')||'';$('#f-lon').value=q.get('lon')||'';$('#f-tz').value=q.get('tz')||'';$('.adv').open=true;}
   $('#f-dst').checked=q.get('dst')==='1';
-  CTX.intent=q.get('i');CTX.status=q.get('s');CTX.job=q.get('j');
+  const ok=(x,arr)=>arr.includes(x)?x:null;
+  CTX.intent=ok(q.get('i'),['all','love','work','money','year']);CTX.status=ok(q.get('s'),['single','crush','dating','married','broke']);CTX.job=ok(q.get('j'),['student','seeking','employee','founder','change']);
   if(q.get('pd')){$('#p-date').value=q.get('pd');$('#p-time').value=q.get('pt')||'';$('#p-name').value=(q.get('pn')||'').slice(0,20);$('#p-city').value=q.get('pc')||'';
     if($('#p-dst'))$('#p-dst').checked=q.get('pdst')==='1';const pr=document.querySelector(`input[name=pg][value="${q.get('pg')==='m'?'男':'女'}"]`);if(pr)pr.checked=true;SH_PAIR=true;}
   return true;
@@ -44,7 +45,7 @@ function shareAfterRender(){if(SH_PAIR){SH_PAIR=false;$('#pairf').requestSubmit?
 
 /* ---------- 列印成 PDF：把所有分頁的完整內容攤平成一份報告 ---------- */
 function printReport(){
-  const T=ST(),U=L.ui,v=readForm();
+  const T=ST(),U=L.ui,v=LASTV||readForm();
   const city=(CITIES.find(c=>c[0]===v.city)||[])[{zh:0,en:1,ja:2,fr:3}[LG]]||`${v.lat}, ${v.lon}`;
   const sec=(tab)=>{const raw=splitSections(ADV[tab]||'');const used=new Set();let h='';
     GROUPS[tab].forEach(([key,keys])=>{const parts=[];keys.forEach(k=>{if(k[0]==='@')return;raw.forEach((x,j)=>{if(!used.has(j)&&x.key===k){used.add(j);parts.push(x);}});});
@@ -53,10 +54,10 @@ function printReport(){
   const clone=sel=>{const el=document.querySelector(sel);return el?el.outerHTML:'';};
   const tabs=[['west','tabW','#w-sum','#wheel','#w-read'],['zw','tabZ','#z-sum','#zw','#z-read'],['hd','tabH','#h-sum','#body','#h-read'],['mix','tabM','#m-sum',null,'#m-read']];
   const esc=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let h=`<header class="pr-head"><h1>${T.printTitle}</h1><p>${T.born}：${v.date} ${v.time}・${city}・${v.g==='男'?U.male:U.female}${PBV?`　｜　${T.pair}：${esc(PBV.name)} ${esc(PBV.date)} ${esc(PBV.time)}`:''}</p></header>`;
+  let h=`<header class="pr-head"><h1>${T.printTitle}</h1><p>${T.born}${LG==='zh'||LG==='ja'?'：':' : '}${v.date} ${v.time}・${city}・${v.g==='男'?U.male:U.female}${PBV?`　｜　${T.pair}${LG==='zh'||LG==='ja'?'：':' : '}${esc(PBV.name)} ${esc(PBV.date)} ${esc(PBV.time)}`:''}</p></header>`;
   h+=`<section class="pr-sec"><h2>${U.hlTitle}</h2>${$('#hl-body').innerHTML}</section>`;
   for(const [tab,tk,sum,chart,read] of tabs){
-    h+=`<section class="pr-sec"><h2>${U[tk]}</h2>${clone(sum)}${chart?`<div class="pr-chart">${clone(chart)}</div>`:''}<div class="reading plain"><div class="body">${document.querySelector(read+' .body').innerHTML}${sec(tab)}</div></div></section>`;}
+    h+=`<section class="pr-sec"><h2>${U[tk]}</h2>${clone(sum)}${chart?`<div class="pr-chart">${clone(chart)}</div>`:''}<div class="reading plain"><div class="body">${sec(tab)||document.querySelector(read+' .body').innerHTML}</div></div></section>`;}
   if(PB&&ADV.pair)h+=`<section class="pr-sec"><h2>${U.tabP}</h2>${clone('#pair-sum')}<div class="reading plain"><div class="body">${sec('pair')}</div></div></section>`;
   const aiOut=document.querySelector('#ai-box .ai-out');if(aiOut&&aiOut.textContent.trim())h+=`<section class="pr-sec"><h2>${AI_TXT[LG]?AI_TXT[LG].title:AI_TXT.zh.title}</h2><div class="reading plain"><div class="body">${aiOut.innerHTML}</div></div></section>`;
   let pr=$('#print');if(!pr){pr=document.createElement('div');pr.id='print';document.body.appendChild(pr);}

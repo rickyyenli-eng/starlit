@@ -44,14 +44,17 @@ function compute(v){
   {const yy=+v.date.slice(0,4);if(!(yy>=1900&&yy<=2100)){showErr('errRange');return false;}}
   if(!v.g){showErr('errGender');return false;}
   if([v.lat,v.lon,v.tz].some(isNaN)){showErr('errPlace');return false;}
+  if(Math.abs(v.lat)>90||Math.abs(v.lon)>180||v.tz<-12||v.tz>14){showErr('errCoord');return false;}
   const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
   const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0);
   const utc=new Date(stdMs-v.tz*3600e3);
+  if(!isFinite(utc.getTime())){showErr('errTime');return false;}
+  LASTV={...v};
   W=westChart(utc,v.lat,v.lon);
   HD=Engine.humanDesign(utc);selH=null;
   const sd=new Date(stdMs);
   Z=zwBySolar(sd,v.g);
-  try{ZH=Z.horoscope(new Date());if(ZH&&ZH.decadal.name==='童限')ZH={...ZH,decadal:{...ZH.decadal,index:-1}};}catch(e){ZH=null;}
+  try{ZH=Z.horoscope(new Date());if(ZH&&(ZH.decadal.name==='童限'||!(ZH.decadal.index>=0)))ZH={...ZH,decadal:{...ZH.decadal,index:-1}};}catch(e){ZH=null;}
   selZ=Z.palaces.findIndex(p=>p.name==='命宮');
   return true;
 }
@@ -70,7 +73,7 @@ function computeChart(v){
   const sd=new Date(stdMs),Zb=zwBySolar(sd,v.g);
   return{W:westChart(utc,c[4],c[5]),Z:Zb,HD:Engine.humanDesign(utc),name:v.name};
 }
-let PB=null,PBV=null;
+let PB=null,PBV=null,LASTV=null;
 function pairSubmit(e){e.preventDefault();const v={name:$('#p-name').value,date:$('#p-date').value,time:$('#p-time').value,g:(document.querySelector('input[name=pg]:checked')||{}).value,city:$('#p-city').value,dst:$('#p-dst')?$('#p-dst').checked:false};
   const er=$('#p-err');er.hidden=true;
   const yy=+String(v.date).slice(0,4);const bad=!v.date||!v.time?'errTime':!(yy>=1900&&yy<=2100)?'errRange':!v.g?'errGender':!v.city?'errPlace':null;
@@ -82,8 +85,8 @@ function renderPair(){
   const out=$('#pair-out');if(!PB||!W){out.hidden=true;ADV.pair='';return;}
   const P=window.Pair&&(Pair[LG]||Pair.zh);let r;
   try{r=P.render({A:{W,Z,HD},B:PB},Engine);}catch(e){console.error(e);out.hidden=true;return;}
-  out.hidden=false;$('#pair-sum').innerHTML=r.cards;
-  $('#pair-read .body').innerHTML=(P!==Pair[LG]&&L.ui.pairNote?`<p class="readnote">${L.ui.pairNote}</p>`:'')+r.basic;ADV.pair=r.adv;
+  out.hidden=false;const pn=P!==Pair[LG]&&L.ui.pairNote?`<p class="readnote" style="grid-column:1/-1">${L.ui.pairNote}</p>`:'';$('#pair-sum').innerHTML=pn+r.cards;
+  $('#pair-read .body').innerHTML=r.basic;ADV.pair=r.adv;
 }
 /* ===================== 星盤 ===================== */
 const C=270;
@@ -162,7 +165,7 @@ function drawZW(g=$('#zw'),mode='natal'){
   const fe=Z.fiveElementsClass,feTxt=L.fiveElNames?F.fiveEl(L.fiveElNames[fe[0]],NUM[fe[1]],fe):F.fiveEl(null,null,fe);
   const pillars=[cd.yearly,cd.monthly,cd.daily,cd.hourly].map(x=>x.join('')).join(' ');
   h+=`<div class="center"><div class="nm">${U.zwTitle}</div>
-   <div>${U.solar} ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${F.timeLbl(Z._late&&U.lateZi?U.lateZi:Z.time,BRANCH[ti],rng)}</div>
+   <div>${U.solar} ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${Z._late&&U.lateZi?`${U.lateZi} ${rng}`:F.timeLbl(Z.time,BRANCH[ti],rng)}</div>
    <div>${U.lunar} ${F.lunarLbl(Z.lunarDate.replace(/腊/g,'臘').replace(/闰/g,'閏'),rd.lunarYear,rd.lunarMonth,rd.lunarDay,rd.isLeap)}</div>
    <div>${U.pillars?U.pillars+' ':''}${pillars}</div>
    <div class="kl"><span>${feTxt}</span><span>${U.soul} ${starName(Z.soul)}</span><span>${U.body} ${starName(Z.body)}</span></div>
@@ -171,14 +174,14 @@ function drawZW(g=$('#zw'),mode='natal'){
   if(main)g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
 }
 function zHoro(mode){if(mode==='natal')return null;try{return Z.horoscope(new Date(Date.UTC(zYear,6,1)));}catch(e){return null;}}
-function zLayer(mode){const H=zHoro(mode);if(!H)return null;if(mode==='dec'&&H.decadal.name==='童限')return null;const src=mode==='dec'?H.decadal:H.yearly;const cells=Z.palaces.map((p,i)=>({name:src.palaceNames[i],muts:[]}));
+function zLayer(mode){const H=zHoro(mode);if(!H)return null;if(mode==='dec'&&(H.decadal.name==='童限'||!(H.decadal.index>=0)))return null;const src=mode==='dec'?H.decadal:H.yearly;const cells=Z.palaces.map((p,i)=>({name:src.palaceNames[i],muts:[]}));
   src.mutagen.forEach((s,j)=>{const t=Z.palaces.findIndex(p=>[...p.majorStars,...p.minorStars].some(x=>x.name===s));if(t>=0)cells[t].muts.push({s,k:MUT_KEYS[j]});});
   return{cells,pre:mode==='dec'?L.ui.layerDec:L.ui.layerYr,label:`${src.heavenlyStem}${src.earthlyBranch}`};}
 function zToolbar(bar,grid){const U=L.ui;const redraw=()=>drawZW(grid,zMode);
   bar.innerHTML=`<div class="seg mini" role="radiogroup">${[['natal',U.zModeNatal],['dec',U.zModeDec],['yr',U.zModeYr]].map(([k,t])=>`<label><input type="radio" name="zm" value="${k}" ${zMode===k?'checked':''}><span>${t}</span></label>`).join('')}</div>
   <label class="yr">${U.zYear} <input id="z-year" type="number" min="1900" max="2100" value="${zYear}"></label>`;
   bar.querySelectorAll('input[name=zm]').forEach(r=>r.addEventListener('change',()=>{zMode=r.value;redraw();}));
-  bar.querySelector('#z-year').addEventListener('change',e=>{const v=parseInt(e.target.value);if(v>1900&&v<2101){zYear=v;redraw();}});redraw();}
+  bar.querySelector('#z-year').addEventListener('change',e=>{let v=parseInt(e.target.value);if(!isFinite(v))v=zYear;v=Math.max(1900,Math.min(2100,v));e.target.value=v;zYear=v;redraw();});redraw();}
 function majorBlock(s){const U=L.ui,m=L.major[MAJOR_KEYS.indexOf(s.name)];const b=s.brightness&&brOf(s.brightness);
   return `<div class="block"><h4>${m[0]}・${m[1]}${b?` <span class="chip">${b[0]}：${b[1]}</span>`:''}${s.mutagen?` <span class="mut ${s.mutagen}">${mutOf(s.mutagen)[1]}</span>`:''}</h4><p>${m[2]}</p><div class="pros"><span class="t g">${U.strengths}</span><span>${m[3]}</span><span class="t w">${U.watch}</span><span>${m[4]}</span></div>${s.mutagen?`<p class="muted" style="font-size:13.5px">${mutOf(s.mutagen)[1]}：${mutOf(s.mutagen)[2]}</p>`:''}</div>`;}
 function decMuts(){if(!ZH||!ZH.decadal.mutagen)return '';return L.fn.list(ZH.decadal.mutagen.map((s,j)=>L.fn.mutPair(starName(s),L.mut[j][1])));}
@@ -230,8 +233,9 @@ function loadLang(lg){if(loaded[lg])return loaded[lg];
   const one=src=>new Promise(r=>{const sc=document.createElement('script');sc.src=src;sc.onload=sc.onerror=()=>r();document.head.appendChild(sc);});
   return loaded[lg]=Promise.all([...LANG_FILES.map(f=>`js/${f}.${lg}.js`),`js/themes-${lg}.js`].map(one));}
 function primer(id,arr){$(id).innerHTML=arr.map(([b,t])=>`<div><b>${b}</b><span>${t??L.mut.map((m,j)=>`${mutBadge(MUT_KEYS[j])} ${m[3]}`).join('　')}</span></div>`).join('');}
+const LANGS=['zh','en','ja','fr'];
 function applyLang(lg){
-  LG=I18N[lg]?lg:'zh';L=I18N[LG];
+  LG=LANGS.includes(lg)?lg:'zh';L=I18N[LG];
   document.documentElement.lang=L.htmlLang;document.title=L.title;
   document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=L.ui[el.dataset.t];});
   const cur=$('#f-city').value;fillCities();if(cur)$('#f-city').value=cur;
@@ -256,18 +260,18 @@ function boot(){
   $('#langs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.l)));
   let lg=new URLSearchParams(location.search).get('lang');if(!lg){try{lg=localStorage.getItem('starlit-lang');}catch(e){}}
   if(!lg){const n=(navigator.language||'zh').toLowerCase();lg=n.startsWith('ja')?'ja':n.startsWith('fr')?'fr':n.startsWith('zh')?'zh':'en';}
-  LG=I18N[lg]?lg:'zh';L=I18N[LG];
+  LG=LANGS.includes(lg)?lg:'zh';L=I18N[LG];
   fillCities();
   $('#f-city').addEventListener('change',onCity);
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
   applyLang(LG);aiInit();wizInit();
   $('#pairf').addEventListener('submit',pairSubmit);
   $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
-    try{await Promise.race([Promise.all([sweReady,loadLang(LG)]),new Promise(r=>setTimeout(r,15000))]);}catch(err){}
+    try{await Promise.race([Promise.all([sweReady,loadLang(LG)]),new Promise(r=>setTimeout(r,6000))]);}catch(err){}
     btn.disabled=false;
-    const v=readForm();if(compute(v)){selW='Sun';aiText='';{const cl=$('#chat .chat-log');if(cl)cl.innerHTML='';}const ao=$('#ai-box .ai-out');if(ao){ao.innerHTML='';$('#ai-box .ai-status').textContent='';}renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});shareAfterRender();}});
+    const v=readForm();if(compute(v)){selW='Sun';aiReset();renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});shareAfterRender();}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
-  document.querySelectorAll('.copyread').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
+  document.querySelectorAll('.reading .rhead .copyread:not(#ai-copy)').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
   document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>openDetail(b.closest('.pane').id.slice(2),0)));
   $('#dlg-x').addEventListener('click',closeDetail);$('#dlg').addEventListener('close',()=>document.body.classList.remove('dlg-open'));
   $('#dlg').addEventListener('click',e=>{if(e.target===$('#dlg'))closeDetail();});
@@ -295,7 +299,7 @@ function openDetail(tab,i){
   const secs=GROUPS[tab].map(([key,keys])=>{const parts=[];keys.forEach(k=>{if(special[k]){parts.push(special[k]);return;}raw.forEach((x,j)=>{if(!used.has(j)&&x.key===k){used.add(j);parts.push(x);}});});return{title:U[key],parts};}).filter(g=>g.parts.length);
   const rest=raw.filter((x,j)=>!used.has(j));if(rest.length)secs[secs.length-1].parts.push(...rest);
   DLG.secs=secs;
-  $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=tab==='pair'?U.tabP:tab==='mix'?U.tabM:`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]} ${U.dlgSuffix}`;
+  $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=tab==='pair'?U.tabP:tab==='mix'?U.tabM:`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]}${LG==='zh'||LG==='ja'?'':' '}${U.dlgSuffix}`;
   $('#dlg-copy').textContent=U.copyAll;$('#dlg-prev').textContent=U.dlgPrev;$('#dlg-next').textContent=U.dlgNext;
   $('#dlg-nav').innerHTML=secs.map((x,k)=>`<button type="button" data-k="${k}">${x.title}</button>`).join('');
   $('#dlg-nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>showSection(+b.dataset.k)));
@@ -332,7 +336,7 @@ function renderReadings(){
   const put=(id,tab,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;ADV[tab]=r.adv;};
   put('#w-read','west',()=>RD().west(W,Engine));put('#z-read','zw',()=>RD().zw(Z,readingCtx()));put('#h-read','hd',()=>RD().hd(HD,HDL()));
   renderMix();renderHL();renderPair();
-  document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
+  document.querySelectorAll('.reading .rhead .copyread:not(#ai-copy)').forEach(b=>b.textContent=L.ui.copy);
 }
 function renderHL(){
   const el=$('#hl-body');if(!el)return;const P=window.Highlights&&(Highlights[LG]||Highlights.zh);
@@ -378,7 +382,8 @@ function hdSummary(){
 function drawBody(){
   const svg=$('#body');let s='';const G=HD.gates;
   const half=(g,o)=>{const a=G[g];if(!a)return null;return a.p&&a.d?'both':a.p?'p':'d';};
-  for(const [a,b] of Engine.CHANNELS){const A=GP[a],B=GP[b];const mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2;
+  const CH_ORD=[...Engine.CHANNELS].sort((p,q)=>Math.hypot(GP[q[0]][0]-GP[q[1]][0],GP[q[0]][1]-GP[q[1]][1])-Math.hypot(GP[p[0]][0]-GP[p[1]][0],GP[p[0]][1]-GP[p[1]][1]));
+  for(const [a,b] of CH_ORD){const A=GP[a],B=GP[b];const mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2;
     const on=HD.channels.some(c=>c[0]===a&&c[1]===b);
     s+=`<g class="ch${selH==='ch'+a+'-'+b?' on':''}" data-ch="${a}-${b}"><line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" class="base"/>`;
     for(const [g,P1,P2] of [[a,A,[mx,my]],[b,B,[mx,my]]]){const st=half(g);if(!st)continue;
