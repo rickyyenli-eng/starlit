@@ -326,6 +326,44 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 .ans-y span{color:var(--muted)}
 .ans-tip{background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:14px}
 .ans-more{font:inherit;font-weight:700;align-self:flex-start;background:none;border:0;color:var(--accent);cursor:pointer;padding:4px 0}
+.pairf{margin:4px 0 16px}
+.card.pair-m .big{font-size:22px}
+.card.pair-m .agree{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.card.pair-m .agree i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.card.pair-m .agree i.on{background:var(--accent)}
+.card.pair-m.friction .agree i.on{background:var(--seal)}
+.sharebar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:0 0 12px}
+.sharebar button{font:inherit;font-size:13.5px;font-weight:700;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--accent);cursor:pointer}
+.sharebar button:hover{border-color:var(--accent)}
+.sharebar .muted{font-size:12px}
+#print{display:none}
+@media print{
+  body.printing>*:not(#print){display:none!important}
+  body.printing{background:#fff}
+  body.printing #print{display:block}
+  #print{color:#111;font-size:12pt}
+  #print .pr-head h1{font-size:22pt;margin:0 0 4px}
+  #print .pr-sec{break-before:page}
+  #print .pr-sec:first-of-type{break-before:auto}
+  #print h2{font-size:18pt;border-bottom:2px solid #333;padding-bottom:4px}
+  #print .pr-cat{font-size:15pt;margin-top:18px;color:#2C47A3}
+  #print .pr-chart{max-width:520px;margin:10px auto;break-inside:avoid}
+  #print .zw{break-inside:avoid}
+  #print .hl-card,#print .card,#print .tl-y{break-inside:avoid}
+  #print .sharebar,#print button,#print .chat{display:none!important}
+  #print .reading{border:0;padding:0;background:none}
+  @page{margin:14mm}
+}
+.chat{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.chat-h{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.chat-h h3{font-family:var(--f-display);font-size:19px;margin:0}
+.chat>p.muted{font-size:13.5px;margin:4px 0 12px}
+.chat-row{display:flex;gap:8px;margin:0 0 10px}
+.chat-row input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--sunk);color:var(--ink)}
+.chat-item{border-top:1px dashed var(--line);padding:10px 0}
+.chat-q{font-weight:700;margin:0 0 4px}
+.chat-a{margin:0;line-height:1.8;white-space:pre-wrap}
+.chat-foot{font-size:12px;margin:6px 0 0}
 .hl{margin:0 0 26px}
 .hl>h2{font-family:var(--f-display);font-size:22px;margin:0 0 12px}
 .hl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
@@ -408,12 +446,13 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
   <div class="err" id="err" hidden></div>
 
   <div id="result" class="result" hidden>
-  <section class="hl" id="hl" aria-labelledby="hl-title"><h2 id="hl-title" data-t="hlTitle"></h2><div id="hl-body"></div></section>
+  <section class="hl" id="hl" aria-labelledby="hl-title"><h2 id="hl-title" data-t="hlTitle"></h2><div id="hl-body"></div><div class="chat" id="chat" hidden></div></section>
   <div class="tabrow"><nav class="tabs" role="tablist">
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
     <button role="tab" id="t-hd" aria-selected="false" aria-controls="p-hd" data-t="tabH"></button>
     <button role="tab" id="t-mix" aria-selected="false" aria-controls="p-mix" data-t="tabM"></button>
+    <button role="tab" id="t-pair" aria-selected="false" aria-controls="p-pair" data-t="tabP"></button>
   </nav></div>
 
   <section class="pane" id="p-west" role="tabpanel" aria-labelledby="t-west">
@@ -460,6 +499,24 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
       <div class="ai-ctl"><label><span class="ai-flab"></span> <select id="ai-focus"></select></label><button type="button" class="go2btn" id="ai-go"></button></div>
       <p class="ai-status muted" aria-live="polite"></p><div class="body ai-out"></div></article>
   </section>
+  <section class="pane" id="p-pair" role="tabpanel" aria-labelledby="t-pair" hidden>
+    <p class="mixintro" data-t="pairIntro"></p>
+    <form class="birth pairf" id="pairf" novalidate>
+      <div class="field"><label for="p-name" data-t="pairName"></label><input id="p-name" type="text" maxlength="20"></div>
+      <div class="field"><label for="p-date" data-t="date"></label><input id="p-date" type="date" min="1900-01-01" max="2100-12-31"></div>
+      <div class="field"><label for="p-time" data-t="time"></label><input id="p-time" type="time"></div>
+      <div class="field"><span class="lab" data-t="gender"></span><div class="seg" role="radiogroup">
+        <label><input type="radio" name="pg" value="女"><span data-t="female"></span></label>
+        <label><input type="radio" name="pg" value="男"><span data-t="male"></span></label></div></div>
+      <div class="field"><label for="p-city" data-t="city"></label><select id="p-city"></select></div>
+      <div class="field"><button class="go" type="submit" data-t="pairGo"></button></div>
+    </form>
+    <div class="err" id="p-err" hidden></div>
+    <div id="pair-out" hidden>
+      <div class="sum" id="pair-sum"></div>
+      <article class="reading" id="pair-read"><div class="rhead"><h2 data-t="pairTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="pairBtn"></button></article>
+    </div>
+  </section>
   </div>
 </div>
 
@@ -495,6 +552,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/themes-zh.js"></script>
 <script src="js/timeline-zh.js"></script>
 <script src="js/intent-zh.js"></script>
+<script src="js/pair-zh.js"></script>
 <script src="js/hd-en.js"></script>
 <script src="js/hd-ja.js"></script>
 <script src="js/hd-fr.js"></script>
@@ -502,6 +560,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/reading-ja.js"></script>
 <script src="js/reading-fr.js"></script>
 <script src="js/wizard.js"></script>
+<script src="js/share.js"></script>
 <script src="js/ai.js"></script>
 <script src="js/app.js"></script>
 </body>

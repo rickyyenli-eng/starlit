@@ -30,8 +30,9 @@ const fmtDeg=l=>{const x=norm(l)%30;const d=Math.floor(x),m=Math.floor((x-d)*60)
 const $=s=>document.querySelector(s);
 let W=null,Z=null,ZH=null,HD=null,selW='Sun',selZ=null,selH=null,zMode='yr',zYear=new Date().getFullYear();
 
-function fillCities(){const s=$('#f-city');s.innerHTML=`<option value="">${L.ui.pick}</option>`;const li={zh:0,en:1,ja:2,fr:3}[LG];
-  CITIES.forEach(c=>{const o=document.createElement('option');o.value=c[0];o.textContent=c[li];s.appendChild(o);});}
+function fillCities(){fillCity($('#f-city'));fillCity($('#p-city'));}
+function fillCity(s){if(!s)return;const cur=s.value;s.innerHTML=`<option value="">${L.ui.pick}</option>`;const li={zh:0,en:1,ja:2,fr:3}[LG];
+  CITIES.forEach(c=>{const o=document.createElement('option');o.value=c[0];o.textContent=c[li];s.appendChild(o);});if(cur)s.value=cur;}
 function onCity(){const v=$('#f-city').value;const c=CITIES.find(x=>x[0]===v);if(c&&c[4]!=null){$('#f-lat').value=c[4];$('#f-lon').value=c[5];$('#f-tz').value=c[6];}else if(!v){$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';}else{$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';$('.adv').open=true;}}
 function readForm(){return{date:$('#f-date').value,time:$('#f-time').value,g:(document.querySelector('input[name=g]:checked')||{}).value,city:$('#f-city').value,dst:$('#f-dst').checked,lat:parseFloat($('#f-lat').value),lon:parseFloat($('#f-lon').value),tz:parseFloat($('#f-tz').value)};}
 let errKey=null;
@@ -56,6 +57,30 @@ function compute(v){
   return true;
 }
 
+/* 任一人的三張盤（合盤用） */
+function computeChart(v){
+  const c=CITIES.find(x=>x[0]===v.city);if(!c||c[4]==null)return null;
+  const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
+  const stdMs=Date.UTC(y,m-1,d,hh,mm),utc=new Date(stdMs-c[6]*3600e3);
+  const sd=new Date(stdMs),sh=sd.getUTCHours(),ti=sh===23?12:Math.floor((sh+1)/2);
+  const Zb=iztro.astro.bySolar(`${sd.getUTCFullYear()}-${sd.getUTCMonth()+1}-${sd.getUTCDate()}`,ti,v.g,true,'zh-TW');Zb._ti=ti;Zb._std=sd;
+  return{W:westChart(utc,c[4],c[5]),Z:Zb,HD:Engine.humanDesign(utc),name:v.name};
+}
+let PB=null,PBV=null;
+function pairSubmit(e){e.preventDefault();const v={name:$('#p-name').value,date:$('#p-date').value,time:$('#p-time').value,g:(document.querySelector('input[name=pg]:checked')||{}).value,city:$('#p-city').value};
+  const er=$('#p-err');er.hidden=true;
+  const bad=!v.date||!v.time?'errTime':!v.g?'errGender':!v.city?'errPlace':null;
+  if(bad){er.textContent=L.ui[bad];er.hidden=false;return;}
+  try{PB=computeChart(v);PBV=v;}catch(err){console.error(err);PB=null;}
+  if(!PB){er.textContent=L.ui.errPlace;er.hidden=false;}
+  renderPair();aiRender();if(PB){const sf=$('#ai-focus');if(sf)sf.value='pair';}if(PB)$('#pair-out').scrollIntoView({behavior:'smooth',block:'start'});}
+function renderPair(){
+  const out=$('#pair-out');if(!PB||!W){out.hidden=true;ADV.pair='';return;}
+  const P=window.Pair&&(Pair[LG]||Pair.zh);let r;
+  try{r=P.render({A:{W,Z,HD},B:PB},Engine);}catch(e){console.error(e);out.hidden=true;return;}
+  out.hidden=false;$('#pair-sum').innerHTML=r.cards;
+  $('#pair-read .body').innerHTML=(P!==Pair[LG]&&L.ui.pairNote?`<p class="readnote">${L.ui.pairNote}</p>`:'')+r.basic;ADV.pair=r.adv;
+}
 /* ===================== 星盤 ===================== */
 const C=270;
 function xy(l,r){const th=(180+(l-W.asc))*D2R;return[C+r*Math.cos(th),C-r*Math.sin(th)];}
@@ -215,8 +240,8 @@ function applyLang(lg){
 }
 
 /* ===================== 啟動 ===================== */
-function renderAll(){aiRender();drawWheel();showPlanet();westSummary();drawZW();showPalace();zwSummary();hdSummary();drawBody();showHD();renderReadings();if(DLG.tab&&$('#dlg').open)openDetail(DLG.tab,DLG.i);}
-const TABS=['west','zw','hd','mix'];
+function renderAll(){aiRender();chatRender();drawWheel();showPlanet();westSummary();drawZW();showPalace();zwSummary();hdSummary();drawBody();showHD();renderReadings();if(DLG.tab&&$('#dlg').open)openDetail(DLG.tab,DLG.i);}
+const TABS=['west','zw','hd','mix','pair'];
 function tab(which){TABS.forEach(t=>{$('#t-'+t).setAttribute('aria-selected',t===which);$('#p-'+t).hidden=t!==which;});try{localStorage.setItem('kdwp-tab',which);}catch(e){}}
 
 /* Swiss Ephemeris：高精度星曆，載入失敗時自動改用 astronomy-engine */
@@ -225,17 +250,18 @@ function boot(){
   const names={zh:'中文',en:'English',ja:'日本語',fr:'Français'};
   $('#langs').innerHTML=Object.keys(names).map(k=>`<button type="button" data-l="${k}" lang="${I18N[k].htmlLang}">${names[k]}</button>`).join('');
   $('#langs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.l)));
-  let lg=null;try{lg=localStorage.getItem('starlit-lang');}catch(e){}
+  let lg=new URLSearchParams(location.search).get('lang');if(!lg){try{lg=localStorage.getItem('starlit-lang');}catch(e){}}
   if(!lg){const n=(navigator.language||'zh').toLowerCase();lg=n.startsWith('ja')?'ja':n.startsWith('fr')?'fr':n.startsWith('zh')?'zh':'en';}
   LG=I18N[lg]?lg:'zh';L=I18N[LG];
   fillCities();
   $('#f-city').addEventListener('change',onCity);
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
   applyLang(LG);aiInit();wizInit();
+  $('#pairf').addEventListener('submit',pairSubmit);
   $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
     try{await Promise.race([Promise.all([sweReady,loadLang(LG)]),new Promise(r=>setTimeout(r,15000))]);}catch(err){}
     btn.disabled=false;
-    const v=readForm();if(compute(v)){selW='Sun';aiText='';const ao=$('#ai-box .ai-out');if(ao){ao.innerHTML='';$('#ai-box .ai-status').textContent='';}renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});}});
+    const v=readForm();if(compute(v)){selW='Sun';aiText='';{const cl=$('#chat .chat-log');if(cl)cl.innerHTML='';}const ao=$('#ai-box .ai-out');if(ao){ao.innerHTML='';$('#ai-box .ai-status').textContent='';}renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});shareAfterRender();}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
   document.querySelectorAll('.copyread').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
   document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>openDetail(b.closest('.pane').id.slice(2),0)));
@@ -244,6 +270,7 @@ function boot(){
   $('#dlg-prev').addEventListener('click',()=>showSection(DLG.i-1));$('#dlg-next').addEventListener('click',()=>showSection(DLG.i+1));
   $('#dlg-copy').addEventListener('click',()=>{const txt=DLG.secs.map(x=>x.parts.filter(p=>!p.tool).map(p=>{const d=document.createElement('div');d.innerHTML=p.html;return p.full+'\n'+d.innerText;}).join('\n\n')).join('\n\n');const b=$('#dlg-copy');const done=()=>{b.textContent=L.ui.copied;setTimeout(()=>b.textContent=L.ui.copyAll,1600);};if(navigator.clipboard)navigator.clipboard.writeText(txt).then(done,()=>{});});
   let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(TABS.includes(t))tab(t);
+  if(shareRestore()){const f=$('#birth');f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true}));}
 }
 
 /* ===================== 詳解 ===================== */
@@ -255,6 +282,7 @@ const GROUPS={
  west:[['catW0',['w-story']],['catW1',['w-more']],['catW2',['w-houses','@table','w-rulers']],['catW3',['w-dignity','w-balance']],['catW4',['w-aspects','w-patterns']],['catW5',['w-node','w-transits']]],
  zw:[['catZ0',['z-story']],['catZ1',['z-info','z-patterns','z-core']],['catZ6',['z-work']],['catZ5',['z-love']],['catZ4',['z-map','z-decade','z-year','z-next','z-advice','@tool']],['catZ2',['z-birthmut','z-fly']],['catZ3',['z-palstory','z-palaces']]],
  hd:[['catH0',['h-story']],['catH1',['h-lines']],['catH2',['h-centers','h-channels','@gates']],['catH3',['h-cross']],['catH4',['h-tips']]],
+ pair:[['catP0',['p-sum']],['catP1',['p-west']],['catP2',['p-zw']],['catP3',['p-hd']],['catP4',['p-tips']]],
  mix:[['catM1',['m-career']],['catM2',['m-wealth']],['catM3',['m-love']],['catM4',['m-health']],['catM5',['m-people']],['catM0',['m-how']]]};
 function openDetail(tab,i){
   const U=L.ui;DLG.tab=tab;const raw=splitSections(ADV[tab]||'');
@@ -263,7 +291,7 @@ function openDetail(tab,i){
   const secs=GROUPS[tab].map(([key,keys])=>{const parts=[];keys.forEach(k=>{if(special[k]){parts.push(special[k]);return;}raw.forEach((x,j)=>{if(!used.has(j)&&x.key===k){used.add(j);parts.push(x);}});});return{title:U[key],parts};}).filter(g=>g.parts.length);
   const rest=raw.filter((x,j)=>!used.has(j));if(rest.length)secs[secs.length-1].parts.push(...rest);
   DLG.secs=secs;
-  $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=tab==='mix'?U.tabM:`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]} ${U.dlgSuffix}`;
+  $('#dlg-eyebrow').textContent=U.readTitle;$('#dlg-title').textContent=tab==='pair'?U.tabP:tab==='mix'?U.tabM:`${U[{west:'tabW',zw:'tabZ',hd:'tabH'}[tab]]} ${U.dlgSuffix}`;
   $('#dlg-copy').textContent=U.copyAll;$('#dlg-prev').textContent=U.dlgPrev;$('#dlg-next').textContent=U.dlgNext;
   $('#dlg-nav').innerHTML=secs.map((x,k)=>`<button type="button" data-k="${k}">${x.title}</button>`).join('');
   $('#dlg-nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>showSection(+b.dataset.k)));
@@ -272,7 +300,7 @@ function openDetail(tab,i){
 }
 function showSection(k){
   if(k<0||k>=DLG.secs.length)return;DLG.i=k;const x=DLG.secs[k];
-  const note=DLG.tab==='mix'?(!(Themes[LG]&&Themes[LG].TAGS)&&L.ui.mixNote?`<p class="readnote">${L.ui.mixNote}</p>`:''):!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
+  const note=DLG.tab==='pair'?(!Pair[LG]&&L.ui.pairNote?`<p class="readnote">${L.ui.pairNote}</p>`:''):DLG.tab==='mix'?(!(Themes[LG]&&Themes[LG].TAGS)&&L.ui.mixNote?`<p class="readnote">${L.ui.mixNote}</p>`:''):!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   $('#dlg-body').innerHTML=`<article class="reading plain"><div class="body">${note}${x.parts.map(pt=>`<section class="dsec"><h3>${pt.full}</h3>${pt.html}</section>`).join('')}</div></article>`;
   x.parts.forEach(pt=>pt.after&&pt.after());
   $('#dlg-body').scrollTop=0;
@@ -299,13 +327,13 @@ function renderReadings(){
   const note=!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   const put=(id,tab,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;ADV[tab]=r.adv;};
   put('#w-read','west',()=>RD().west(W,Engine));put('#z-read','zw',()=>RD().zw(Z,readingCtx()));put('#h-read','hd',()=>RD().hd(HD,HDL()));
-  renderMix();renderHL();
+  renderMix();renderHL();renderPair();
   document.querySelectorAll('.copyread').forEach(b=>b.textContent=L.ui.copy);
 }
 function renderHL(){
   const el=$('#hl-body');if(!el)return;const P=window.Highlights&&(Highlights[LG]||Highlights.zh);
-  try{const ans=intentCard();el.innerHTML=(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans);
-    el.querySelectorAll('.ans-more').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.tab,+b.dataset.i)));}catch(e){console.error(e);el.innerHTML='';}
+  try{const ans=intentCard();el.innerHTML=shareBar()+(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans);
+    shareBind();el.querySelectorAll('.ans-more').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.tab,+b.dataset.i)));}catch(e){console.error(e);el.innerHTML='';}
 }
 function renderMix(){
   const U=L.ui;const ml=Themes[LG]&&Themes[LG].TAGS?LG:'zh';let r;try{r=Themes.mix(ml,W,Z,HD,Engine);}catch(e){console.error(e);$('#m-sum').innerHTML='';$('#m-read .body').innerHTML='<p class="err">—</p>';ADV.mix='';return;}
