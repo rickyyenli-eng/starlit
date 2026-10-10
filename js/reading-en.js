@@ -162,7 +162,7 @@ function readWest(W,E){
   const personal=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];
   const keyAsp=W.asp.filter(a=>a.orb<=4&&(personal.includes(a.a)||personal.includes(a.b))).slice(0,10);
   o.push(h3('Major aspects','w-aspects'));
-  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0]} ${PN[a.b]} (orb ${a.orb.toFixed(1)}°)`,(STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t])||`${cap(THEME[a.a])} and ${THEME[a.b]}: ${ASP[a.t][1]}.`))):p('There are no major aspects within a 4° orb.'));
+  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0]} ${PN[a.b]} (orb ${a.orb.toFixed(1)}°${a.oos?', '+((typeof I18N!=='undefined'&&I18N.en.ui.oos)||''):''})`,(STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t])||`${cap(THEME[a.a])} and ${THEME[a.b]}: ${ASP[a.t][1]}.`)))+(keyAsp.some(a=>a.oos)?`<p class="muted">${((typeof I18N!=='undefined'&&I18N.en.ui.oosNote)||'')}</p>`:''):p('There are no major aspects within a 4° orb.'));
   /* patterns */
   const pats=patterns(W,E);
   o.push(h3('Aspect patterns and stelliums','w-patterns'));
@@ -193,7 +193,7 @@ function readWest(W,E){
   if(STA())ws.push(`Start with how you meet the world. ${STA().ascSun[asc][sun]}`);
   if(STW())ws.push(`Then look further in. ${STW().sunMoon[sun][moon]}`);
   if(STW()){const mars=s('Mars'),strip=t=>cap(String(t).replace(/^(for example|for instance|say),?\s+/i,''));
-    ws.push(`In love, your Venus in ${SG[ven]} often shows up like this: ${strip(STW().scenes.Venus[ven])} When there is a conflict, or something you want to go after, your Mars in ${SG[mars]} takes over: ${strip(STW().scenes.Mars[mars])}`);}
+    ws.push(`${AGE_ST==='child'?'When you show you like someone':'In love'}, your Venus in ${SG[ven]} often shows up like this: ${strip(STW().scenes.Venus[ven])} When there is a conflict, or something you want to go after, your Mars in ${SG[mars]} takes over: ${strip(STW().scenes.Mars[mars])}`);}
   {const dom=EL.filter(e=>cnt[e]===Math.max(...EL.map(x=>cnt[x])));const miss=EL.filter(e=>cnt[e]===0);
    ws.push(`Step back and look at the whole chart. Your chart ruler ${PN[ar]} sits in your ${ord(P[ar].house)} house, so your life keeps getting pulled toward ${HOUSE[P[ar].house-1]}. Among the ten planets, ${andList(dom.map(e=>ELN[e]))} ${dom.length>1?'are the most common elements':'is the most common element'}, so being ${andList(dom.map(e=>ELQ[e]))} is your base note.${miss.length?` You have no planets at all in ${andList(miss.map(e=>ELN[e]))}, and that is a skill you will need to build on purpose.`:''}`);}
   {const a=keyAsp[0];const t=a&&STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t];
@@ -252,6 +252,23 @@ const LOVE_STG={
  child:{lab:'Friendship',both:'Good friendships with a few small misunderstandings: you make friends easily, but learn to say things clearly.',ji:'Small misunderstandings with friends are likely; speak up when something upsets you.',lu:'A year of good friendships: you easily make new friends.',fl:'Lots of activities and friends; have fun, but keep a steady routine.',calm:'Friendships are steady, and things are easy with family and friends.'},
  student:{lab:'Friends and relationships',both:'Popular, but misunderstandings happen too: talk things through with friends, take romance slowly, and balance school and friendship.',ji:'Misunderstandings with friends or a crush are likely; talk more and don’t let feelings derail your studies.',lu:'You are popular and easily meet people you click with; no need to rush anything, and keep school and friendship in balance.',fl:'Lots of attention and a busy social life; tell real feelings from a passing crush.',calm:'Friendships and feelings are steady; focus on school and your interests.'},
  senior:{lab:'Family and friends',both:'Warm ties with family, with a little friction too: get together often and speak gently.',ji:'Misunderstandings with your partner or family are likely; be patient and say things clearly.',lu:'Warm bonds with family and old friends; a good year for get-togethers.',fl:'Plenty of invitations and good company; enjoy it, but mind your energy.',calm:'Family life and friendships are steady; let things take their course.'}};
+/* natal wording for a child's chart, written for parents: main star -> learning and interests, money habits, friendships */
+const KID_STAR={
+ '紫微':{learn:'Proud and keen to lead: a small responsibility (class helper, caring for a pet) motivates them most. Encourage and respect them rather than give orders.',money:'They have good taste and like nicer things, so an early habit worth building is "save up first for what you want."',friend:'Often the one who leads among friends; help them learn to listen and to take turns in the spotlight.'},
+ '天機':{learn:'Quick-minded and always asking why: puzzles, building blocks and science experiments suit them. Their attention jumps around, so keep learning sessions short.',money:'Good at counting and comparing; let them help plan their pocket money and see the plan through.',friend:'Their friends are usually playmates they can talk with. Sensitive and prone to overthinking, they need an adult to help put worries into words.'},
+ '太陽':{learn:'Warm and expressive: group activities, sports and performing suit them, and being seen and praised is their biggest motivator.',money:'Generous and fond of sharing, they often give things away; teach the balance between sharing and keeping something for themselves.',friend:'They look after others like a little sun and are well liked; remind them they do not always have to come off worse.'},
+ '武曲':{learn:'Persistent with clear goals: things that build through practice suit them, such as sports, an instrument or maths.',money:'They understand money and can hold on to it; a piggy bank early on, and watching the total grow, is very satisfying for them.',friend:'Not very talkative but loyal and direct; practicing gentle words helps.'},
+ '天同':{learn:'Easygoing and playful, they learn best in a relaxed, fun atmosphere, so learning through games works better than pressure.',money:'They love treats and fun things, so pocket money can vanish fast; agree together to "save a little first, then spend."',friend:'Easy to get along with and affectionate, so friends love playing with them; they need to learn to make their own choices rather than always following.'},
+ '廉貞':{learn:'Strong-willed and competitive, they like challenges with clear rules, such as board games and contests. Feelings flare up fast and need patient guidance.',money:'They fix on the things they love; practice waiting and comparing before deciding.',friend:'They love and dislike strongly and are very loyal to close friends; after a quarrel they need an adult to show them how to make up.'},
+ '天府':{learn:'Steady and rule-abiding, they like going step by step; structured learning with clear steps makes them feel safe.',money:'A natural saver who can manage pocket money well from an early age.',friend:'Gentle and polite, they often look after younger children, and friends find them dependable.'},
+ '太陰':{learn:'Sensitive and perceptive: reading, drawing and music suit them, and they concentrate best somewhere quiet and safe.',money:'Thrifty and tidy with their things; teach them to note their pocket money in a little notebook.',friend:'Slow to warm up and a bit shy, they need time to open up; one or two close friends are plenty.'},
+ '貪狼':{learn:'Curious with wide interests, they want to try everything. Explore broadly, then pick one or two things to practice until they feel proud of them; that builds focus.',money:'They want anything new and shiny, which makes it good practice for telling "want" from "need."',friend:'Lively and great at making friends; keep a regular routine so play and rest both get their share.'},
+ '巨門':{learn:'They ask lots of questions and speak well: storytelling, reading and languages suit them. Let them finish their questions, and teach them to listen well too.',money:'They compare and choose carefully and like to ask before buying; let them practice small shopping decisions.',friend:'They speak directly, so small spats with friends happen; teach them to think about the other person’s feelings before speaking.'},
+ '天相':{learn:'Sensible and rule-abiding, they like doing things properly and make great little helpers; a steady routine and encouragement build confidence.',money:'They spend with good judgment and are happy to share with those who need it.',friend:'Good at keeping the peace and smoothing things over; they also need to learn to say what they really think.'},
+ '天梁':{learn:'Mature for their age and caring, they love stories and explanations: reading and time with grandparents suit them, and looking after a plant or pet is a great task.',money:'Not very materialistic and happy as long as there is enough; teach basic saving habits.',friend:'They look after friends like a little grown-up and like to explain things; sometimes let them be the one who is looked after.'},
+ '七殺':{learn:'Driven and hating to lose, they suit sports and challenging activities; goals and rules help channel their energy.',money:'They want things right away; practicing waiting and saving teaches patience.',friend:'Independent and straightforward, with few but very loyal friends; in a conflict they need to learn to calm down before speaking.'},
+ '破軍':{learn:'They love trying new things and dislike routine: hands-on building and taking things apart suit them. Give them room to create, and agree on tidy-up rules.',money:'They spend casually and like new things; agree on a fixed weekly amount.',friend:'Bold and adventurous, they often lead friends on adventures; remind them about safety and respecting other people’s boundaries.'}};
+const KID_PAL={'兄弟':'Bonds with siblings and playmates.','夫妻':'How the child gets along with close friends; later in life it also covers relationships.','子女':'Hobbies and creativity, and the bond with younger children.','財帛':'Attitude toward pocket money and belongings.','遷移':'How the child does when going out or in new places.','僕役':'Classmates, friends and how well liked the child is in groups.','官祿':'Ways of learning and natural talents, and later the style of getting things done.','田宅':'The home environment and the feel of home.','父母':'Bonds with parents and teachers; it also relates to exams.'};
 /* stem-branch with pinyin, for readers who don't read the characters */
 const GZ_PY={'甲':'Jia','乙':'Yi','丙':'Bing','丁':'Ding','戊':'Wu','己':'Ji','庚':'Geng','辛':'Xin','壬':'Ren','癸':'Gui','子':'Zi','丑':'Chou','寅':'Yin','卯':'Mao','辰':'Chen','巳':'Si','午':'Wu','未':'Wei','申':'Shen','酉':'You','戌':'Xu','亥':'Hai'};
 const gzPY=(s,b)=>`${GZ_PY[s]||s} ${GZ_PY[b]||b} ${s}${b}`;
@@ -270,7 +287,8 @@ const timeEN=t=>{const s=String(t||'');const b=s.replace(/[早晚時]/g,'');retu
 const feEN=f=>{const s=String(f||'');return FE[s[0]]&&FN[s[1]]?`${FE[s[0]]}-${FN[s[1]]} class`:s;};
 
 function readZW(Z,ctx){
-  const M=ctx.major,MINOR=ctx.minor,BR=ctx.bright,PAL=ctx.palDesc;
+  const AST=root.StarlitAge?root.StarlitAge.stage(Z):'adult',YNG=AST==='child'||AST==='student',KIDC=AST==='child',NT=tbl(YNG?'young':'adult');
+  const M=ctx.major,MINOR=ctx.minor,BR=ctx.bright,PAL=n=>(YNG&&KID_PAL[n])||ctx.palDesc(n);
   const S=n=>ctx.star(n),ML=k=>ctx.mutLabel(k),BL=b=>ctx.brightLabel(b);
   const SN=n=>ADJ[n]?ADJ[n][0]:S(n);
   const mt=(star,k)=>`${S(star)} ${ML(k)}`;
@@ -293,7 +311,7 @@ function readZW(Z,ctx){
   function brNote(p){const st=p.majorStars;if(!st.length)return '';
     const weak=st.filter(s=>['陷','不'].includes(s.brightness)).map(s=>`${S(s.name)} (${BL(s.brightness)})`),strong=st.filter(s=>s.brightness==='廟').map(s=>S(s.name));
     return (strong.length?` ${andList(strong)} ${strong.length>1?'are':'is'} at full brightness here, so these qualities come through completely.`:'')+(weak.length?` ${andList(weak)} ${weak.length>1?'are':'is'} dim here, though, so the strengths above take more effort to bring out, and the weak spots show more.`:'');}
-  const mutNote=(s,nm)=>cap((s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})[nm]||(s.mutagen==='權'?`you take a strong lead in ${DOM[nm]}.`:`you tend to earn a good name in ${DOM[nm]}.`));
+  const mutNote=(s,nm)=>cap((s.mutagen==='祿'?NT.LU:s.mutagen==='忌'?NT.JI:{})[nm]||(s.mutagen==='權'?`you take a strong lead in ${NT.DOM[nm]}.`:`you tend to earn a good name in ${NT.DOM[nm]}.`));
   const birthMut={};pal.forEach((p,i)=>[...p.majorStars,...p.minorStars].forEach(s=>{if(s.mutagen)birthMut[s.mutagen]={star:s.name,i};}));
   const sd=Z._std,rd=Z.rawDates.lunarDate;
   const yinyang=('甲丙戊庚壬'.includes(Z.rawDates.chineseDate.yearly[0])?'Yang':'Yin')+' '+(Z.gender==='男'?'male':'female');
@@ -346,19 +364,19 @@ function readZW(Z,ctx){
   /* Body palace */
   const bp=pal[body];
   o.push(h4(`Body palace in ${bp.earthlyBranch} (${pn(bp.name)}: ${stLine(body)}${minorLine(body)?'; '+minorLine(body):''})`));
-  const bl=[pt('Where your life’s focus goes',`The Body palace shows how you tend to act after about age thirty. ${bp.name==='命宮'?'Yours shares the Life palace, so your inborn nature is also your later focus: being yourself matters most':`Yours is the ${pn(bp.name)}, so from midlife on you will care a great deal about ${DOM[bp.name]}`}.`)];
+  const bl=[pt('Where your life’s focus goes',`The Body palace shows how you tend to act after about age thirty. ${bp.name==='命宮'?'Yours shares the Life palace, so your inborn nature is also your later focus: being yourself matters most':`Yours is the ${pn(bp.name)}, so from midlife on you will care a great deal about ${NT.DOM[bp.name]}`}.`)];
   if(has(body,'天馬')&&(has(body,'祿存')||bp.majorStars.concat(bp.minorStars).some(s=>s.mutagen==='祿')))bl.push(pt('Lu Ma Jiao Chi in the Body palace','see the pattern notes above; this power to make money on the move lands right on the focus of the second half of your life.'));
   if(has(body,'陀羅'))bl.push(pt('Hidden knots',`${S('陀羅')} sits here, so in this area you tend to overthink and hesitate, and things are easily delayed.`));
   if(has(body,'擎羊'))bl.push(pt('Drive and friction',`${S('擎羊')} sits here: strong drive, but also a tendency to clash with people.`));
-  for(const s of bp.majorStars.concat(bp.minorStars))if(s.mutagen)bl.push(pt(mt(s.name,s.mutagen),cap((s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})[bp.name]||`${S(s.name)} ${ML(s.mutagen)} makes this area stand out even more.`)));
+  for(const s of bp.majorStars.concat(bp.minorStars))if(s.mutagen)bl.push(pt(mt(s.name,s.mutagen),cap((s.mutagen==='祿'?NT.LU:s.mutagen==='忌'?NT.JI:{})[bp.name]||`${S(s.name)} ${ML(s.mutagen)} makes this area stand out even more.`)));
   o.push(ul(bl));
 
   /* 4. birth-year transformations */
   o.push(h3('Birth-year transformations','z-birthmut'));
   o.push(p(`Your birth-year stem is ${Z.rawDates.chineseDate.yearly[0]}: ${MK.map(k=>birthMut[k]?mt(birthMut[k].star,k):'').filter(Boolean).join(', ')}.`));
   o.push(ul(MK.filter(k=>birthMut[k]).map(k=>{const b=birthMut[k],pnm=pal[b.i].name,oppn=pal[(b.i+6)%12].name;
-    const base=k==='祿'?cap(LU[pnm]):k==='忌'?cap(JI[pnm]):k==='權'?`In ${DOM[pnm]}, you hold the reins and have real ability; you act with energy, but can push too hard.`:`In ${DOM[pnm]}, you tend to earn a good name, and when trouble comes, help or a good solution usually appears.`;
-    const extra=k==='忌'?` The Snag sits in your ${pn(pnm)} and clashes with the opposite ${pn(oppn)}, so ${pn(oppn)} matters are affected too.${STAR_JI[b.star]?' '+STAR_JI[b.star]:''}`:k==='祿'?(STAR_LU[b.star]?' '+STAR_LU[b.star]:''):'';
+    const base=k==='祿'?cap(NT.LU[pnm]):k==='忌'?cap(NT.JI[pnm]):k==='權'?`In ${NT.DOM[pnm]}, you hold the reins and have real ability; you act with energy, but can push too hard.`:`In ${NT.DOM[pnm]}, you tend to earn a good name, and when trouble comes, help or a good solution usually appears.`;
+    const extra=k==='忌'?` The Snag sits in your ${pn(pnm)} and clashes with the opposite ${pn(oppn)}, so ${pn(oppn)} matters are affected too.${NT.SJI[b.star]?' '+NT.SJI[b.star]:''}`:k==='祿'?(NT.SLU[b.star]?' '+NT.SLU[b.star]:''):'';
     return pt(`${mt(b.star,k)} in the ${pn(pnm)}`,base+extra);})));
 
   /* 5. flying transformations */
@@ -367,8 +385,8 @@ function readZW(Z,ctx){
   o.push(`<div class="tablewrap"><table><thead><tr><th>Palace</th><th>Stem</th><th>${ML('祿')}</th><th>${ML('權')}</th><th>${ML('科')}</th><th>${ML('忌')}</th></tr></thead><tbody>${flyRows.join('')}</tbody></table></div>`);
   const notes=[];
   pal.forEach((p,i)=>{const mm=STEM_MUT[p.heavenlyStem];mm.forEach((star,j)=>{const t=findStar(star);if(t===i)notes.push(pt(`Self-${ML(MK[j])} in the ${pn(p.name)}`,['benefits in this palace come fast and go fast; they are hard to hold on to.','you tend to act on your own in this area; forceful, but not lasting.','the reputation and benefits of this palace show readily; beware of style over substance.','matters in this palace tend to create their own trouble or fizzle out unfinished.'][j]));});
-    const jt=findStar(mm[3]);if(jt===ming&&i!==ming)notes.push(pt(`${pn(p.name)} sends its ${ML('忌')} into your Life palace`,`matters of ${DOM[p.name]} weigh on you most in life.`));
-    if(jt===(ming+6)%12&&i!==ming)notes.push(pt(`${pn(p.name)} sends its ${ML('忌')} against your Life palace`,`matters of ${DOM[p.name]} tend to put direct pressure on you.`));});
+    const jt=findStar(mm[3]);if(jt===ming&&i!==ming)notes.push(pt(`${pn(p.name)} sends its ${ML('忌')} into your Life palace`,`matters of ${NT.DOM[p.name]} weigh on you most in life.`));
+    if(jt===(ming+6)%12&&i!==ming)notes.push(pt(`${pn(p.name)} sends its ${ML('忌')} against your Life palace`,`matters of ${NT.DOM[p.name]} tend to put direct pressure on you.`));});
   if(notes.length)o.push(ul(notes));
 
   /* 6. twelve palaces */
@@ -446,23 +464,35 @@ function readZW(Z,ctx){
   }
 
   /* career and money */
-  if(SZW()){o.push(h3('Career and money','z-work'));
-    for(const [i,key,lab] of [[idx('官祿'),'career','Work'],[idx('財帛'),'wealth','Money']]){const c=comboOf(pal[i]);const e=SZW()[key][c];if(!e)continue;
+  const kidSrc=i=>pal[i].majorStars.length?pal[i].majorStars:oppOf(i).majorStars;
+  const kidTxt=(i,f)=>kidSrc(i).map(s=>KID_STAR[s.name]?KID_STAR[s.name][f]:'').filter(Boolean).join(' ');
+  if(SZW()&&KIDC){o.push(h3('Talents, learning and money habits','z-work'));
+    o.push(p('For a child, the Career and Wealth palaces are less about work and earnings. They show how the child learns, their natural interests, and their attitude toward pocket money and belongings.'));
+    for(const [i,lab,f] of [[idx('官祿'),'Talents and learning','learn'],[idx('財帛'),'Money habits','money']]){
+      o.push(h4(`${lab} (${pn(pal[i].name)})`));o.push(p(`The ${pn(pal[i].name)} is in ${pal[i].earthlyBranch} (${stLineB(i)}). ${kidTxt(i,f)}`));
+      if(f==='learn'){const e=SZW().career[comboOf(pal[i].majorStars.length?pal[i]:oppOf(i))];if(e&&e.fields)o.push(p(`Later in life, work may lean toward: ${e.fields}`));}
+      for(const s of [...pal[i].majorStars,...pal[i].minorStars])if(s.mutagen)o.push(p(`<b>${mt(s.name,s.mutagen)} here</b>: ${mutNote(s,pal[i].name)}`));}}
+  else if(SZW()){const WL=AST==='student'?['Studies, future direction and money','Studies and future direction','Pocket money, part-time work and money habits','Directions worth exploring']:['Career and money','Work','Money','Directions that suit you'];o.push(h3(WL[0],'z-work'));
+    for(const [i,key,lab] of [[idx('官祿'),'career',WL[1]],[idx('財帛'),'wealth',WL[2]]]){const c=comboOf(pal[i]);const e=SZW()[key][c];if(!e)continue;
       o.push(h4(`${lab} (${pn(pal[i].name)}): ${e.title}`));
       o.push(p(`Your ${pn(pal[i].name)} is in ${pal[i].earthlyBranch} (${stLine(i)}${minorLine(i)?'; '+minorLine(i):''}). ${fitAt(e.story,i)}${brNote(pal[i])}`));
       if(c==='空'){const oc=comboOf(oppOf(i));const oe=SZW()[key][oc];if(oe&&oc!=='空')o.push(p(borrowed(oc,fit(oe.story,oppOf(i)))));}
-      if(e.fields)o.push(ul([pt('Directions that suit you',e.fields)]));
+      if(e.fields)o.push(ul([pt(WL[3],e.fields)]));
       o.push(e.scenes.map(scene).join(''));o.push(ul([pt('Advice',e.advice)]));
       for(const s of [...pal[i].majorStars,...pal[i].minorStars])if(s.mutagen)o.push(p(`<b>${mt(s.name,s.mutagen)} here</b>: ${mutNote(s,pal[i].name)}`));}}
   /* 9. love */
-  o.push(h3('Love and romance','z-love'));
+  o.push(h3(KIDC?'Making friends and getting close':AST==='student'?'Love and friendships':'Love and romance','z-love'));
   const fi=idx('夫妻'),fp=pal[fi];
+  if(KIDC){o.push(p(`The Spouse palace is in ${fp.earthlyBranch} (${stLineB(fi)}). For a child it shows how they get along with close friends and the people they feel near to. ${kidTxt(fi,'friend')}`));
+    const fr=idx('僕役');o.push(p(`With classmates and in groups (the ${pn('僕役')}: ${stLineB(fr)}): ${kidTxt(fr,'friend')}`));
+    o.push(ul([pt('How to support them','Listen when they talk about school and friends without rushing to judge. If there is a quarrel or they feel left out, first acknowledge the feelings, then work out together what to say or do.')]));}
+  else{
   {const sc=comboOf(fp);const e=SZS()&&SZS()[sc];
    if(e){o.push(h4(e.title));o.push(p(fitAt(e.partner+' '+e.pattern,fi)+brNote(fp)));
      if(sc==='空'){const oc=comboOf(oppOf(fi));const oe=SZS()[oc];if(oe&&oc!=='空')o.push(p(borrowed(oc,fit(oe.partner,oppOf(fi)))));}
      o.push(e.scenes.map(scene).join(''));o.push(ul([pt('Advice',e.advice)]));o.push(h4('Spouse palace details'));}}
   const fl=[pt(`Natal Spouse palace in ${fp.earthlyBranch} (${stLine(fi)}${minorLine(fi)?'; '+minorLine(fi):''})`,`${PAL('夫妻')}${fp.majorStars.map(s=>M[s.name]?` You, or your partner, carry ${S(s.name)}’s traits in love: ${lc(M[s.name][2])}`:'').join('')}`)];
-  for(const s of fp.majorStars.concat(fp.minorStars))if(s.mutagen)fl.push(pt(`${mt(s.name,s.mutagen)} in the Spouse palace`,cap((s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})['夫妻']||`${S(s.name)}’s traits are amplified in love.`)));
+  for(const s of fp.majorStars.concat(fp.minorStars))if(s.mutagen)fl.push(pt(`${mt(s.name,s.mutagen)} in the Spouse palace`,cap((s.mutagen==='祿'?NT.LU:s.mutagen==='忌'?NT.JI:{})['夫妻']||`${S(s.name)}’s traits are amplified in love.`)));
   if(has(fi,'擎羊'))fl.push(pt(`${S('擎羊')} in the Spouse palace`,'arguments and clashes come easily in love, so soften your tone when you talk.'));
   if(has(fi,'陀羅'))fl.push(pt(`${S('陀羅')} in the Spouse palace`,'love moves slowly; things tend to drag and you get tangled up inside.'));
   if(has(fi,'地空')||has(fi,'地劫'))fl.push(pt(`${S('地空')} or ${S('地劫')} in the Spouse palace`,'you hold idealized hopes for love, and reality can fall short.'));
@@ -470,7 +500,7 @@ function readZW(Z,ctx){
   const bath=pal.findIndex(p=>p.changsheng12==='沐浴');
   if(bath>=0)peach.push(`Mu Yu (Bathing) in the ${pn(pal[bath].name)}`);
   fl.push(pt('Where your romance stars fall',peach.join(', ')+'. When romance stars land in the Life, Travel, Spouse, Children or Fortune palace, your appeal to others is especially strong.'));
-  o.push(ul(fl));
+  o.push(ul(fl));}
   const cmp=[];
   for(const yr of [yNow,yNow+1]){const Hy=ctx.horoscope(ctx.yearMid(yr));if(!Hy)continue;const y=Hy.yearly;
     const fi2=y.palaceNames.indexOf('夫妻'),f2=pal[fi2];
@@ -508,22 +538,24 @@ function readZW(Z,ctx){
   /* your story (rule-based) */
   const story=[];let workLine='';
   {const ms=SZM()&&SZM().ming[mcombo];
-   if(ms){story.push(fitAt(ms.image+' '+ms.story,ming)+brNote(pal[ming]));
+   if(ms){story.push((KIDC?'What follows is the child’s inborn temperament. Some sides only show clearly later in life, so for now, watch for glimpses of it. ':'')+fitAt(ms.image+' '+ms.story,ming)+brNote(pal[ming]));
      if(mcombo==='空'&&SZM().ming[ocombo])story.push(`Your Life palace has no main star, so it borrows ${comboTxt(ocombo)} from the opposite palace. You resemble “${SZM().ming[ocombo].title}”, but you are more easily shaped by your surroundings and the people around you.`);}
    const bsrc=bp.majorStars.length?body:(body+6)%12,bc=comboOf(pal[bsrc]);
    if(bp.name==='命宮')story.push('Your Body palace sits in the same place as your Life palace, so your inborn character stays the center of your whole life, and the older you get, the more you become yourself.');
    else{let frag='';
      const ws=SZW()&&bc!=='空'&&(bp.name==='財帛'?SZW().wealth[bc]:bp.name==='官祿'?SZW().career[bc]:null);
-     if(ws)frag=`Here you are “${ws.title}”: ${firstSent(fitAt(ws.story,body))}${brNote(bp)}`;
+     if(KIDC&&['財帛','官祿','夫妻'].includes(bp.name))frag=kidTxt(body,bp.name==='財帛'?'money':bp.name==='官祿'?'learn':'friend');
+     else if(ws)frag=`Here you are “${ws.title}”: ${firstSent(fitAt(ws.story,body))}${brNote(bp)}`;
      else if(bp.name==='夫妻'&&SZS()&&SZS()[bc]&&bc!=='空')frag=firstSent(fitAt(SZS()[bc].pattern,body));
      else if(SZM()&&SZM().ming[bc]&&bc!=='空')frag=`The ${comboTxt(bc)} here ${bc.includes('·')?'read':'reads'} like “${SZM().ming[bc].title}”.`;
      const lm=has(body,'天馬')&&(has(body,'祿存')||[...bp.majorStars,...bp.minorStars].some(s=>s.mutagen==='祿'));
-     story.push([`As life reaches its middle stretch, though, your focus gradually shifts to ${DOM[bp.name]}, because your Body palace is the ${pn(bp.name)}.`,frag.trim(),lm?'It also forms Lu Ma Jiao Chi (Wealth-and-Horse) here: the more you move around, the more you earn.':''].filter(Boolean).join(' '));}
+     story.push([`${YNG?'As you grow up':'As life reaches its middle stretch, though'}, your focus gradually shifts to ${NT.DOM[bp.name]}, because your Body palace is the ${pn(bp.name)}.`,frag.trim(),lm?'It also forms Lu Ma Jiao Chi (Wealth-and-Horse) here: the more you move around, the more you earn.':''].filter(Boolean).join(' '));}
    if(SZW()){const ci=idx('官祿'),wi=idx('財帛');
      const say=(i,key,lab)=>{const c=comboOf(pal[i]);if(c!=='空')return SZW()[key][c]?`${lab}, you are “${SZW()[key][c].title}”`:'';const oc=comboOf(oppOf(i));return SZW()[key][oc]&&oc!=='空'?`${lab}, your ${pn(pal[i].name)} has no main star, so it borrows ${comboTxt(oc)} from the opposite palace and you resemble “${SZW()[key][oc].title}”`:'';};
-     const parts=[say(ci,'career','at work'),say(wi,'wealth','with money')].filter(Boolean);
-     if(parts.length){workLine=cap(parts.join('; '))+'.';story.push(workLine);}}
-   if(birthMut['忌']){const jp=pal[birthMut['忌'].i].name;story.push(`What you care about most in life, and where you most often get stuck, is ${DOM[jp]}. ${mt(birthMut['忌'].star,'忌')} sits in your ${pn(jp)}: ${JI[jp]} This is not bad luck. It is the lesson most worth your effort in this lifetime.`);}
+     const parts=KIDC?[]:[say(ci,'career',AST==='student'?'in your future direction':'at work'),say(wi,'wealth','with money')].filter(Boolean);
+     if(KIDC){workLine=`In learning: ${firstSent(kidTxt(ci,'learn'))} With money: ${firstSent(kidTxt(wi,'money'))}`;story.push(workLine);}
+     else if(parts.length){workLine=cap(parts.join('; '))+'.';story.push(workLine);}}
+   if(birthMut['忌']){const jp=pal[birthMut['忌'].i].name;story.push(`What you care about most in life, and where you most often get stuck, is ${NT.DOM[jp]}. ${mt(birthMut['忌'].star,'忌')} sits in your ${pn(jp)}: ${NT.JI[jp]} This is not bad luck. It is the lesson most worth your effort in this lifetime.`);}
    if(decInfo&&decTitle)story.push(`Right now you are in the chapter for ages ${decInfo.range}, and its theme is “${decTitle}”. ${decStory}`);
    if(yearInfo)story.push(`In ${yearInfo.yr}, the yearly Life palace falls in your natal ${yearInfo.pal}${yearInfo.meet?', and it overlaps your decade Life palace, so the highs and lows of the year are doubled':''}.`);}
   if(story.length)o.unshift(h3('Your story','z-story'),...story.map(p));
@@ -533,11 +565,11 @@ function readZW(Z,ctx){
   b.push(h3('Your Zi Wei chart highlights'));
   const msrc=mp.majorStars.length?mp.majorStars:opp.majorStars;
   const bItems=story.length?[]:[pt(`Life palace (${msrc.map(x=>S(x.name)).join(', ')||'—'}${mp.majorStars.length?'':', borrowed from the opposite palace'})`,msrc.map(x=>M[x.name]?M[x.name][2]:'').join(' ')),
-    pt(`Body palace in the ${pn(bp.name)}`,bp.name==='命宮'?'your inborn nature is also your later focus: being yourself matters most.':`from midlife on, ${DOM[bp.name]} will matter more and more to you.`)];
-  if(story.length&&workLine)bItems.push(pt('Work and money',workLine));
+    pt(`Body palace in the ${pn(bp.name)}`,bp.name==='命宮'?'your inborn nature is also your later focus: being yourself matters most.':`from midlife on, ${NT.DOM[bp.name]} will matter more and more to you.`)];
+  if(story.length&&workLine)bItems.push(pt(KIDC?'Talents, learning and money habits':AST==='student'?'Studies and money':'Work and money',workLine));
   const pn2=pats.map(x=>(x.match(/<b>(.*?)<\/b>/)||[])[1]).filter(Boolean);
   if(pn2.length)bItems.push(pt('Chart patterns',pn2.join('; ')+' (details in Advanced).'));
-  if(birthMut["忌"])bItems.push(pt(`Lifelong lesson (${mt(birthMut['忌'].star,'忌')} in the ${pn(pal[birthMut['忌'].i].name)})`,JI[pal[birthMut['忌'].i].name]));
+  if(birthMut["忌"])bItems.push(pt(`${KIDC?'Lesson for growing up':'Lifelong lesson'} (${mt(birthMut['忌'].star,'忌')} in the ${pn(pal[birthMut['忌'].i].name)})`,NT.JI[pal[birthMut['忌'].i].name]));
   b.push(ul(bItems));
   if(decInfo){b.push(h4(`This decade (ages ${decInfo.range}): the ${decInfo.pal} decade`));const dup=!!(decInfo.jiStar&&yearInfo&&yearInfo.ji===decInfo.jiStar);b.push(p(`Main stars: ${decInfo.star}. These ten years center on ${decInfo.dom}. ${decInfo.ji&&!dup?decInfo.ji:''}${dup?`Both the decade’s and this year’s ${ML('忌')} fall on ${S(decInfo.jiStar)}, so pay special attention to the reminders below.`:''}`));}
   if(yearInfo){b.push(h4(`${yearInfo.yr}, the ${yearInfo.gz} year`));b.push(p(`The yearly Life palace is your natal ${yearInfo.pal} (${yearInfo.star}). ${yearInfo.meet?'This year the yearly and decade Life palaces meet, so good and bad are both amplified.':''}`));if(adv.length)b.push(ul(adv));}
@@ -648,7 +680,7 @@ function readHD(H,Z){
     const SL=SHD()&&SHD().lines[ln];
     if(SL)o.push(ul([pt('Common misreading',SL.misread),pt('A better way to see it',SL.mindset)]));
     o.push((SL?SL.examples:[L.e]).map(scene).join(''));}
-  {const pr=SHD()&&SHD().profiles[pk];if(pr){o.push(h4(`The ${pk} life cycle`));o.push(p(pr.loop));o.push(h4('In love'));o.push(p(pr.love));o.push(h4('At work and in business'));o.push(p(pr.work));o.push(h4(`Tips for a ${pk}`));o.push(ul(pr.tips));}}
+  {const pr=SHD()&&SHD().profiles[pk];if(pr){o.push(h4(`The ${pk} life cycle`));o.push(p(pr.loop));o.push(h4(AGE_ST==='child'?'Getting close to people':'In love'));o.push(p(pr.love));o.push(h4(AGE_ST==='child'?'Learning and doing things':AGE_ST==='student'?'Studies and future direction':'At work and in business'));o.push(p(pr.work));o.push(h4(`Tips for a ${pk}`));o.push(ul(pr.tips));}}
   const cr=crossName(H,Z);
   o.push(h3('Incarnation Cross','h-cross'));
   o.push(p(`${cr.full}, gates ${H.cross.gates[0]}/${H.cross.gates[1]} | ${H.cross.gates[2]}/${H.cross.gates[3]}. ${Z.angles[H.cross.angle][1]}`));
@@ -683,5 +715,12 @@ function crossName(H,Z){
   return{full:`${ang} of ${nm}${c[1]?` (${c[1]})`:''}`,zh:`${nm}${c[1]?' '+c[1]:''}`,en:c[0]};
 }
 
-root.Readings=root.Readings||{};root.Readings.en={west:readWest,zw:readZW,hd:readHD,crossName};
+/* child / student charts: swap house wording and the Venus heading while rendering, then filter adult-only sentences */
+let AGE_ST='adult';
+const HOUSE_KID=['self-image and first impressions','pocket money, belongings and self-worth','communication, learning and siblings','family, roots and your inner safe place','play, creativity and hobbies','daily routines, study habits and health','close friends, teamwork and one-to-one bonds','trust, sharing and inner growth','travel, curiosity and learning','future goals, recognition and how you do at school','friends, clubs and hopes for the future','the subconscious, solitude and what stays hidden'];
+const SA=()=>root.StarlitAge,stNow=Zx=>SA()?SA().stage(Zx):'adult';
+function withAge(st,f){if(st!=='child'&&st!=='student')return f();const h0=HOUSE.slice(),v0=ROLE.Venus[0];AGE_ST=st;HOUSE.splice(0,12,...HOUSE_KID);if(st==='child')ROLE.Venus[0]='What you like and value';
+  try{return f();}finally{HOUSE.splice(0,12,...h0);ROLE.Venus[0]=v0;AGE_ST='adult';}}
+const ageWrap=(r,st)=>(st==='child'||st==='student')&&SA()?{...r,basic:SA().safe(r.basic,'en',st),adv:SA().safe(r.adv,'en',st)}:r;
+root.Readings=root.Readings||{};root.Readings.en={west:(W,E,o)=>{const st=stNow();return ageWrap(withAge(st,()=>readWest(W,E,o)),st);},zw:(Zc,ctx)=>ageWrap(readZW(Zc,ctx),stNow(Zc)),hd:(H,D,o)=>{const st=stNow();return ageWrap(withAge(st,()=>readHD(H,D,o)),st);},crossName,kidPal:KID_PAL};
 })(typeof window!=='undefined'?window:globalThis);

@@ -169,7 +169,7 @@ function readWest(W,E){
   const personal=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'];
   const keyAsp=W.asp.filter(a=>a.orb<=4&&(personal.includes(a.a)||personal.includes(a.b))).slice(0,10);
   o.push(h3('Aspects majeurs','w-aspects'));
-  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0].toLowerCase()} ${PN[a.b]} (orbe ${dec1(a.orb)}°)`,(STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t])||`${cap(THEME[a.a])} et ${THEME[a.b]} — ${ASP[a.t][1]}.`))):p('Aucun aspect majeur avec un orbe inférieur à 4°.'));
+  o.push(keyAsp.length?ul(keyAsp.map(a=>pt(`${PN[a.a]} ${ASP[a.t][0].toLowerCase()} ${PN[a.b]} (orbe ${dec1(a.orb)}°${a.oos?', '+((typeof I18N!=='undefined'&&I18N.fr.ui.oos)||''):''})`,(STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t])||`${cap(THEME[a.a])} et ${THEME[a.b]} — ${ASP[a.t][1]}.`)))+(keyAsp.some(a=>a.oos)?`<p class="muted">${((typeof I18N!=='undefined'&&I18N.fr.ui.oosNote)||'')}</p>`:''):p('Aucun aspect majeur avec un orbe inférieur à 4°.'));
   /* configurations */
   const pats=patterns(W,E);
   o.push(h3('Configurations et stelliums','w-patterns'));
@@ -199,7 +199,7 @@ function readWest(W,E){
   const ws=[];
   if(STA())ws.push(`Commençons par ce que les autres voient de vous. ${STA().ascSun[asc][sun]}`);
   if(STW())ws.push(`Regardons maintenant ce qui se passe au-dedans. ${STW().sunMoon[sun][moon]}`);
-  if(STW()){const mars=s('Mars'),strip=t=>String(t).replace(/^Par exemple,\s*/,'');ws.push(`En amour, Vénus en ${SG[ven]} se voit souvent ainsi : ${strip(STW().scenes.Venus[ven])} Et quand il faut agir, vous défendre ou obtenir quelque chose, Mars en ${SG[mars]} prend le relais : ${strip(STW().scenes.Mars[mars])}`);}
+  if(STW()){const mars=s('Mars'),strip=t=>String(t).replace(/^Par exemple,\s*/,'');ws.push(`${AGE_ST==='child'?'Quand vous montrez votre affection':'En amour'}, Vénus en ${SG[ven]} se voit souvent ainsi : ${strip(STW().scenes.Venus[ven])} Et quand il faut agir, vous défendre ou obtenir quelque chose, Mars en ${SG[mars]} prend le relais : ${strip(STW().scenes.Mars[mars])}`);}
   {const dom=EL.filter(e=>cnt[e]===Math.max(...EL.map(x=>cnt[x])));const miss=EL.filter(e=>cnt[e]===0);
    ws.push(`Si l’on regarde le thème dans son ensemble, votre maître d’Ascendant, ${PN[ar]}, se trouve en maison ${P[ar].house} : votre vie gravite souvent autour de « ${HOUSE[P[ar].house-1]} ». Parmi les dix planètes, ${dom.length>1?`les éléments ${andList(dom.map(e=>ELN[e]))} dominent`:`l’élément ${ELN[dom[0]]} domine`}, et ${andList(dom.map(e=>ELQ[e]))} ${dom.length>1?'forment':'forme'} votre couleur de fond${miss.length?` ; en revanche, aucune planète en ${miss.map(e=>ELN[e]).join(' ni en ')} : c’est une capacité à cultiver consciemment`:''}.`);}
   {const a=keyAsp[0];const t=a&&STW()&&STW().aspects[`${a.a}-${a.b}`]&&STW().aspects[`${a.a}-${a.b}`][a.t];
@@ -261,6 +261,23 @@ const LOVE_STG={
  child:{lab:'Amitiés',both:'De belles amitiés, avec quelques petits malentendus : vous vous faites facilement des amis, mais apprenez à dire les choses clairement.',ji:'De petits malentendus avec les amis sont probables : dites-le quand quelque chose vous contrarie.',lu:'Une année de belles amitiés : vous vous faites facilement de nouveaux amis.',fl:'Beaucoup d’activités et d’amis : amusez-vous, en gardant un rythme régulier.',calm:'Des amitiés stables et des relations simples avec la famille et les amis.'},
  student:{lab:'Amitiés et sentiments',both:'Vous plaisez, mais les malentendus sont possibles aussi : parlez avec vos amis, prenez votre temps en amour et équilibrez études et amitiés.',ji:'Des malentendus avec des amis ou une personne qui vous plaît sont probables : parlez davantage et ne laissez pas vos émotions déborder sur vos études.',lu:'Vous plaisez et rencontrez facilement des personnes avec qui le courant passe ; rien ne presse, gardez l’équilibre entre études et amitiés.',fl:'Beaucoup d’attention et une vie sociale animée : distinguez les vrais sentiments d’un simple coup de cœur.',calm:'Amitiés et sentiments sont calmes : concentrez-vous sur vos études et vos passions.'},
  senior:{lab:'Famille et entourage',both:'Des liens familiaux chaleureux, avec quelques frictions : retrouvez-vous souvent et parlez avec douceur.',ji:'Des malentendus avec votre conjoint ou votre famille sont possibles : soyez patient et dites les choses clairement.',lu:'Des liens chaleureux avec la famille et les vieux amis : une belle année pour les retrouvailles.',fl:'Beaucoup d’invitations et de belles rencontres : profitez-en en ménageant vos forces.',calm:'Vie de famille et amitiés paisibles : laissez les choses suivre leur cours.'}};
+/* thème d’un enfant, écrit pour les parents : étoile principale → façon d’apprendre, rapport à l’argent, amitiés */
+const KID_STAR={
+ '紫微':{learn:'Votre enfant a de la fierté et aime mener : lui confier une petite responsabilité (aider en classe, s’occuper d’un animal) est ce qui le motive le plus. Préférez l’encouragement et le respect aux ordres.',money:'Il a du goût et aime les belles choses : une bonne habitude à prendre tôt, « mettre de côté avant d’acheter ce qu’on veut ».',friend:'Souvent celui ou celle qui mène la bande ; aidez-le à écouter les autres et à laisser la vedette à son tour.'},
+ '天機':{learn:'Esprit vif qui demande sans cesse « pourquoi ? » : casse-têtes, jeux de construction et petites expériences scientifiques lui conviennent. Son attention papillonne, alors gardez des séances d’apprentissage courtes.',money:'À l’aise pour compter et comparer : faites-lui préparer le budget de son argent de poche et tenir le plan jusqu’au bout.',friend:'Ses amis sont surtout des camarades avec qui discuter. Très sensible, il a tendance à trop réfléchir : aidez-le à mettre des mots sur ses inquiétudes.'},
+ '太陽':{learn:'Chaleureux et expressif, il s’épanouit dans les activités de groupe, le sport ou sur scène ; être vu et félicité est sa plus grande motivation.',money:'Il aime partager et donne souvent ses affaires : apprenez-lui l’équilibre entre partager et garder quelque chose pour soi.',friend:'Il prend soin des autres comme un petit soleil et il est très apprécié ; rappelez-lui qu’il n’a pas à être toujours celui qui y perd.'},
+ '武曲':{learn:'Persévérant et clair sur ses objectifs, il est fait pour ce qui se construit à force d’entraînement : sport, instrument, mathématiques.',money:'Il comprend l’argent et sait le garder : une tirelire tôt, et voir la somme grandir, lui apporte une vraie fierté.',friend:'Peu bavard mais loyal et direct ; s’entraîner à dire des mots doux l’aide beaucoup.'},
+ '天同':{learn:'Doux et joueur, il apprend mieux dans une ambiance détendue et amusante : le jeu marche mieux que la pression.',money:'Il aime les gourmandises et les choses amusantes, et l’argent de poche file vite : convenez ensemble de « mettre un peu de côté avant de dépenser ».',friend:'Facile à vivre et câlin, ses amis adorent jouer avec lui ; il doit apprendre à faire ses propres choix plutôt que de toujours suivre.'},
+ '廉貞':{learn:'Caractère affirmé et goût de la compétition : il aime les défis aux règles claires, jeux de société ou concours. Ses émotions montent vite et demandent un accompagnement patient.',money:'Il s’attache fortement à ce qu’il aime : entraînez-le à attendre et à comparer avant de décider.',friend:'Entier dans ses goûts et très fidèle à ses amis proches ; après une dispute, il a besoin qu’un adulte lui montre comment se réconcilier.'},
+ '天府':{learn:'Posé et respectueux des règles, il aime avancer étape par étape ; un apprentissage structuré, aux étapes claires, le rassure.',money:'Il range et épargne naturellement : un enfant capable de bien gérer son argent de poche très tôt.',friend:'Doux et poli, il veille souvent sur les plus petits ; ses amis le trouvent fiable.'},
+ '太陰':{learn:'Sensible et attentif, il est fait pour la lecture, le dessin, la musique ; il se concentre mieux dans un lieu calme et rassurant.',money:'Économe et soigneux de ses affaires : apprenez-lui à noter son argent de poche dans un petit carnet.',friend:'Lent à s’ouvrir et un peu timide, il lui faut du temps ; un ou deux amis proches lui suffisent.'},
+ '貪狼':{learn:'Curieux de tout, il veut tout essayer : explorez largement, puis choisissez une ou deux activités à pratiquer jusqu’à ce qu’il en soit fier, ce qui développe la concentration.',money:'Tout ce qui est nouveau lui fait envie : idéal pour apprendre à distinguer « envie » et « besoin ».',friend:'Vif et doué pour se faire des amis ; gardez un rythme régulier pour que le jeu et le repos aient chacun leur place.'},
+ '巨門':{learn:'Il pose beaucoup de questions et s’exprime bien : histoires, lecture et langues lui conviennent. Laissez-le aller au bout de ses questions et apprenez-lui aussi à bien écouter.',money:'Il compare et choisit avec soin, aime se renseigner avant d’acheter : laissez-le prendre de petites décisions d’achat.',friend:'Il parle franchement, d’où de petites prises de bec avec ses amis ; apprenez-lui à penser aux sentiments de l’autre avant de parler.'},
+ '天相':{learn:'Raisonnable et respectueux des règles, il aime bien faire les choses et adore aider ; un rythme stable et des encouragements renforcent sa confiance.',money:'Il dépense avec mesure et partage volontiers avec ceux qui en ont besoin.',friend:'Doué pour apaiser les tensions et faire la paix ; il doit aussi apprendre à dire ce qu’il pense vraiment.'},
+ '天梁':{learn:'Mûr pour son âge et protecteur, il aime les histoires et les explications : la lecture et le temps passé avec ses grands-parents lui conviennent, et s’occuper d’une plante ou d’un animal est une belle mission.',money:'Peu attaché aux objets, il est content dès qu’il y a assez ; transmettez-lui les bases de l’épargne.',friend:'Il veille sur ses amis comme un petit adulte et aime expliquer ; laissez-le parfois être celui dont on prend soin.'},
+ '七殺':{learn:'Plein d’élan et mauvais perdant, il est fait pour le sport et les activités qui le mettent au défi ; des objectifs et des règles canalisent son énergie.',money:'Il veut tout, tout de suite : apprendre à attendre et à épargner développe sa patience.',friend:'Indépendant et direct, il a peu d’amis mais des amis solides ; en cas de conflit, il doit apprendre à se calmer avant de parler.'},
+ '破軍':{learn:'Il adore essayer et déteste la routine : construire, démonter et remonter lui conviennent. Laissez-lui de la place pour créer, et fixez ensemble des règles de rangement.',money:'Il dépense sans trop compter et aime la nouveauté : convenez d’une somme fixe par semaine.',friend:'Audacieux et aventureux, il entraîne souvent ses amis dans des aventures ; rappelez-lui la sécurité et le respect des limites des autres.'}};
+const KID_PAL={'兄弟':'Les liens avec les frères, sœurs et camarades de jeu.','夫妻':'La façon de se lier avec les amis proches ; à l’âge adulte, ce palais parle aussi de la vie sentimentale.','子女':'Les loisirs, la créativité et les liens avec les plus petits.','財帛':'Le rapport à l’argent de poche et aux affaires personnelles.','遷移':'Comment l’enfant se débrouille en sortie ou dans un lieu nouveau.','僕役':'Les camarades, les amis et la place dans un groupe.','官祿':'La façon d’apprendre et les talents naturels, puis plus tard la manière d’agir.','田宅':'Le cadre familial et l’ambiance de la maison.','父母':'Les liens avec les parents et les enseignants ; concerne aussi les examens.'};
 /* âge (à l’asiatique) → étape ; tbl() renvoie les formulations de cette étape */
 const ageStage=a=>a<13?'child':a<23?'student':a<65?'adult':'senior';
 const decStage=a=>a<13?'young':a>=65?'senior':'adult';
@@ -293,7 +310,8 @@ function zwHelpers(ctx){
 }
 
 function readZW(Z,ctx){
-  const M=ctx.major,MINOR=ctx.minor,BR=ctx.bright,PAL=ctx.palDesc;
+  const AST=root.StarlitAge?root.StarlitAge.stage(Z):'adult',YNG=AST==='child'||AST==='student',KIDC=AST==='child',NT=tbl(YNG?'young':'adult');
+  const M=ctx.major,MINOR=ctx.minor,BR=ctx.bright,PAL=n=>(YNG&&KID_PAL[n])||ctx.palDesc(n);
   const X=zwHelpers(ctx),{S,ML,MZ,PN,deP,pn,BL,starTag}=X;
   const pal=Z.palaces,o=[];
   const idx=n=>pal.findIndex(x=>x.name===n);
@@ -325,7 +343,7 @@ function readZW(Z,ctx){
   const brNote=pp=>{const st=pp.majorStars;if(!st.length)return '';
     const weak=st.filter(s=>['陷','不'].includes(s.brightness)).map(s=>`${S(s.name)} (${BL(s.brightness)})`),strong=st.filter(s=>s.brightness==='廟').map(s=>S(s.name));
     return (strong.length?` ${andList(strong)} ${strong.length>1?'brillent':'brille'} ici de tout ${strong.length>1?'leur':'son'} éclat (${BL('廟')}) : ces traits s’expriment pleinement.`:'')+(weak.length?` En revanche, ${andList(weak)} ${weak.length>1?'manquent':'manque'} d’éclat ici : les qualités décrites demandent plus d’efforts pour s’exprimer, et les défauts se voient davantage.`:'');};
-  const mutTxt=(s,nm)=>(s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})[nm]||(s.mutagen==='權'?`Pour ce qui touche ${DOMA(nm)}, vous avez la main.`:`Ce qui touche ${DOMA(nm)} vous vaut facilement une bonne réputation.`);
+  const mutTxt=(s,nm)=>(s.mutagen==='祿'?NT.LU:s.mutagen==='忌'?NT.JI:{})[nm]||(s.mutagen==='權'?`Pour ce qui touche ${NT.DOMA(nm)}, vous avez la main.`:`Ce qui touche ${NT.DOMA(nm)} vous vaut facilement une bonne réputation.`);
 
   /* 1. Informations */
   o.push(h3('Analyse du thème Zi Wei Dou Shu','z-info'));
@@ -369,19 +387,19 @@ function readZW(Z,ctx){
   /* Palais du Corps */
   const bp=pal[body];
   o.push(h4(`Palais du Corps en ${bp.earthlyBranch} (${PN(bp.name)} : ${withMinor(body)})`));
-  const bl=[pt('Centre de gravité',`le palais du Corps indique vos tendances après trente ans. ${bp.name==='命宮'?`Le vôtre coïncide avec le ${V} : votre nature innée est aussi votre centre de gravité, être vous-même est l’essentiel`:`Le vôtre se trouve dans le ${pn(bp.name)} : dans la seconde moitié de votre vie, vous accorderez beaucoup d’importance ${DOMA(bp.name)}`}.`)];
+  const bl=[pt('Centre de gravité',`le palais du Corps indique vos tendances après trente ans. ${bp.name==='命宮'?`Le vôtre coïncide avec le ${V} : votre nature innée est aussi votre centre de gravité, être vous-même est l’essentiel`:`Le vôtre se trouve dans le ${pn(bp.name)} : dans la seconde moitié de votre vie, vous accorderez beaucoup d’importance ${NT.DOMA(bp.name)}`}.`)];
   if(has(body,'天馬')&&(has(body,'祿存')||bp.majorStars.concat(bp.minorStars).some(s=>s.mutagen==='祿')))bl.push(pt('Lu Ma Jiao Chi dans le palais du Corps','voir la configuration plus haut ; cette force qui fait naître l’argent du mouvement tombe justement sur le centre de gravité de la seconde moitié de votre vie.'));
   if(has(body,'陀羅'))bl.push(pt('Nœuds cachés',`${S('陀羅')} se trouve dans ce palais : dans ce domaine, vous avez tendance à trop réfléchir et à hésiter, et les choses traînent facilement.`));
   if(has(body,'擎羊'))bl.push(pt('Élan et conflits',`${S('擎羊')} se trouve dans ce palais : beaucoup d’énergie pour agir, mais des frictions faciles avec les autres.`));
-  for(const s of bp.majorStars.concat(bp.minorStars))if(s.mutagen)bl.push(pt(MZ(s.name,s.mutagen),(s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})[bp.name]||`${MZ(s.name,s.mutagen)} met ce domaine encore plus en avant.`));
+  for(const s of bp.majorStars.concat(bp.minorStars))if(s.mutagen)bl.push(pt(MZ(s.name,s.mutagen),(s.mutagen==='祿'?NT.LU:s.mutagen==='忌'?NT.JI:{})[bp.name]||`${MZ(s.name,s.mutagen)} met ce domaine encore plus en avant.`));
   o.push(ul(bl));
 
   /* 4. Transformations de naissance */
   o.push(h3('Transformations de naissance','z-birthmut'));
   o.push(p(`Tige céleste de l’année de naissance « ${yy[0]} » : ${MK.map(k=>birthMut[k]?MZ(birthMut[k].star,k):'').filter(Boolean).join(', ')}.`));
   o.push(ul(MK.filter(k=>birthMut[k]).map(k=>{const b=birthMut[k],pnm=pal[b.i].name,oppn=pal[(b.i+6)%12].name;
-    const base=k==='祿'?LU[pnm]:k==='忌'?JI[pnm]:k==='權'?`Pour ce qui touche ${DOMA(pnm)}, vous avez la main et les moyens ; vous êtes dynamique, mais risquez d’en faire trop.`:`Ce qui touche ${DOMA(pnm)} vous vaut facilement une bonne réputation ; en cas de difficulté, un soutien ou une bonne solution se présente souvent.`;
-    const extra=k==='忌'?` Le ${ML('忌')} dans le ${pn(pnm)} s’oppose au ${pn(oppn)} : les affaires de ce palais en subissent aussi les effets. ${STAR_JI[b.star]||''}`:k==='祿'?(STAR_LU[b.star]?' '+STAR_LU[b.star]:''):'';
+    const base=k==='祿'?NT.LU[pnm]:k==='忌'?NT.JI[pnm]:k==='權'?`Pour ce qui touche ${NT.DOMA(pnm)}, vous avez la main et les moyens ; vous êtes dynamique, mais risquez d’en faire trop.`:`Ce qui touche ${NT.DOMA(pnm)} vous vaut facilement une bonne réputation ; en cas de difficulté, un soutien ou une bonne solution se présente souvent.`;
+    const extra=k==='忌'?` Le ${ML('忌')} dans le ${pn(pnm)} s’oppose au ${pn(oppn)} : les affaires de ce palais en subissent aussi les effets. ${NT.SJI[b.star]||''}`:k==='祿'?(NT.SLU[b.star]?' '+NT.SLU[b.star]:''):'';
     return pt(`${MZ(b.star,k)} dans le ${pn(pnm)}`,base+extra);})));
 
   /* 5. Transformations volantes */
@@ -390,8 +408,8 @@ function readZW(Z,ctx){
   o.push(`<div class="tablewrap"><table><thead><tr><th>Palais</th><th>Tige</th><th>${ML('祿')}</th><th>${ML('權')}</th><th>${ML('科')}</th><th>${ML('忌')}</th></tr></thead><tbody>${flyRows.join('')}</tbody></table></div>`);
   const notes=[];
   pal.forEach((p,i)=>{const mm=STEM_MUT[p.heavenlyStem];mm.forEach((star,j)=>{const t=findStar(star);if(t===i)notes.push(pt(`${cap(pn(p.name))}, auto-${ML(MK[j])}`,['les avantages de ce palais arrivent vite et repartent aussi vite ; ils sont difficiles à retenir.','dans ce palais, vous avez tendance à décider seul : de l’autorité, mais peu de constance.','la réputation et les avantages de ce palais se voient facilement ; méfiez-vous toutefois des apparences sans fond.','les affaires de ce palais ont tendance à créer leurs propres complications et à ne pas aller jusqu’au bout.'][j]));});
-    const jt=findStar(mm[3]);if(jt===ming&&i!==ming)notes.push(pt(`${cap(pn(p.name))}, ${ML('忌')} vers le ${V}`,`ce qui touche ${DOMA(p.name)} vous préoccupera toute votre vie.`));
-    if(jt===(ming+6)%12&&i!==ming)notes.push(pt(`${cap(pn(p.name))}, ${ML('忌')} opposé au ${V}`,`ce qui touche ${DOMA(p.name)} peut exercer sur vous une pression directe.`));});
+    const jt=findStar(mm[3]);if(jt===ming&&i!==ming)notes.push(pt(`${cap(pn(p.name))}, ${ML('忌')} vers le ${V}`,`ce qui touche ${NT.DOMA(p.name)} vous préoccupera toute votre vie.`));
+    if(jt===(ming+6)%12&&i!==ming)notes.push(pt(`${cap(pn(p.name))}, ${ML('忌')} opposé au ${V}`,`ce qui touche ${NT.DOMA(p.name)} peut exercer sur vous une pression directe.`));});
   if(notes.length)o.push(ul(notes));
 
   /* 6. Les douze palais */
@@ -469,24 +487,36 @@ function readZW(Z,ctx){
   }
 
   /* carrière et argent */
-  if(SZW()){o.push(h3('Carrière et argent','z-work'));
-    for(const [i,key,lab] of [[idx('官祿'),'career',`Carrière (${pn('官祿')})`],[idx('財帛'),'wealth',`Argent (${pn('財帛')})`]]){const c=comboOf(pal[i]);const e=SZW()[key][c];if(!e)continue;
+  const kidSrc=i=>pal[i].majorStars.length?pal[i].majorStars:pal[(i+6)%12].majorStars;
+  const kidTxt=(i,f)=>kidSrc(i).map(s=>KID_STAR[s.name]?KID_STAR[s.name][f]:'').filter(Boolean).join(' ');
+  if(SZW()&&KIDC){o.push(h3('Talents, apprentissages et rapport à l’argent','z-work'));
+    o.push(p(`Chez un enfant, le ${pn('官祿')} et le ${pn('財帛')} ne parlent pas de travail ni de revenus : ils montrent sa façon d’apprendre, ses intérêts naturels et son rapport à l’argent de poche et à ses affaires.`));
+    for(const [i,lab,f] of [[idx('官祿'),`Talents et apprentissages (${pn('官祿')})`,'learn'],[idx('財帛'),`Rapport à l’argent (${pn('財帛')})`,'money']]){
+      o.push(h4(lab));o.push(p(`${cap(pn(pal[i].name))} en ${pal[i].earthlyBranch} (${stLineB(i)}). ${kidTxt(i,f)}`));
+      if(f==='learn'){const e=SZW().career[comboOf(pal[i].majorStars.length?pal[i]:pal[(i+6)%12])];if(e&&e.fields)o.push(p(`Plus tard, sa vie professionnelle pourrait s’orienter vers : ${fit(e.fields,pal[i],oppStars(i))}`));}
+      for(const s of [...pal[i].majorStars,...pal[i].minorStars])if(s.mutagen)o.push(p(`<b>${MZ(s.name,s.mutagen)} ici</b> : ${mutTxt(s,pal[i].name)}`));}}
+  else if(SZW()){const WL=AST==='student'?['Études, avenir et argent',`Études et avenir (${pn('官祿')})`,`Argent de poche, petits boulots et rapport à l’argent (${pn('財帛')})`,'Pistes à explorer']:['Carrière et argent',`Carrière (${pn('官祿')})`,`Argent (${pn('財帛')})`,'Domaines qui vous conviennent'];o.push(h3(WL[0],'z-work'));
+    for(const [i,key,lab] of [[idx('官祿'),'career',WL[1]],[idx('財帛'),'wealth',WL[2]]]){const c=comboOf(pal[i]);const e=SZW()[key][c];if(!e)continue;
       const F=t=>fit(t,pal[i],oppStars(i));
       o.push(h4(`${lab} : « ${e.title} »`));
       o.push(p(`${cap(pn(pal[i].name))} en ${pal[i].earthlyBranch} (${stLine(i)}${minorLine(i)?', '+minorLine(i):''}). ${F(e.story)}${brNote(pal[i])}`));
       if(c==='空'){const oc=comboOf(pal[(i+6)%12]);const oe=SZW()[key][oc];if(oe)o.push(p(borrow(oc)+fit(oe.story,pal[(i+6)%12])));}
-      if(e.fields)o.push(ul([pt('Domaines qui vous conviennent',F(e.fields))]));
+      if(e.fields)o.push(ul([pt(WL[3],F(e.fields))]));
       o.push(e.scenes.map(x=>scene(F(x))).join(''));o.push(ul([pt('Conseil',F(e.advice))]));
       for(const s of [...pal[i].majorStars,...pal[i].minorStars])if(s.mutagen)o.push(p(`<b>${MZ(s.name,s.mutagen)} ici</b> : ${mutTxt(s,pal[i].name)}`));}}
   /* 9. Amour */
-  o.push(h3('Amour','z-love'));
+  o.push(h3(KIDC?'Se faire des amis et s’attacher':AST==='student'?'Amour et amitiés':'Amour','z-love'));
   const fi=idx('夫妻'),fp=pal[fi];
+  if(KIDC){o.push(p(`${cap(pn('夫妻'))} en ${fp.earthlyBranch} (${stLineB(fi)}). Chez un enfant, ce palais montre sa façon de se lier avec ses amis proches et les personnes dont il se sent près. ${kidTxt(fi,'friend')}`));
+    const fr=idx('僕役');o.push(p(`Avec les camarades et en groupe (${pn('僕役')} : ${stLineB(fr)}) : ${kidTxt(fr,'friend')}`));
+    o.push(ul([pt('Comment l’accompagner','Écoutez-le parler de l’école et de ses amis sans juger trop vite. En cas de dispute ou s’il se sent mis à l’écart, accueillez d’abord l’émotion, puis cherchez ensemble quoi dire ou quoi faire.')]));}
+  else{
   {const sc=comboOf(fp);const e=SZS()&&SZS()[sc];
    if(e){const F=t=>fit(t,fp,oppStars(fi));o.push(h4(`« ${e.title} »`));o.push(p(F(e.partner+' '+e.pattern)+brNote(fp)));
      if(sc==='空'){const oc=comboOf(pal[(fi+6)%12]);const oe=SZS()[oc];if(oe)o.push(p(borrow(oc)+fit(oe.partner,pal[(fi+6)%12])));}
      o.push(e.scenes.map(x=>scene(F(x))).join(''));o.push(ul([pt('Conseil',F(e.advice))]));o.push(h4(`Le ${pn('夫妻')} en détail`));}}
   const fl=[pt(`${cap(pn('夫妻'))} natal en ${fp.earthlyBranch} (${withMinor(fi)})`,`${PAL('夫妻')}${fp.majorStars.map(s=>M[s.name]?` Votre partenaire, ou vous-même en amour, porte les traits de ${S(s.name)} : ${lcf(M[s.name][2])}`:'').join('')}`)];
-  for(const s of fp.majorStars.concat(fp.minorStars))if(s.mutagen)fl.push(pt(`${MZ(s.name,s.mutagen)} dans le ${pn('夫妻')}`,(s.mutagen==='祿'?LU:s.mutagen==='忌'?JI:{})['夫妻']||`en amour, les traits de ${S(s.name)} sont amplifiés.`));
+  for(const s of fp.majorStars.concat(fp.minorStars))if(s.mutagen)fl.push(pt(`${MZ(s.name,s.mutagen)} dans le ${pn('夫妻')}`,(s.mutagen==='祿'?NT.LU:s.mutagen==='忌'?NT.JI:{})['夫妻']||`en amour, les traits de ${S(s.name)} sont amplifiés.`));
   if(has(fi,'擎羊'))fl.push(pt(`${S('擎羊')} dans le ${pn('夫妻')}`,'disputes et heurts faciles en amour : adoucissez le ton quand vous parlez.'));
   if(has(fi,'陀羅'))fl.push(pt(`${S('陀羅')} dans le ${pn('夫妻')}`,'l’amour progresse lentement ; les choses traînent et vous ressassez.'));
   if(has(fi,'地空')||has(fi,'地劫'))fl.push(pt(`${S('地空')} ou ${S('地劫')} dans le ${pn('夫妻')}`,'des attentes idéalisées en amour, souvent décalées par rapport à la réalité.'));
@@ -494,7 +524,7 @@ function readZW(Z,ctx){
   const bath=pal.findIndex(p=>p.changsheng12==='沐浴');
   if(bath>=0)peach.push(`${S('沐浴')} dans le ${pn(pal[bath].name)}`);
   fl.push(pt('Étoiles de romance',peach.join(', ')+`. Quand ces étoiles se trouvent dans les palais ${andList(['命宮','遷移','夫妻','子女','福德'].map(deP))}, votre pouvoir de séduction est particulièrement visible.`));
-  o.push(ul(fl));
+  o.push(ul(fl));}
   const cmp=[];
   for(const yr of [yNow,yNow+1]){const Hy=ctx.horoscope(ctx.yearMid(yr));if(!Hy)continue;const y=Hy.yearly;
     const fi2=y.palaceNames.indexOf('夫妻'),f2=pal[fi2];
@@ -532,20 +562,23 @@ function readZW(Z,ctx){
   /* votre histoire (assemblage par règles) */
   const story=[];let workLine='';
   {const ms=SZM()&&SZM().ming[mcombo];
-   if(ms){story.push(fit(ms.image+' '+ms.story,pal[ming],oppStars(ming))+brNote(pal[ming]));if(mcombo==='空'&&SZM().ming[ocombo])story.push(`Votre ${V} n’a pas d’étoile principale : on le lit donc à travers le palais opposé, où ${ocombo.includes('·')?'siègent':'siège'} ${comboTxt(ocombo)}. Vous ressemblez à « ${SZM().ming[ocombo].title} », mais votre environnement et votre entourage vous façonnent davantage.`);}
+   if(ms){story.push((KIDC?'Ce qui suit décrit le tempérament de naissance de votre enfant ; certains traits ne deviendront nets qu’à l’âge adulte, alors observez pour l’instant ce qui s’en devine déjà. ':'')+fit(ms.image+' '+ms.story,pal[ming],oppStars(ming))+brNote(pal[ming]));if(mcombo==='空'&&SZM().ming[ocombo])story.push(`Votre ${V} n’a pas d’étoile principale : on le lit donc à travers le palais opposé, où ${ocombo.includes('·')?'siègent':'siège'} ${comboTxt(ocombo)}. Vous ressemblez à « ${SZM().ming[ocombo].title} », mais votre environnement et votre entourage vous façonnent davantage.`);}
    const bo=(body+6)%12,bc=comboOf(bp.majorStars.length?bp:pal[bo]);const BF=t=>fit(t,bp,pal[bo].majorStars);
    if(bp.name==='命宮')story.push(`Votre palais du Corps coïncide avec le ${V} : votre nature innée reste le centre de gravité de toute votre vie, et plus vous avancez, plus vous devenez vous-même.`);
    else{let frag='';
-     if(bp.name==='財帛'&&SZW()&&SZW().wealth[bc])frag=` Vous y êtes « ${SZW().wealth[bc].title} ». ${firstSent(BF(SZW().wealth[bc].story))}${brNote(bp)}`;
+     if(KIDC&&['財帛','官祿','夫妻'].includes(bp.name))frag=' '+kidTxt(body,bp.name==='財帛'?'money':bp.name==='官祿'?'learn':'friend');
+     else if(bp.name==='財帛'&&SZW()&&SZW().wealth[bc])frag=` Vous y êtes « ${SZW().wealth[bc].title} ». ${firstSent(BF(SZW().wealth[bc].story))}${brNote(bp)}`;
      else if(bp.name==='官祿'&&SZW()&&SZW().career[bc])frag=` Vous y êtes « ${SZW().career[bc].title} ». ${firstSent(BF(SZW().career[bc].story))}${brNote(bp)}`;
      else if(bp.name==='夫妻'&&SZS()&&SZS()[bc])frag=' '+firstSent(BF(SZS()[bc].pattern));
      else if(SZM()&&SZM().ming[bc])frag=` ${bc==='空'?'Sans étoile principale, il emprunte celles du palais opposé':`On y trouve ${comboTxt(bc)}`}, dans l’esprit de « ${SZM().ming[bc].title} ».`;
      const lm=has(body,'天馬')&&(has(body,'祿存')||[...bp.majorStars,...bp.minorStars].some(s=>s.mutagen==='祿'));
-     story.push(`Mais au fil de la vie, votre centre de gravité se déplace peu à peu vers ${DOM[bp.name]}. Votre palais du Corps se trouve dans le ${pn(bp.name)}.${frag}${lm?' Ce palais forme aussi la configuration Lu Ma Jiao Chi : plus vous bougez, plus l’argent vient, et vos déplacements finissent par payer.':''}`);}
+     story.push(`${YNG?'En grandissant':'Mais au fil de la vie'}, votre centre de gravité se déplace peu à peu vers ${NT.DOM[bp.name]}. Votre palais du Corps se trouve dans le ${pn(bp.name)}.${frag}${lm?' Ce palais forme aussi la configuration Lu Ma Jiao Chi : plus vous bougez, plus l’argent vient, et vos déplacements finissent par payer.':''}`);}
    if(SZW()){const ci=idx('官祿'),wi=idx('財帛');
      const say=(i,key,lab)=>{const c=comboOf(pal[i]);if(c!=='空')return SZW()[key][c]?`${lab}, vous êtes « ${SZW()[key][c].title} »`:'';const oc=comboOf(pal[(i+6)%12]);return SZW()[key][oc]?`${lab}, votre ${pn(pal[i].name)} n’a pas d’étoile principale ; à travers ${comboTxt(oc)}, dans le palais opposé, vous ressemblez à « ${SZW()[key][oc].title} »`:'';};
-     const parts=[say(ci,'career','au travail'),say(wi,'wealth','avec l’argent')].filter(Boolean);if(parts.length){workLine=cap(parts.join(' ; '))+'.';story.push(workLine);}}
-   if(birthMut['忌']){const jp=pal[birthMut['忌'].i].name;story.push(`Ce qui compte le plus pour vous toute votre vie, et où vous butez le plus souvent, c’est ${DOM[jp]}. ${MZ(birthMut['忌'].star,'忌')} se trouve dans le ${pn(jp)}. ${JI[jp]} Ce n’est pas de la malchance, c’est la leçon de vie qui mérite le plus votre attention.`);}
+     const parts=KIDC?[]:[say(ci,'career',AST==='student'?'pour votre avenir':'au travail'),say(wi,'wealth','avec l’argent')].filter(Boolean);
+     if(KIDC){workLine=`Pour apprendre : ${lcf(firstSent(kidTxt(ci,'learn')))} Avec l’argent : ${lcf(firstSent(kidTxt(wi,'money')))}`;story.push(workLine);}
+     else if(parts.length){workLine=cap(parts.join(' ; '))+'.';story.push(workLine);}}
+   if(birthMut['忌']){const jp=pal[birthMut['忌'].i].name;story.push(`Ce qui compte le plus pour vous toute votre vie, et où vous butez le plus souvent, c’est ${NT.DOM[jp]}. ${MZ(birthMut['忌'].star,'忌')} se trouve dans le ${pn(jp)}. ${NT.JI[jp]} Ce n’est pas de la malchance, c’est la leçon de vie qui mérite le plus votre attention.`);}
    if(decInfo&&decTitle)story.push(`Aujourd’hui, vous êtes dans le chapitre de vos ${decInfo.range} ans, dont le thème est « ${decTitle} ». ${decStory}`);
    if(yearInfo)story.push(`En ${yearInfo.yr}, le ${V} de l’année tombe dans votre ${yearInfo.pal} natal${yearInfo.meet?', et il coïncide avec celui de la décennie : en bien comme en mal, tout ce qui arrive cette année pèse double':''}.`);}
   if(story.length)o.unshift(h3('Votre histoire','z-story'),...story.map(p));
@@ -555,11 +588,11 @@ function readZW(Z,ctx){
   b.push(h3('L’essentiel de votre thème Zi Wei'));
   const msrc=mp.majorStars.length?mp.majorStars:opp.majorStars;
   const bItems=story.length?[]:[pt(`${cap(V)} (${msrc.map(x=>S(x.name)).join(', ')||'—'}${mp.majorStars.length?'':', empruntées au palais opposé'})`,msrc.map(x=>M[x.name]?M[x.name][2]:'').filter(Boolean).join(' ')),
-    pt(`Palais du Corps dans le ${pn(bp.name)}`,bp.name==='命宮'?'votre nature innée est aussi votre centre de gravité : être vous-même est l’essentiel.':`avec l’âge, vous accorderez de plus en plus d’importance ${DOMA(bp.name)}.`)];
-  if(story.length&&workLine)bItems.push(pt('Travail et argent',lcf(workLine)));
+    pt(`Palais du Corps dans le ${pn(bp.name)}`,bp.name==='命宮'?'votre nature innée est aussi votre centre de gravité : être vous-même est l’essentiel.':`avec l’âge, vous accorderez de plus en plus d’importance ${NT.DOMA(bp.name)}.`)];
+  if(story.length&&workLine)bItems.push(pt(KIDC?'Talents, apprentissages et argent':AST==='student'?'Études et argent':'Travail et argent',lcf(workLine)));
   const pn2=pats.map(x=>(x.match(/<b>(.*?)<\/b>/)||[])[1]).filter(Boolean);
   if(pn2.length)bItems.push(pt('Configurations',pn2.join(' ; ')+' (détails dans la partie avancée).'));
-  if(birthMut['忌'])bItems.push(pt(`Leçon de vie (${MZ(birthMut['忌'].star,'忌')} dans le ${pn(pal[birthMut['忌'].i].name)})`,JI[pal[birthMut['忌'].i].name]));
+  if(birthMut['忌'])bItems.push(pt(`${KIDC?'Leçon pour grandir':'Leçon de vie'} (${MZ(birthMut['忌'].star,'忌')} dans le ${pn(pal[birthMut['忌'].i].name)})`,NT.JI[pal[birthMut['忌'].i].name]));
   b.push(ul(bItems));
   if(decInfo){b.push(h4(`Ces dix ans (${decInfo.range} ans) : décennie du ${decInfo.pal}`));const dup=!!(decInfo.jiStar&&yearInfo&&yearInfo.ji===decInfo.jiStar);b.push(p(`Étoiles principales : ${decInfo.star}. Pendant ces dix ans, l’accent est mis sur ${DOM_ACC(decInfo.dom)}. ${decInfo.ji&&!dup?decInfo.ji:''}${dup?`Le ${ML('忌')} de la décennie et celui de l’année portent tous deux sur ${S(decInfo.jiStar)} : redoublez d’attention aux conseils ci-dessous.`:''}`));}
   if(yearInfo){b.push(h4(`${yearInfo.yr}, année ${yearInfo.gz}`));b.push(p(`Le ${V} de l’année tombe dans le ${yearInfo.pal} natal : ${yearInfo.star}.${yearInfo.meet?' Cette année, année et décennie se superposent : le bon comme le mauvais est amplifié.':''}`));if(adv.length)b.push(ul(adv));}
@@ -669,7 +702,7 @@ function readHD(H,Z){
     const SL=SHD()&&SHD().lines[ln];
     if(SL)o.push(ul([pt('Le malentendu fréquent',SL.misread),pt('Le bon état d’esprit',SL.mindset)]));
     o.push((SL?SL.examples:[L.e]).map(scene).join(''));}
-  {const pr=SHD()&&SHD().profiles[pk];if(pr){o.push(h4(`Le cycle du profil ${pk}`));o.push(p(pr.loop));o.push(h4('En amour'));o.push(p(pr.love));o.push(h4('Au travail et dans l’entrepreneuriat'));o.push(p(pr.work));o.push(h4(`Conseils pour le profil ${pk}`));o.push(ul(pr.tips));}}
+  {const pr=SHD()&&SHD().profiles[pk];if(pr){o.push(h4(`Le cycle du profil ${pk}`));o.push(p(pr.loop));o.push(h4(AGE_ST==='child'?'Dans les liens proches':'En amour'));o.push(p(pr.love));o.push(h4(AGE_ST==='child'?'Pour apprendre et agir':AGE_ST==='student'?'Études et avenir':'Au travail et dans l’entrepreneuriat'));o.push(p(pr.work));o.push(h4(`Conseils pour le profil ${pk}`));o.push(ul(pr.tips));}}
   const cr=crossName(H,Z);
   o.push(h3('Croix d’incarnation','h-cross'));
   o.push(p(`${cr.full}, portes ${H.cross.gates[0]}/${H.cross.gates[1]} | ${H.cross.gates[2]}/${H.cross.gates[3]}. ${Z.angles[H.cross.angle][1]}`));
@@ -748,6 +781,13 @@ function fem(html){
 const genderOf=o=>(o&&o.gender)||(typeof Z!=='undefined'&&Z&&Z.gender)||'';
 const femR=(r,g)=>g==='女'&&r&&typeof r==='object'?{...r,basic:fem(r.basic),adv:fem(r.adv)}:r;
 
-root.Readings=root.Readings||{};root.Readings.fr={west:(W,E,o)=>femR(readWest(W,E),genderOf(o)),zw:(Zc,ctx)=>femR(readZW(Zc,ctx),Zc&&Zc.gender),hd:(H,D,o)=>femR(readHD(H,D),genderOf(o)),crossName,fit,fem};
+/* thème d’un enfant ou d’un étudiant : on change le vocabulaire des maisons et le titre de Vénus le temps du rendu, puis on retire les phrases d’adulte */
+let AGE_ST='adult';
+const HOUSE_KID=['l’image de soi et la première impression','l’argent de poche, les affaires et l’estime de soi','la communication, les études et la fratrie','la famille, les racines et votre refuge intérieur','les jeux, la création et les loisirs','le rythme quotidien, les habitudes d’étude et la santé','les amis proches, le travail d’équipe et les liens à deux','la confiance, le partage et la croissance intérieure','les voyages, la curiosité et le savoir','les projets d’avenir, la reconnaissance et la vie à l’école','les amis, les clubs et les espoirs pour l’avenir','l’inconscient, la solitude et ce qui reste caché'];
+const SA=()=>root.StarlitAge,stNow=Zx=>SA()?SA().stage(Zx):'adult';
+function withAge(st,f){if(st!=='child'&&st!=='student')return f();const h0=HOUSE.slice(),v0=ROLE.Venus[0];AGE_ST=st;HOUSE.splice(0,12,...HOUSE_KID);if(st==='child')ROLE.Venus[0]='Goûts et valeurs';
+  try{return f();}finally{HOUSE.splice(0,12,...h0);ROLE.Venus[0]=v0;AGE_ST='adult';}}
+const ageWrap=(r,st)=>(st==='child'||st==='student')&&SA()?{...r,basic:SA().safe(r.basic,'fr',st),adv:SA().safe(r.adv,'fr',st)}:r;
+root.Readings=root.Readings||{};root.Readings.fr={west:(W,E,o)=>{const st=stNow();return ageWrap(femR(withAge(st,()=>readWest(W,E)),genderOf(o)),st);},zw:(Zc,ctx)=>ageWrap(femR(readZW(Zc,ctx),Zc&&Zc.gender),stNow(Zc)),hd:(H,D,o)=>{const st=stNow();return ageWrap(femR(withAge(st,()=>readHD(H,D)),genderOf(o)),st);},crossName,fit,fem,kidPal:KID_PAL};
 
 })(typeof window!=='undefined'?window:globalThis);

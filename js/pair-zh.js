@@ -56,7 +56,7 @@ function synastry(A,B,E){
   for(const a of KEYS)for(const b of KEYS){
     const key=[a,b].sort().join('-');if(!SYN[key])continue;if(a==='ASC'&&b==='ASC')continue;
     const d=E.sep(lon(A,a),lon(B,b));
-    for(const s of ASP){const lum=(a==='Sun'||a==='Moon'||b==='Sun'||b==='Moon')?1:0;const o=Math.abs(d-s.a);if(o<=s.orb+lum){out.push({a,b,key,c:s.c,n:s.n,orb:o,w:SYN[key].w*(1-o/(s.orb+lum+1))});break;}}}
+    for(const s of ASP){const lum=(a==='Sun'||a==='Moon'||b==='Sun'||b==='Moon')?1:0;const o=Math.abs(d-s.a);if(o<=s.orb+lum){out.push({a,b,key,c:s.c,n:s.n,orb:o,oos:E.outOfSign?E.outOfSign(lon(A,a),lon(B,b),s.a):false,w:SYN[key].w*(1-o/(s.orb+lum+1))});break;}}}
   return out.sort((x,y)=>y.w-x.w);
 }
 function overlays(A,B,E){const o=[];for(const k of ['Sun','Moon','Venus','Mars']){const h=E.houseOf(B.pos[k].lon,A.houses);o.push({k,h});}return o;}
@@ -147,7 +147,7 @@ function render(P,E){
   if(top.length)sum+=`<p>${top.map(s=>SYN[s.key][s.c]).join('')}</p>`;
   /* 詳細 */
   let adv=`<h3 data-k="p-sum">合盤總覽</h3>${sum}<ul>${Object.entries(MN).map(([k,[t]])=>`<li><b>${t}</b>：${M[k].length?M[k].join('、'):'沒有明顯的指標'}</li>`).join('')}</ul>`;
-  adv+=`<h3 data-k="p-west">西洋比較盤</h3><h4>兩人之間的重要相位</h4>${syn.length?`<ul>${syn.slice(0,8).map(s=>`<li><b>${pn(na,s.a)}${s.n}${pn(nb,s.b)}</b>（容許度 ${s.orb.toFixed(1)}°）：${SYN[s.key][s.c]}</li>`).join('')}</ul>`:'<p class="muted">兩人的個人行星之間沒有緊密的相位，關係的重點更多在其他系統。</p>'}`;
+  adv+=`<h3 data-k="p-west">西洋比較盤</h3><h4>兩人之間的重要相位</h4>${syn.length?`<ul>${syn.slice(0,8).map(s=>`<li><b>${pn(na,s.a)}${s.n}${pn(nb,s.b)}</b>（容許度 ${s.orb.toFixed(1)}°${s.oos?'，'+((typeof I18N!=='undefined'&&I18N.zh.ui.oos)||'跨星座'):''}）：${SYN[s.key][s.c]}</li>`).join('')}</ul>${syn.slice(0,8).some(s=>s.oos)?`<p class="muted">${(typeof I18N!=='undefined'&&I18N.zh.ui.oosNote)||''}</p>`:''}`:'<p class="muted">兩人的個人行星之間沒有緊密的相位，關係的重點更多在其他系統。</p>'}`;
   adv+=`<h4>${nb}的行星落在你的哪裡</h4><ul>${ov.map(o=>`<li><b>${pn(nb,o.k)}落在你的${H[o.h]}</b>（${HT[o.h]}）：${nb}${OVERLAY[o.k]}。</li>`).join('')}</ul>`;
   adv+=`<h4>你的行星落在${nb}的哪裡</h4><ul>${ov2.map(o=>`<li><b>${pn(na,o.k)}落在${nb}的${H[o.h]}</b>（${HT[o.h]}）：${OVERLAY[o.k].replace(/你/g,nb)}。</li>`).join('')}</ul>`;
   const pnz=pz;

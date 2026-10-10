@@ -14,7 +14,12 @@ let LG='zh',L=I18N.zh;
 const pl=k=>{const r=L.planets[PK.indexOf(k)];return{name:r[0],glyph:r[1],theme:r[2],core:r[3],long:r[4]};};
 const sg=i=>{const r=L.signs[i];return{name:r[0],glyph:r[1],style:r[2],long:r[3],el:EL[i%4],mode:L.modes[i%3]};};
 const palName=z=>L.palaces[PALACE_KEYS.indexOf(z)][0];
-const palDesc=z=>L.palaces[PALACE_KEYS.indexOf(z)][1];
+/* 給小孩／學生看的盤：宮位說明用孩子版，命盤細節面板再濾掉成人情境的句子（成人不變） */
+const ageSt=()=>window.StarlitAge&&typeof Z!=='undefined'&&Z?StarlitAge.stage(Z):'adult';
+const palDesc=z=>{const st=ageSt(),k=window.Readings&&Readings[LG]&&Readings[LG].kidPal;return ((st==='child'||st==='student')&&k&&k[z])||L.palaces[PALACE_KEYS.indexOf(z)][1];};
+function kidFix(el){const st=ageSt();if(!el||(st!=='child'&&st!=='student'))return;const h=StarlitAge.safe(el.innerHTML,LG,st);if(h!==el.innerHTML)el.innerHTML=h;}
+{const wrap=(f,sel)=>function(...a){const r=f.apply(this,a);kidFix(document.querySelector(sel));return r;};
+ showPlanet=wrap(showPlanet,'#w-detail');westSummary=wrap(westSummary,'#w-sum');showPalace=wrap(showPalace,'#z-detail');zwSummary=wrap(zwSummary,'#z-sum');hdSummary=wrap(hdSummary,'#h-sum');showHD=wrap(showHD,'#h-detail');}
 const starName=z=>{let i=MAJOR_KEYS.indexOf(z);if(i>=0)return L.major[i][0];i=MINOR_KEYS.indexOf(z);return i>=0?L.minor[i][0]:z;};
 const mutOf=z=>L.mut[MUT_KEYS.indexOf(z)];
 const brOf=z=>L.bright[BRIGHT_KEYS.indexOf(z)];
@@ -123,7 +128,7 @@ function drawWheel(){
    const[mx,my]=xy(W.mc,R0-6);s+=`<text x="${mx+6}" y="${my+4}" font-size="11" font-weight="700" fill="var(--ink)">${L.ui.mcL}</text>`;}
   for(const a of W.asp){if(a.deg===0)continue;const[x1,y1]=xy(W.pos[a.a].lon,R2-4),[x2,y2]=xy(W.pos[a.b].lon,R2-4);
     const col=a.tone==='good'?'var(--good)':'var(--seal)';const on=a.a===selW||a.b===selW;
-    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${on?2:1.2}" stroke-opacity="${on?0.95:0.15}"/>`;}
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${on?2:1.2}" stroke-opacity="${on?0.95:0.15}"${a.oos?' stroke-dasharray="5 3"':''}><title>${pl(a.a).name} ${L.aspects[a.t][0]} ${pl(a.b).name}${a.oos?` (${L.ui.oos})`:''}</title></line>`;}
   const arr=PK.map(k=>({k,l:W.pos[k].lon,d:W.pos[k].lon}));arr.sort((a,b)=>a.l-b.l);
   for(let it=0;it<40;it++){let moved=false;for(let i=0;i<arr.length;i++){const a=arr[i],b=arr[(i+1)%arr.length];const df=norm(b.d-a.d);if(df<10){a.d-=(10-df)/2;b.d+=(10-df)/2;moved=true;}}if(!moved)break;}
   for(const o of arr){const p=pl(o.k);const[t1,t2]=xy(o.l,R1),[t3,t4]=xy(o.l,R1-10),[cx,cy]=xy(o.d,RP),[l3,l4]=xy(o.d,RP+15);
@@ -142,7 +147,7 @@ function showPlanet(){
   <div class="block"><h4>${F.secPlanet(p.name)}</h4><p>${p.long}</p></div>
   <div class="block"><h4>${F.secSign(g.name)}</h4><p>${g.long}</p></div>
   ${q.retro?`<div class="block"><h4>${U.secRetro}</h4><p>${U.retroTxt}</p></div>`:''}
-  <div class="block"><h4>${U.secAsp}</h4>${asp.length?`<div class="asplist">${asp.map(a=>{const o=pl(a.a===k?a.b:a.a);const[n,say]=L.aspects[a.t];return `<div><span class="chip ${a.tone==='good'?'good':a.tone==='bad'?'bad':'acc'}">${n}</span> ${F.aspLine(o.name,say,p.theme,o.theme)}</div>`;}).join('')}</div>`:`<p class="muted">${U.noAsp}</p>`}</div>`;
+  <div class="block"><h4>${U.secAsp}</h4>${asp.length?`<div class="asplist">${asp.map(a=>{const o=pl(a.a===k?a.b:a.a);const[n,say]=L.aspects[a.t];return `<div><span class="chip ${a.tone==='good'?'good':a.tone==='bad'?'bad':'acc'}">${n}</span>${a.oos?` <span class="chip">${U.oos}</span>`:''} ${F.aspLine(o.name,say,p.theme,o.theme)}</div>`;}).join('')}</div>${asp.some(a=>a.oos)?`<p class="muted">${U.oosNote}</p>`:''}`:`<p class="muted">${U.noAsp}</p>`}</div>`;
 }
 function westSummary(){
   const U=L.ui,F=L.fn,sun=sg(signOf(W.pos.Sun.lon)),moon=sg(signOf(W.pos.Moon.lon)),asc=sg(signOf(W.asc));
@@ -369,7 +374,14 @@ function renderReadings(){
 function renderHL(){
   const el=$('#hl-body');if(!el)return;const P=window.Highlights&&(Highlights[LG]||Highlights.zh);
   try{const ans=intentCard();let mon='',cal='';try{if(window.Calendar){const CL=Calendar[LG]||Calendar.zh;mon=CL.nowCard(W,Z,HD,Engine);cal=CL.render(W,Z,HD,Engine);}}catch(e){console.error(e);}
-    el.innerHTML=shareBar()+(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans+mon)+(cal?`<details class="calwrap"><summary>${L.ui.calOpen||'年度運勢行事曆'}</summary>${cal}</details>`:'');
+    /* 給小孩／學生看的盤：濾掉成人情境的句子（成人不變） */
+    const SA=window.StarlitAge,ast=SA?SA.stage(Z):'adult';
+    const HLK={zh:{child:[['事業上，你是','長大後做事時，你是'],['財運上，你是','對零用錢，你是'],['感情上，你是','交朋友時，你是']],student:[['事業上，你是','學業與未來方向上，你是'],['財運上，你是','對零用錢，你是']]},
+      en:{child:[['Career: ','Talents and future direction: '],['Money: ','Money habits: '],['Love: ','Friendships: ']],student:[['Career: ','Studies and future direction: '],['Money: ','Pocket money: ']]},
+      ja:{child:[['仕事：','才能と将来の方向：'],['お金：','お金の感覚：'],['恋愛：','友だちづきあい：']],student:[['仕事：','学業と将来の方向：'],['お金：','おこづかい：']]},
+      fr:{child:[['Carrière : ','Talents et voie future : '],['Argent : ','Rapport à l’argent : '],['Amour : ','Amitiés : ']],student:[['Carrière : ','Études et avenir : '],['Argent : ','Argent de poche : ']]}};
+    const KS=h=>{if(!SA||(ast!=='child'&&ast!=='student'))return h;for(const [a,b] of ((HLK[LG]||{})[ast]||[]))h=h.replace(new RegExp('(<h3[^>]*>)'+a.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),'$1'+b);return SA.safe(h,LG,ast);};
+    el.innerHTML=shareBar()+(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+KS(P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans+mon)+(cal?`<details class="calwrap"><summary>${L.ui.calOpen||'年度運勢行事曆'}</summary>${cal}</details>`:''));
     shareBind();el.querySelectorAll('.ans-more').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.tab,+b.dataset.i)));}catch(e){console.error(e);el.innerHTML='';}
 }
 function renderMix(){
@@ -377,7 +389,7 @@ function renderMix(){
   const note=ml!==LG&&U.mixNote?`<p class="readnote">${U.mixNote}</p>`:'';
   $('#m-read .body').innerHTML=note+r.basic;ADV.mix=r.adv;
   const cat=['catM1','catM2','catM3','catM4','catM5'];
-  $('#m-sum').innerHTML=r.cards.map((c,i)=>`<button type="button" class="card mix" data-i="${i}"><span class="q">${U[cat[i]]}</span><span class="big">${c.labels.join(c.tension?' ⇄ ':'・')}</span><span class="agree">${[0,1,2].map(k=>`<i class="${k<c.agree?'on':''}"></i>`).join('')} ${c.agree>=2?c.agree+U.mixAgree:U.mixSplit}</span><p>${c.line}</p><span class="go2">${U.mixOpen} →</span></button>`).join('');
+  $('#m-sum').innerHTML=r.cards.map((c,i)=>`<button type="button" class="card mix" data-i="${i}"><span class="q">${c.q||U[cat[i]]}</span><span class="big">${c.labels.join(c.tension?' ⇄ ':'・')}</span><span class="agree">${[0,1,2].map(k=>`<i class="${k<c.agree?'on':''}"></i>`).join('')} ${c.agree>=2?c.agree+U.mixAgree:U.mixSplit}</span><p>${c.line}</p><span class="go2">${U.mixOpen} →</span></button>`).join('');
   $('#m-sum').querySelectorAll('.card.mix').forEach(b=>b.addEventListener('click',()=>openDetail('mix',+b.dataset.i)));
 }
 function copyReading(btn){

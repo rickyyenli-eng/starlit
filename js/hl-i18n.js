@@ -189,7 +189,7 @@ function reg(lg,T){
     const top=syn.slice(0,2);
     if(top.length)sum+=`<p>${top.map(s=>PR.SYN[s.key][s.c]).join(SP)}</p>`;
     let adv=`<h3 data-k="p-sum">${PR.h.sum}</h3>${sum}<ul>${Object.entries(PR.MN).map(([k,[t]])=>`<li><b>${t}</b>${T.colon}${M[k].length?M[k].join(T.sep2):PR.noSign}</li>`).join('')}</ul>`;
-    adv+=`<h3 data-k="p-west">${PR.h.west}</h3><h4>${PR.h.aspects}</h4>${syn.length?`<ul>${syn.slice(0,8).map(s=>`<li><b>${cap(itemTxt({t:'syn',s}))}</b>${T.paren(PR.orb(s.orb.toFixed(1)))}${T.colon}${PR.SYN[s.key][s.c]}</li>`).join('')}</ul>`:`<p class="muted">${PR.noAsp}</p>`}`;
+    adv+=`<h3 data-k="p-west">${PR.h.west}</h3><h4>${PR.h.aspects}</h4>${syn.length?`<ul>${syn.slice(0,8).map(s=>`<li><b>${cap(itemTxt({t:'syn',s}))}</b>${T.paren(PR.orb(s.orb.toFixed(1))+(s.oos?({zh:'，',ja:'、'}[lg]||', ')+I().ui.oos:''))}${T.colon}${PR.SYN[s.key][s.c]}</li>`).join('')}</ul>${syn.slice(0,8).some(s=>s.oos)?`<p class="muted">${I().ui.oosNote}</p>`:''}`:`<p class="muted">${PR.noAsp}</p>`}`;
     adv+=`<h4>${PR.h.ovAB(nb)}</h4><ul>${ov.map(o=>`<li><b>${cap(itemTxt({t:'ov',dir:'AB',k:o.k,h:o.h}))}</b>${T.paren(I().houses[o.h-1])}${T.colon}${PR.OV_AB[o.k](nb)}</li>`).join('')}</ul>`;
     adv+=`<h4>${PR.h.ovBA(nb)}</h4><ul>${ov2.map(o=>`<li><b>${cap(itemTxt({t:'ov',dir:'BA',k:o.k,h:o.h}))}</b>${T.paren(I().houses[o.h-1])}${T.colon}${PR.OV_BA[o.k](nb)}</li>`).join('')}</ul>`;
     adv+=`<h3 data-k="p-zw">${PR.h.zw}</h3><h4>${PR.h.fly}</h4><p class="muted">${PR.flyIntro}</p><ul>`;

@@ -145,5 +145,27 @@ function mix(L,W,Z,HD,E){
 }
 root.Themes=root.Themes||{};
 root.Themes.core={mix,build,THEMES,TAG_KEYS};
-root.Themes.mix=(lang,W,Z,HD,E)=>{const L=root.Themes[lang]||root.Themes.zh;return mix(L,W,Z,HD,E);};
+/* 給小孩／學生看的盤：主題卡改名、加一句說明，並濾掉成人情境的句子（成人輸出不變） */
+const AGE_TH={
+ zh:{child:{career:'天賦與未來方向',wealth:'金錢觀',love:'交朋友的樣子'},student:{career:'學業與未來方向',wealth:'零用錢與金錢觀'},
+   line:{career:'小時候先看天賦和學習方式，長大後的方向現在只是參考，多讓孩子嘗試。',wealth:'看的是孩子對零用錢和物品的態度。',love:'看的是孩子交朋友、和親近的人相處的樣子。'},
+   rep:{child:[['工作上，你','長大後做事時，你'],['錢的方面，你','對零用錢和物品，你'],['錢的模式偏向','金錢觀偏向'],['感情裡，你','和朋友相處時，你']],student:[['工作上，你','在學業與未來方向上，你'],['錢的方面，你','對零用錢，你'],['錢的模式偏向','金錢觀偏向']]}},
+ en:{child:{career:'Talents and future direction',wealth:'Money habits',love:'Friendships'},student:{career:'Studies and future direction',wealth:'Pocket money and money habits'},
+   line:{career:'For a child this shows talents and ways of learning; the adult direction is only a hint for now, so let them try many things.',wealth:'This shows how the child treats pocket money and belongings.',love:'This shows how the child makes friends and gets close to people.'},
+   rep:{child:[['At work, you','In how you learn and get things done, you'],['At work, your clearest','In how you learn and get things done, your clearest'],['With money, you','With pocket money and belongings, you'],['Your money pattern leans','Your money habits lean'],['In love, you','With friends, you'],['In love, your style','With friends, your style']],student:[['At work, you','In your studies and future direction, you'],['At work, your clearest','In your studies and future direction, your clearest'],['Your money pattern leans','Your money habits lean']]}},
+ ja:{child:{career:'才能と将来の方向',wealth:'お金の感覚',love:'友だちづきあい'},student:{career:'学業と将来の方向',wealth:'おこづかいとお金の感覚'},
+   line:{career:'子どものうちは才能と学び方を見ます。将来の方向はまだ参考程度なので、いろいろ試させてあげましょう。',wealth:'おこづかいや持ち物への向き合い方を表します。',love:'友だちのつくり方、親しい人との関わり方を表します。'},
+   rep:{child:[['仕事では、','物事に取り組むときは、'],['仕事でいちばん','物事に取り組むときにいちばん'],['お金の面では、','おこづかいや持ち物については、'],['お金の傾向は','お金の感覚は'],['恋愛では、','友だちとの関わりでは、']],student:[['仕事では、','学業と将来の方向では、'],['仕事でいちばん','学業と将来の方向でいちばん'],['お金の傾向は','お金の感覚は']]}},
+ fr:{child:{career:'Talents et voie future',wealth:'Rapport à l’argent',love:'Amitiés'},student:{career:'Études et avenir',wealth:'Argent de poche'},
+   line:{career:'Chez un enfant, on regarde d’abord les talents et la façon d’apprendre ; la voie future n’est qu’une piste, laissez-le essayer beaucoup de choses.',wealth:'On regarde ici le rapport de l’enfant à l’argent de poche et à ses affaires.',love:'On regarde ici la façon dont l’enfant se fait des amis et s’attache aux autres.'},
+   rep:{child:[['Au travail, ','Pour apprendre et agir, '],['Côté argent, ','Avec l’argent de poche et ses affaires, '],['Avec l’argent, votre tendance','Avec l’argent de poche, votre tendance'],['En amour, ','Avec les amis, ']],student:[['Au travail, ','Pour vos études et votre avenir, '],['Avec l’argent, votre tendance','Avec l’argent de poche, votre tendance']]}}};
+function ageMix(r,lang,Z){const SA=root.StarlitAge;const st=SA?SA.stage(Z):'adult';if(st!=='child'&&st!=='student')return r;
+  const A=AGE_TH[lang]||AGE_TH.zh,NM=A[st]||{};let adv=r.adv,basic=r.basic;
+  const RL=st==='child'&&lang==='en'?[['Practical partner','Practical'],['Romantic','Tender-hearted']]:[];const rl=s=>RL.reduce((t,[a,b])=>t.split(a).join(b),s);
+  adv=rl(adv);basic=rl(basic);
+  const cards=r.cards.map(c0=>{const c={...c0,labels:c0.labels.map(rl),line:rl(c0.line||'')};const nm=NM[c.th];if(nm)adv=adv.replace(`<h3 data-k="${c.key}">${c.name}</h3>`,`<h3 data-k="${c.key}">${nm}</h3>`);
+    const line=SA.safe(c.line||'',lang,st);return{...c,name:nm||c.name,q:nm||undefined,line:st==='child'&&A.line[c.th]?A.line[c.th]:line};});
+  for(const [a,b] of A.rep[st]||[])basic=basic.split(a).join(b);
+  return{...r,cards,basic:SA.safe(basic,lang,st),adv:SA.safe(adv,lang,st)};}
+root.Themes.mix=(lang,W,Z,HD,E)=>{const L=root.Themes[lang]||root.Themes.zh;return ageMix(mix(L,W,Z,HD,E),root.Themes[lang]?lang:'zh',Z);};
 })(typeof globalThis!=='undefined'?globalThis:this);
