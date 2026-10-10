@@ -302,7 +302,7 @@ function boot(){
   $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
     try{await Promise.race([Promise.all([sweReady,loadLang(LG)]),new Promise(r=>setTimeout(r,6000))]);}catch(err){}
     btn.disabled=false;
-    const v=readForm();if(compute(v)){selW='Sun';aiReset();bReset();renderAll();$('#result').hidden=false;vBar();vPairPick();$('#result').scrollIntoView({behavior:'smooth',block:'start'});shareAfterRender();}});
+    const v=readForm();if(compute(v)){lastSave(v);selW='Sun';aiReset();bReset();renderAll();$('#result').hidden=false;vBar();vPairPick();$('#result').scrollIntoView({behavior:'smooth',block:'start'});shareAfterRender();}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
   document.querySelectorAll('.reading .rhead .copyread:not(#ai-copy)').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
   document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>openDetail(b.closest('.pane').id.slice(2),0)));
@@ -311,7 +311,7 @@ function boot(){
   $('#dlg-prev').addEventListener('click',()=>showSection(DLG.i-1));$('#dlg-next').addEventListener('click',()=>showSection(DLG.i+1));
   $('#dlg-copy').addEventListener('click',()=>{const txt=DLG.secs.map(x=>x.parts.filter(p=>!p.tool).map(p=>{const d=document.createElement('div');d.innerHTML=p.html;return p.full+'\n'+d.innerText;}).join('\n\n')).join('\n\n');const b=$('#dlg-copy');const done=()=>{b.textContent=L.ui.copied;setTimeout(()=>b.textContent=L.ui.copyAll,1600);};if(navigator.clipboard)navigator.clipboard.writeText(txt).then(done,()=>{});});
   let t=null;try{t=localStorage.getItem('kdwp-tab');}catch(e){} if(TABS.includes(t))tab(t);
-  if(shareRestore()){const f=$('#birth');f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true}));}
+  if(shareRestore()||lastRestore()){const f=$('#birth');f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event('submit',{cancelable:true}));}
 }
 
 /* ===================== 詳解 ===================== */
@@ -456,3 +456,16 @@ function showHD(){
    ${gs.length?`<div class="block"><h4>${U.hdGatesOn}</h4>${gs.map(g=>`<p><b>${g}</b> ${HZ.gates[g]} <span class="chip ${HD.gates[g].p&&HD.gates[g].d?'acc':HD.gates[g].p?'':'bad'}">${HD.gates[g].p&&HD.gates[g].d?U.personality+' + '+U.design:HD.gates[g].p?U.personality:U.design}</span></p>`).join('')}</div>`:''}`;
 }
 boot();
+
+/* 記住上一次排的盤與情境：下次打開直接顯示，不再重問；按「重新輸入」才清掉 */
+
+function lastSave(v){try{localStorage.setItem('starlit-last',JSON.stringify({v:{date:v.date,time:v.time,g:v.g,city:v.city,lat:v.lat,lon:v.lon,tz:v.tz,dst:!!v.dst},ctx:{intent:CTX.intent,status:CTX.status,job:CTX.job}}));}catch(e){}}
+function lastLoad(){try{const o=JSON.parse(localStorage.getItem('starlit-last')||'null');return o&&o.v&&/^\d{4}-\d{2}-\d{2}$/.test(o.v.date)&&/^\d{2}:\d{2}$/.test(o.v.time)?o:null;}catch(e){return null;}}
+function lastRestore(){const o=lastLoad();if(!o)return false;const x=o.v;
+  $('#f-date').value=x.date;$('#f-time').value=x.time;const r=document.querySelector(`input[name=g][value="${x.g==='女'?'女':'男'}"]`);if(r)r.checked=true;
+  if(x.city&&CITIES.find(c=>c[0]===x.city&&c[4]!=null)){$('#f-city').value=x.city;onCity();}else{$('#f-city').value='';$('#f-lat').value=x.lat;$('#f-lon').value=x.lon;$('#f-tz').value=x.tz;$('#f-dst').checked=!!x.dst;}
+  const ok=(a,arr)=>arr.includes(a)?a:null;const c=o.ctx||{};
+  CTX.intent=ok(c.intent,['all','love','work','money','year']);CTX.status=ok(c.status,['single','crush','dating','married','broke']);CTX.job=ok(c.job,['student','seeking','employee','founder','change']);
+  if(typeof askRender==='function')askRender();return true;}
+function lastReset(){try{localStorage.removeItem('starlit-last');}catch(e){}CTX.intent=null;CTX.status=null;CTX.job=null;
+  $('#f-date').value='';$('#f-time').value='';$('#result').hidden=true;LASTV=null;if(typeof askRender==='function')askRender();window.scrollTo({top:0,behavior:'smooth'});wizOpen(null);}

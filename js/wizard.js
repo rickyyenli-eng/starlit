@@ -2,7 +2,7 @@
  * 引導完成後把資料填回原本的表單並送出，排盤只有一條路徑。CTX 記錄使用者想問什麼與情境。 */
 const CTX={intent:null,status:null,job:null};
 const WIZ_TXT={
- zh:{askTitle:'你想先知道什麼？',askSub:'選一個問題，我一步一步帶你排盤。熟悉的話也可以直接填下面的表單。',
+ zh:{reset:'重新輸入生日／換一個人',askTitle:'你想先知道什麼？',askSub:'選一個問題，我一步一步帶你排盤。熟悉的話也可以直接填下面的表單。',
   intents:{all:'整體的我',love:'感情',work:'工作',money:'錢',year:'今年運勢'},
   back:'上一步',next:'下一步',done:'開始排盤',close:'關閉',
   steps:{
@@ -17,7 +17,7 @@ const WIZ_TXT={
   status:{single:'單身',crush:'曖昧中',dating:'戀愛中',married:'已婚',broke:'剛分手',none:'不想說'},
   job:{student:'學生',seeking:'正在找工作',employee:'上班族',founder:'創業／接案',change:'想轉換跑道',none:'不想說'},
   otherCity:'其他地點（用表單自訂經緯度）',shichen:['早子時 00–01','丑時 01–03','寅時 03–05','卯時 05–07','辰時 07–09','巳時 09–11','午時 11–13','未時 13–15','申時 15–17','酉時 17–19','戌時 19–21','亥時 21–23','晚子時 23–24（算隔天）']},
- en:{askTitle:'What would you like to know first?',askSub:'Pick a question and I’ll walk you through it step by step. Or fill in the form below directly.',
+ en:{reset:'Start over / someone else',askTitle:'What would you like to know first?',askSub:'Pick a question and I’ll walk you through it step by step. Or fill in the form below directly.',
   intents:{all:'Who I am',love:'Love',work:'Work',money:'Money',year:'This year'},
   back:'Back',next:'Next',done:'Read my charts',close:'Close',
   steps:{intent:['Hi, welcome to Starlit.','What would you most like to know today?'],date:['Let’s start at the beginning.','When is your birthday?'],
@@ -27,7 +27,7 @@ const WIZ_TXT={
   status:{single:'Single',crush:'Something’s starting',dating:'In a relationship',married:'Married',broke:'Just broke up',none:'Prefer not to say'},
   job:{student:'Student',seeking:'Looking for work',employee:'Employed',founder:'Own business / freelance',change:'Thinking of a career change',none:'Prefer not to say'},
   otherCity:'Somewhere else (set coordinates in the form)',shichen:['00:00–01:00 (early Zi)','01:00–03:00','03:00–05:00','05:00–07:00','07:00–09:00','09:00–11:00','11:00–13:00','13:00–15:00','15:00–17:00','17:00–19:00','19:00–21:00','21:00–23:00','23:00–24:00 (late Zi, counted as next day)']},
- ja:{askTitle:'まず何を知りたいですか？',askSub:'質問を選ぶと、一つずつ案内しながらチャートを作ります。慣れている方は下のフォームに直接入力できます。',
+ ja:{reset:'生年月日を入れ直す／別の人',askTitle:'まず何を知りたいですか？',askSub:'質問を選ぶと、一つずつ案内しながらチャートを作ります。慣れている方は下のフォームに直接入力できます。',
   intents:{all:'自分のこと',love:'恋愛',work:'仕事',money:'お金',year:'今年の運勢'},
   back:'戻る',next:'次へ',done:'チャートを作る',close:'閉じる',
   steps:{intent:['こんにちは、Starlit へようこそ。','今日いちばん知りたいことは？'],date:['では、最初から始めましょう。','誕生日はいつですか？'],
@@ -37,7 +37,7 @@ const WIZ_TXT={
   status:{single:'シングル',crush:'いい感じの人がいる',dating:'交際中',married:'既婚',broke:'最近別れた',none:'答えない'},
   job:{student:'学生',seeking:'求職中',employee:'会社員',founder:'起業／フリーランス',change:'転職を考えている',none:'答えない'},
   otherCity:'その他の場所（フォームで緯度経度を指定）',shichen:['00–01時（早子）','01–03時','03–05時','05–07時','07–09時','09–11時','11–13時','13–15時','15–17時','17–19時','19–21時','21–23時','23–24時（夜子・翌日扱い）']},
- fr:{askTitle:'Que voulez-vous savoir en premier ?',askSub:'Choisissez une question, je vous guide étape par étape. Ou remplissez directement le formulaire ci-dessous.',
+ fr:{reset:'Recommencer / une autre personne',askTitle:'Que voulez-vous savoir en premier ?',askSub:'Choisissez une question, je vous guide étape par étape. Ou remplissez directement le formulaire ci-dessous.',
   intents:{all:'Qui je suis',love:'L’amour',work:'Le travail',money:'L’argent',year:'Cette année'},
   back:'Retour',next:'Suivant',done:'Lire mes thèmes',close:'Fermer',
   steps:{intent:['Bonjour, bienvenue sur Starlit.','Que voulez-vous savoir aujourd’hui ?'],date:['Commençons par le début.','Quelle est votre date de naissance ?'],
@@ -53,6 +53,7 @@ const WT=()=>WIZ_TXT[LG]||WIZ_TXT.zh;
 function askRender(){
   const el=document.querySelector('#ask');if(!el)return;const T=WT();
   el.innerHTML=`<h2>${T.askTitle}</h2><p>${T.askSub}</p><div class="ask-chips">${Object.entries(T.intents).map(([k,v])=>`<button type="button" data-intent="${k}"${CTX.intent===k?' aria-pressed="true"':''}>${v}</button>`).join('')}</div>`;
+  if(typeof lastLoad==='function'&&lastLoad()){const rb=document.createElement('button');rb.type='button';rb.className='ask-reset';rb.textContent=T.reset;rb.addEventListener('click',()=>lastReset());el.querySelector('.ask-chips').appendChild(rb);}
   el.querySelectorAll('button[data-intent]').forEach(b=>b.addEventListener('click',()=>wizOpen(b.dataset.intent)));
 }
 
@@ -61,6 +62,10 @@ const WZ={i:0,steps:[],v:{}};
 function wizOpen(intent){
   WZ.v={intent:intent||null,date:$('#f-date').value,time:$('#f-time').value,g:(document.querySelector('input[name=g]:checked')||{}).value||'',city:$('#f-city').value,status:CTX.status,job:CTX.job,unsure:false,sc:4};
   WZ.steps=[...(intent?[]:['intent']),'date','time','gender','city','status','job'];WZ.i=0;
+  /* 已經排過盤：不再開問答視窗，直接換成這個主題的答案卡（要重問請按「重新輸入」） */
+  if(intent&&typeof LASTV!=='undefined'&&LASTV&&!$('#result').hidden){
+    {CTX.intent=intent;askRender();{const sf=document.querySelector('#ai-focus'),m={love:'love',work:'career',money:'wealth',year:'year'}[intent];if(sf&&m)sf.value=m;}
+      const f=$('#birth');if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true}));setTimeout(()=>{const a=document.querySelector('#hl')||document.querySelector('#result');if(a)a.scrollIntoView({behavior:'smooth',block:'start'});},300);return;}}
   const d=$('#wiz');if(!d.open)d.showModal();document.body.classList.add('dlg-open');wizShow();
 }
 function wizClose(){$('#wiz').close();document.body.classList.remove('dlg-open');}
