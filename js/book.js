@@ -60,7 +60,7 @@ async function bRun(pair){
   const gen=BK.gen[i]=(BK.gen[i]||0)+1,ctl=BK.ctl[i]=new AbortController();bBox(pair);
   const st=()=>el.querySelector('.bk-st');let md='';
   try{
-    const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,body:JSON.stringify({mode:pair?'pairbook':'book',lang:LG,chart:aiChartData(pair?'pair':'all')})});
+    const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,body:JSON.stringify({mode:pair?'pairbook':'book',lang:LG,chart:aiChartData(pair?'pair':'all')+(pair?'':bMonths())})});
     if(gen!==BK.gen[i])return;
     if(!r.ok){let j={};try{j=await r.json();}catch(e){}BK.ctl[i]=null;bBox(pair);st().textContent=r.status===429&&j.error!=='busy'?T.limit(j.limit||2):r.status===429?T.busy:T.err;return;}
     const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
@@ -100,6 +100,10 @@ function bPrint(pair){
   if($('#bookv').open)$('#bookv').close();
   document.body.classList.add('printing');const done=()=>{document.body.classList.remove('printing');window.removeEventListener('afterprint',done);};window.addEventListener('afterprint',done);setTimeout(()=>window.print(),50);
 }
+/* 今年逐月資料（農曆流月），給報告書第八章用 */
+function bMonths(){try{if(!window.Calendar)return '';const ly=Highlights.zh.curYear(Z);const ms=Calendar.zh.months(W,Z,HD,Engine,ly);if(!ms.length)return '';
+  const f=t=>{const d=new Date(t);return `${d.getUTCMonth()+1}/${d.getUTCDate()}`;},RN={Mercury:'水星逆行',Venus:'金星逆行',Mars:'火星逆行'},TN={up:'順',even:'平',hard:'留意'};
+  return `\n\n# 今年逐月（農曆 ${ly} 年流月，國曆日期為約略範圍）\n`+ms.map(x=>`${x.label}（約 ${f(x.from)}–${f(x.to)}）：流月命宮在本命${x.mp||'—'}；流月四化 ${x.muts.map(m=>`${m.star}化${m.k}→${m.pal||'—'}`).join(' ')}；整體 ${TN[x.tone]}`+(x.retro.length?`；${x.retro.map(r=>`${RN[r.k]} ${f(r.from)}–${f(r.to)}`).join('、')}`:'')+(x.ing.length?`；${x.ing.map(g=>`${g.k==='Jupiter'?'木星':'土星'}約 ${f(g.t)} 進入第${g.h}宮`).join('、')}`:'')).join('\n');}catch(e){return '';}}
 function bInit(){$('#bookv-x').addEventListener('click',()=>$('#bookv').close());$('#bookv').addEventListener('close',()=>document.body.classList.remove('dlg-open'));}
 function bReset(){for(const i of [0,1]){BK.gen[i]=(BK.gen[i]||0)+1;if(BK.ctl[i]){try{BK.ctl[i].abort();}catch(e){}BK.ctl[i]=null;}}BK.name='';}
 function bRender(){bBox(false);bBox(true);}
