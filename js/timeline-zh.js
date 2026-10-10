@@ -164,5 +164,5 @@ function render(W,Z,HD,E){
    ${ys.length?ys.map(row).join(''):'<p class="muted">這段期間還沒出生，沒有流年可以看。</p>'}</div>`;
 }
 root.Highlights=root.Highlights||{};
-root.Highlights.zh={render,years,top3,horoY,curYear};
+root.Highlights.zh={render,years,top3,horoY,curYear,DOM,FOCUS,LU,JI,GOOD,HARD,H,KID_FOCUS,KID_LU,KID_JI};
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -84,7 +84,7 @@ let aiCtl=null,aiText='',aiGen=0;
 /* 換一張盤時呼叫：中止進行中的故事與聊天，讓舊回應作廢 */
 function aiReset(){aiGen++;if(aiCtl){try{aiCtl.abort();}catch(e){}aiCtl=null;}aiText='';chatGen++;if(chatCtl){try{chatCtl.abort();}catch(e){}chatCtl=null;}chatBusy=false;
   const b=document.querySelector('#ai-box');if(b){b.querySelector('.ai-out').innerHTML='';b.querySelector('.ai-status').textContent='';b.querySelector('#ai-copy').hidden=true;}
-  const cl=document.querySelector('#chat .chat-log');if(cl)cl.innerHTML='';aiRender();}
+  chatRestore();aiRender();}
 function aiRender(){
   const box=document.querySelector('#ai-box');if(!box)return;
   if(!AI_URL){box.hidden=true;return;}
@@ -125,42 +125,58 @@ function aiInit(){
 
 /* ---------- G：一句話＋小問答（便宜的小互動，用 Haiku） ---------- */
 const CHAT_TXT={
- zh:{title:'和星星聊兩句',sub:'抽一句今天給你的話，或問一個小問題。每次回答都會根據你的盤。',note:'給我一句話',ask:'問',ph:'例如：今年適合換工作嗎？（120 字以內）',persona:{gentle:'溫柔一點',direct:'直球一點'},busy:'想一下…',foot:'AI 依你的盤回答，僅供參考。'},
- en:{title:'A word from the stars',sub:'Draw a short message for today, or ask one small question. Every answer is based on your charts.',note:'Give me a message',ask:'Ask',ph:'e.g. Is this a good year to change jobs? (max 120 characters)',persona:{gentle:'Gentle',direct:'Straight talk'},busy:'Thinking…',foot:'AI answers from your charts. For reflection only.'},
- ja:{title:'星とひとこと',sub:'今日のあなたへのひとことを引くか、小さな質問をひとつどうぞ。答えはすべてあなたのチャートにもとづきます。',note:'ひとことください',ask:'聞く',ph:'例：今年は転職に向いていますか？（120字以内）',persona:{gentle:'やさしく',direct:'はっきり'},busy:'考え中…',foot:'AI がチャートをもとに答えます。参考程度にどうぞ。'},
- fr:{title:'Un mot des étoiles',sub:'Tirez un petit message pour aujourd’hui, ou posez une petite question. Chaque réponse s’appuie sur vos thèmes.',note:'Un mot pour moi',ask:'Demander',ph:'ex. : Est-ce une bonne année pour changer de travail ? (120 caractères max)',persona:{gentle:'Avec douceur',direct:'Sans détour'},busy:'Je réfléchis…',foot:'Réponse de l’IA d’après vos thèmes, à titre indicatif.'}};
+ zh:{mem:'會記得你們前面聊過的內容（只存在這台裝置）',clr:'清除對話',cfm:'再按一次清除',title:'和星星聊兩句',sub:'抽一句今天給你的話，或問一個小問題。每次回答都會根據你的盤。',note:'給我一句話',ask:'問',ph:'例如：今年適合換工作嗎？（120 字以內）',persona:{gentle:'溫柔一點',direct:'直球一點'},busy:'想一下…',foot:'AI 依你的盤回答，僅供參考。'},
+ en:{mem:'Remembers what you talked about before (stored on this device only)',clr:'Clear chat',cfm:'Click again to clear',title:'A word from the stars',sub:'Draw a short message for today, or ask one small question. Every answer is based on your charts.',note:'Give me a message',ask:'Ask',ph:'e.g. Is this a good year to change jobs? (max 120 characters)',persona:{gentle:'Gentle',direct:'Straight talk'},busy:'Thinking…',foot:'AI answers from your charts. For reflection only.'},
+ ja:{mem:'前に話した内容を覚えています（この端末にだけ保存）',clr:'会話を消す',cfm:'もう一度押すと消えます',title:'星とひとこと',sub:'今日のあなたへのひとことを引くか、小さな質問をひとつどうぞ。答えはすべてあなたのチャートにもとづきます。',note:'ひとことください',ask:'聞く',ph:'例：今年は転職に向いていますか？（120字以内）',persona:{gentle:'やさしく',direct:'はっきり'},busy:'考え中…',foot:'AI がチャートをもとに答えます。参考程度にどうぞ。'},
+ fr:{mem:'Se souvient de vos échanges précédents (enregistrés sur cet appareil uniquement)',clr:'Effacer la conversation',cfm:'Cliquez encore pour effacer',title:'Un mot des étoiles',sub:'Tirez un petit message pour aujourd’hui, ou posez une petite question. Chaque réponse s’appuie sur vos thèmes.',note:'Un mot pour moi',ask:'Demander',ph:'ex. : Est-ce une bonne année pour changer de travail ? (120 caractères max)',persona:{gentle:'Avec douceur',direct:'Sans détour'},busy:'Je réfléchis…',foot:'Réponse de l’IA d’après vos thèmes, à titre indicatif.'}};
 let chatPersona='gentle',chatBusy=false,chatGen=0,chatCtl=null;
+/* 對話記憶：依出生資料存在這台裝置，最多 20 則；送給 AI 的是最近 6 則問答 */
+function chatKey(v){v=v||LASTV;if(!v)return null;return 'starlit-chat-'+[v.date,v.time,v.g,v.lat,v.lon,v.tz,v.dst?1:0].join('|');}
+function chatLoad(){const k=chatKey();if(!k)return [];try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a.filter(x=>x&&typeof x.a==='string'):[];}catch(e){return [];}}
+function chatStore(a){const k=chatKey();if(!k)return;try{if(a.length)localStorage.setItem(k,JSON.stringify(a.slice(-20)));else localStorage.removeItem(k);}catch(e){}}
+const chatEsc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function chatItemHTML(x){return (x.q?`<p class="chat-q">${chatEsc(x.q)}</p>`:'')+`<p class="chat-a">${chatEsc(x.a)}</p>`;}
+/* 換盤或第一次載入時：把這張盤的舊對話放回畫面 */
+function chatRestore(){const log=document.querySelector('#chat .chat-log');if(!log)return;
+  const a=chatLoad();log.innerHTML=a.slice().reverse().map(x=>`<div class="chat-item">${chatItemHTML(x)}</div>`).join('');
+  const b=document.querySelector('#chat-clr');if(b){b.hidden=!a.length;b.dataset.c='';b.textContent=(CHAT_TXT[LG]||CHAT_TXT.zh).clr;}}
 function chatRender(){
   const el=document.querySelector('#chat');if(!el)return;if(!AI_URL){el.hidden=true;return;}el.hidden=false;
   const T=CHAT_TXT[LG]||CHAT_TXT.zh;
   if(el.querySelector('.chat-log')){/* 已建好：只更新文字，不重建紀錄（避免串流中的回答脫離畫面） */
     el.querySelector('.chat-h h3').textContent=T.title;el.querySelector(':scope>p.muted').textContent=T.sub;el.querySelector('#chat-note').textContent=T.note;
     el.querySelector('#chat-f button').textContent=T.ask;el.querySelector('#chat-q').placeholder=T.ph;el.querySelector('.chat-foot').textContent=T.foot;
-    el.querySelectorAll('input[name=persona]').forEach(r=>{r.nextElementSibling.textContent=T.persona[r.value];});return;}
+    el.querySelectorAll('input[name=persona]').forEach(r=>{r.nextElementSibling.textContent=T.persona[r.value];});
+    el.querySelector('.chat-mem').textContent=T.mem;const cb=el.querySelector('#chat-clr');if(!cb.dataset.c)cb.textContent=T.clr;return;}
   const keep='',q='';
   el.innerHTML=`<div class="chat-h"><h3>${T.title}</h3><div class="seg mini">${Object.entries(T.persona).map(([k,v])=>`<label><input type="radio" name="persona" value="${k}"${chatPersona===k?' checked':''}><span>${v}</span></label>`).join('')}</div></div>
    <p class="muted">${T.sub}</p>
    <div class="chat-row"><button type="button" class="go2btn" id="chat-note">${T.note}</button></div>
    <form class="chat-row" id="chat-f"><input id="chat-q" maxlength="120" placeholder="${T.ph}"><button type="submit" class="go2btn">${T.ask}</button></form>
-   <div class="chat-log">${keep}</div><p class="muted chat-foot">${T.foot}</p>`;
+   <div class="chat-log">${keep}</div><div class="chat-row chat-mrow"><span class="muted chat-mem">${T.mem}</span><button type="button" class="linkbtn" id="chat-clr" hidden>${T.clr}</button></div><p class="muted chat-foot">${T.foot}</p>`;
   el.querySelector('#chat-q').value=q;
   el.querySelectorAll('input[name=persona]').forEach(r=>r.addEventListener('change',()=>chatPersona=r.value));
   el.querySelector('#chat-note').addEventListener('click',()=>chatSend('note',''));
+  el.querySelector('#chat-clr').addEventListener('click',e=>{const b=e.currentTarget,T2=CHAT_TXT[LG]||CHAT_TXT.zh;
+    if(!b.dataset.c){b.dataset.c='1';b.textContent=T2.cfm;setTimeout(()=>{if(b.dataset.c){b.dataset.c='';b.textContent=(CHAT_TXT[LG]||CHAT_TXT.zh).clr;}},3000);return;}
+    if(chatBusy)return;chatStore([]);chatRestore();});
+  chatRestore();
   el.querySelector('#chat-f').addEventListener('submit',e=>{e.preventDefault();const v=el.querySelector('#chat-q').value.trim();if(v)chatSend('ask',v);});
 }
 async function chatSend(mode,q){
   if(chatBusy)return;chatBusy=true;const T=CHAT_TXT[LG]||CHAT_TXT.zh,A=AI_TXT[LG]||AI_TXT.zh,log=document.querySelector('#chat .chat-log');
-  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const item=document.createElement('div');item.className='chat-item';
-  item.innerHTML=(q?`<p class="chat-q">${esc(q)}</p>`:'')+`<p class="chat-a">${T.busy}</p>`;log.prepend(item);const a=item.querySelector('.chat-a');
+  item.innerHTML=(q?`<p class="chat-q">${chatEsc(q)}</p>`:'')+`<p class="chat-a">${T.busy}</p>`;
+  const key=chatKey(),hist=mode==='ask'?chatLoad().filter(x=>x.m==='ask'&&x.q).slice(-6).map(x=>({q:x.q,a:x.a.slice(0,700)})):[];log.prepend(item);const a=item.querySelector('.chat-a');
   const gen=chatGen;chatCtl=new AbortController();
-  try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:chatCtl.signal,body:JSON.stringify({mode,q,persona:chatPersona,lang:LG,chart:aiChartData('all')})});
+  try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:chatCtl.signal,body:JSON.stringify({mode,q,hist,persona:chatPersona,lang:LG,chart:aiChartData('all')})});
     if(gen!==chatGen)return;
     if(!r.ok){let j={};try{j=await r.json();}catch(e){}a.textContent=r.status===429?(j.error==='busy'?T.busy:A.limit(j.limit||20)):A.err;return;}
     const rd=r.body.getReader(),dec=new TextDecoder();let buf='',txt='';
     for(;;){const {value,done}=await rd.read();if(done||gen!==chatGen)break;buf+=dec.decode(value,{stream:true});let i;
       while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line.startsWith('data:'))continue;let ev;try{ev=JSON.parse(line.slice(5));}catch(e){continue;}
         if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.text){txt+=ev.delta.text;a.textContent=txt.replace(/\*\*/g,'');}}}
-    if(!txt)a.textContent=A.err;else if(mode==='ask')document.querySelector('#chat-q').value='';
+    if(!txt)a.textContent=A.err;else{if(mode==='ask')document.querySelector('#chat-q').value='';
+      if(gen===chatGen&&key===chatKey()){const h=chatLoad();h.push({m:mode,q:q||'',a:txt.replace(/\*\*/g,''),t:Date.now()});chatStore(h);const b=document.querySelector('#chat-clr');if(b)b.hidden=false;}}
   }catch(e){if(gen===chatGen&&e.name!=='AbortError')a.textContent=A.err;}finally{if(gen===chatGen){chatBusy=false;chatCtl=null;}}
 }

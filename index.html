@@ -360,12 +360,14 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
   #print .pr-cat{font-size:15pt;margin-top:18px;color:#2C47A3}
   #print .pr-chart{max-width:520px;margin:10px auto;break-inside:avoid}
   #print .zw{break-inside:avoid}
-  #print .hl-card,#print .card,#print .tl-y{break-inside:avoid}
-  #print .sharebar,#print button,#print .chat{display:none!important}
+  #print .hl-card,#print .card,#print .tl-y,#print .cal-m{break-inside:avoid}
+  #print .sharebar,#print button:not(.cell),#print .chat{display:none!important}
   #print summary{list-style:none}#print summary::after{content:none!important}
   #print .reading{border:0;padding:0;background:none}
   @page{margin:14mm}
 }
+.chat-mrow{justify-content:space-between;align-items:center;margin-top:8px}.chat-mem{font-size:12px}
+.linkbtn{background:none;border:0;padding:2px 0;font:inherit;font-size:12.5px;color:var(--seal);cursor:pointer;text-decoration:underline}
 .chat{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
 .chat-h{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
 .chat-h h3{font-family:var(--f-display);font-size:19px;margin:0}
@@ -378,6 +380,71 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 .chat-q,.ai-out{overflow-wrap:anywhere}
 .chat-foot{font-size:12px;margin:6px 0 0}
 @media (max-width:640px){.tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs button{white-space:nowrap;flex:0 0 auto}}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.topbook{font:inherit;font-size:13.5px;font-weight:700;border:1px solid var(--line);background:var(--panel);color:var(--accent);border-radius:999px;padding:5px 14px;cursor:pointer}
+.vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.vbar input{font:inherit;font-size:13.5px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);width:auto;min-width:0;flex:0 1 200px}
+.vbar button{font:inherit;font-size:13.5px;font-weight:700;padding:6px 14px;border-radius:999px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+.vsaved{font-size:13.5px;color:var(--good);font-weight:700}
+dialog.sdlg{border:0;padding:0;border-radius:16px;width:min(620px,94vw);max-height:88dvh;background:var(--panel);color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.35)}
+dialog.sdlg::backdrop{background:rgba(10,12,24,.5)}
+.sdlg-in{padding:18px 20px 22px;overflow:auto;max-height:88dvh;box-sizing:border-box}
+.sdlg-in header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sdlg-in header h2{font-family:var(--f-display);font-size:21px;margin:0}
+.vnote{font-size:13px}.vempty{padding:18px 0;color:var(--muted)}
+.vlist{list-style:none;padding:0;margin:8px 0}
+.vlist li{border-top:1px solid var(--line);padding:10px 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.vinfo{display:flex;flex-direction:column;gap:2px;min-width:0}.vinfo .chip{align-self:flex-start}.vinfo .muted{font-size:12.5px}
+.vact{display:flex;gap:6px;flex-wrap:wrap}
+.vact button,.vio button,.vimp span{font:inherit;font-size:13px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);cursor:pointer}
+.vact .vdel{color:var(--seal)}
+.vio{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;border-top:1px solid var(--line);padding-top:12px}
+.vren{font:inherit;padding:5px 10px;border:1px solid var(--line);border-radius:8px;width:auto}
+.ppick select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);margin-bottom:8px}
+.sitefoot{max-width:1120px;margin:30px auto 24px;padding:0 20px;display:flex;justify-content:space-between;color:var(--muted);font-size:13px}
+.sitefoot button{font:inherit;background:none;border:0;color:var(--accent);cursor:pointer;padding:0}
+@media print{.topbar,.sitefoot,.vbar{display:none!important}}
+.hl-card.mon ul{margin:0;padding-left:18px;font-size:14px;line-height:1.7}
+.hl-card.mon h3 .tone{font-family:var(--f-body);vertical-align:middle}
+.calwrap{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:4px 18px}
+.calwrap>summary{cursor:pointer;font-weight:700;color:var(--accent);padding:12px 0;list-style:none}
+.calwrap>summary::-webkit-details-marker{display:none}
+.calwrap>summary::before{content:'＋ '}.calwrap[open]>summary::before{content:'－ '}
+.cal{padding-bottom:16px}
+.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:10px}
+.cal-m{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--sunk);break-inside:avoid}
+.cal-m.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.cal-m.up{border-left:4px solid var(--good)}.cal-m.hard{border-left:4px solid var(--seal)}
+.cal-h{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.cal-h b{font-family:var(--f-display);font-size:17px}.cal-h .muted{font-size:12px}.cal-h .tone{margin-left:auto}
+.cal-t{font-weight:700;font-size:14px;margin:6px 0 2px}
+.cal-m ul{margin:0;padding-left:17px;font-size:13px;line-height:1.65}
+.bookbox{margin-top:16px;border:1.5px solid var(--accent);border-radius:var(--r);padding:16px 18px;background:linear-gradient(135deg,var(--accent-soft),var(--panel) 60%)}
+.bk-h{display:flex;gap:12px;align-items:flex-start}.bk-ico{font-size:28px;line-height:1}
+.bk-h h3{font-family:var(--f-display);font-size:20px;margin:0 0 4px}.bk-h p{margin:0;font-size:14px;line-height:1.7}
+.bk-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 4px}
+.bk-row input{font:inherit;font-size:14px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);width:auto;flex:0 1 220px;min-width:0}
+.bk-row button:not(.go2btn){font:inherit;font-weight:700;font-size:14px;padding:8px 16px;border-radius:999px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);cursor:pointer}
+.bk-st{font-size:13px;margin:6px 0 0}
+dialog.bookv{border:0;padding:0;width:min(860px,100vw);max-width:100vw;height:96dvh;max-height:100dvh;border-radius:14px;background:var(--panel);color:var(--ink)}
+dialog.bookv::backdrop{background:rgba(8,10,20,.6)}
+.bookv-in{display:flex;flex-direction:column;height:100%}
+.bookv-in>header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+#bookv-body{overflow:auto;flex:1;padding:0 6%}
+.book{font-size:16px;line-height:1.95;max-width:720px;margin:0 auto;padding:10px 0 60px}
+.bk-cover{text-align:center;padding:70px 0 50px;border-bottom:1px solid var(--line)}
+.bk-brand{letter-spacing:.3em;color:var(--accent);font-weight:700;font-size:13px}
+.bk-cover h1{font-family:var(--f-display);font-size:34px;margin:18px 0 12px;line-height:1.35}
+.bk-made,.bk-ai{color:var(--muted);font-size:13px}
+.bk-h2,.book .bk-h2{font-family:var(--f-display);font-size:24px;margin:34px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+.bk-figs .bk-fig{margin:14px 0}.bk-figs .bk-fig h3{font-size:16px;color:var(--accent)}
+.bk-figs svg{max-width:440px;display:block;margin:0 auto}.bk-figs .zw{max-width:640px;margin:0 auto}
+.bk-text h1.bk-h1{font-family:var(--f-display);font-size:28px;text-align:center;margin:40px 0 10px}
+.bk-text h2.bk-h2{font-family:var(--f-display);font-size:23px}
+.bk-text h3.bk-h3{font-size:18px;margin:20px 0 6px}
+.bk-text p{margin:0 0 14px}
+@media (max-width:600px){dialog.bookv{width:100vw;height:100dvh;border-radius:0}.bk-cover h1{font-size:26px}}
+@media print{#print .book{max-width:none;font-size:11.5pt}#print .bk-cover{min-height:90vh;display:flex;flex-direction:column;justify-content:center;border:0}#print .bk-figs,#print .bk-sum,#print .bk-text{break-before:page}#print .bk-text h2.bk-h2{break-before:page}#print .bk-fig{break-inside:avoid}}
 .hl{margin:0 0 26px}
 .hl>h2{font-family:var(--f-display);font-size:22px;margin:0 0 12px}
 .hl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
@@ -434,7 +501,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 </head>
 <body>
 <div class="wrap">
-  <div class="langs" role="group" aria-label="Language" id="langs"></div>
+  <div class="topbar"><button type="button" class="topbook" id="top-book"></button><div class="langs" role="group" aria-label="Language" id="langs"></div></div>
 
   <section class="ask" id="ask"></section>
   <form class="birth" id="birth" novalidate>
@@ -460,7 +527,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
   <div class="err" id="err" hidden></div>
 
   <div id="result" class="result" hidden>
-  <section class="hl" id="hl" aria-labelledby="hl-title"><h2 id="hl-title" data-t="hlTitle"></h2><div id="hl-body"></div><div class="chat" id="chat" hidden></div></section>
+  <section class="hl" id="hl" aria-labelledby="hl-title"><h2 id="hl-title" data-t="hlTitle"></h2><div class="vbar" id="vbar"></div><div id="hl-body"></div><div class="bookbox" id="book-box" hidden></div><div class="chat" id="chat" hidden></div></section>
   <div class="tabrow"><nav class="tabs" role="tablist">
     <button role="tab" id="t-west" aria-selected="true" aria-controls="p-west" data-t="tabW"></button>
     <button role="tab" id="t-zw" aria-selected="false" aria-controls="p-zw" data-t="tabZ"></button>
@@ -515,6 +582,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
   </section>
   <section class="pane" id="p-pair" role="tabpanel" aria-labelledby="t-pair" hidden>
     <p class="mixintro" data-t="pairIntro"></p>
+    <div id="p-pick" class="ppick"></div>
     <form class="birth pairf" id="pairf" novalidate>
       <div class="field"><label for="p-name" data-t="pairName"></label><input id="p-name" type="text" maxlength="20"></div>
       <div class="field"><label for="p-date" data-t="date"></label><input id="p-date" type="date" min="1900-01-01" max="2100-12-31"></div>
@@ -530,11 +598,16 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
     <div id="pair-out" hidden>
       <div class="sum" id="pair-sum"></div>
       <article class="reading" id="pair-read"><div class="rhead"><h2 data-t="pairTitle"></h2><button type="button" class="copyread"></button></div><div class="body"></div><button type="button" class="more" data-t="pairBtn"></button></article>
+      <div class="bookbox" id="pbook-box" hidden></div>
     </div>
   </section>
   </div>
 </div>
 
+<footer class="sitefoot"><button type="button" id="foot-about"></button><span>Starlit 星曜</span></footer>
+<dialog id="bookv" class="bookv"><div class="bookv-in"><header><button type="button" class="go2btn" id="bookv-pdf"></button><button type="button" class="dlg-x" id="bookv-x">×</button></header><div id="bookv-body"></div></div></dialog>
+<dialog id="vault" class="sdlg" aria-labelledby="vault-title"><div class="sdlg-in"><header><h2 id="vault-title"></h2><button type="button" class="dlg-x" id="vault-x">×</button></header><div id="vault-body"></div></div></dialog>
+<dialog id="about" class="sdlg" aria-labelledby="about-title"><div class="sdlg-in"><header><h2 id="about-title"></h2><button type="button" class="dlg-x" id="about-x">×</button></header><div id="about-body" class="reading plain"></div></div></dialog>
 <dialog id="wiz" class="wiz" aria-label="Starlit"><div class="wiz-in"><button type="button" class="dlg-x wiz-x" id="wiz-x">×</button><div id="wiz-body"></div></div></dialog>
 <dialog id="dlg" class="dlg" aria-labelledby="dlg-title">
   <div class="dlg-in">
@@ -567,6 +640,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/themes-zh.js"></script>
 <script src="js/timeline-zh.js"></script>
 <script src="js/intent-zh.js"></script>
+<script src="js/calendar-zh.js"></script>
 <script src="js/pair-zh.js"></script>
 <script src="js/hd-en.js"></script>
 <script src="js/hd-ja.js"></script>
@@ -576,7 +650,9 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/reading-fr.js"></script>
 <script src="js/wizard.js"></script>
 <script src="js/share.js"></script>
+<script src="js/vault.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/book.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

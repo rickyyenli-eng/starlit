@@ -80,7 +80,7 @@ function pairSubmit(e){e.preventDefault();const v={name:$('#p-name').value,date:
   if(bad){er.textContent=L.ui[bad];er.hidden=false;return;}
   try{PB=computeChart(v);PBV=v;}catch(err){console.error(err);PB=null;}
   if(!PB){er.textContent=L.ui.errPlace;er.hidden=false;}
-  renderPair();aiRender();if(PB){const sf=$('#ai-focus');if(sf)sf.value='pair';}if(PB)$('#pair-out').scrollIntoView({behavior:'smooth',block:'start'});}
+  renderPair();aiRender();if(typeof bBox==='function')bBox(true);if(PB){const sf=$('#ai-focus');if(sf)sf.value='pair';}if(PB)$('#pair-out').scrollIntoView({behavior:'smooth',block:'start'});}
 function renderPair(){
   const out=$('#pair-out');if(!PB||!W){out.hidden=true;ADV.pair='';return;}
   const P=window.Pair&&(Pair[LG]||Pair.zh);let r;
@@ -243,6 +243,7 @@ function applyLang(lg){
   $('#langs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LG));
   if(errKey)showErr(errKey);
   if(typeof askRender==='function')askRender();
+  if(typeof vLabels==='function')vLabels();
   const want=LG;loadLang(LG).then(()=>{if(W&&Z&&LG===want)renderAll();});
   try{localStorage.setItem('starlit-lang',LG);}catch(e){}
 }
@@ -264,12 +265,12 @@ function boot(){
   fillCities();
   $('#f-city').addEventListener('change',onCity);
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
-  applyLang(LG);aiInit();wizInit();
+  applyLang(LG);aiInit();wizInit();vInit();bInit();
   $('#pairf').addEventListener('submit',pairSubmit);
   $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
     try{await Promise.race([Promise.all([sweReady,loadLang(LG)]),new Promise(r=>setTimeout(r,6000))]);}catch(err){}
     btn.disabled=false;
-    const v=readForm();if(compute(v)){selW='Sun';aiReset();renderAll();$('#result').hidden=false;$('#result').scrollIntoView({behavior:'smooth',block:'start'});shareAfterRender();}});
+    const v=readForm();if(compute(v)){selW='Sun';aiReset();bReset();renderAll();$('#result').hidden=false;vBar();vPairPick();$('#result').scrollIntoView({behavior:'smooth',block:'start'});shareAfterRender();}});
   TABS.forEach(t=>$('#t-'+t).addEventListener('click',()=>tab(t)));
   document.querySelectorAll('.reading .rhead .copyread:not(#ai-copy)').forEach(b=>b.addEventListener('click',()=>copyReading(b)));
   document.querySelectorAll('button.more').forEach(b=>b.addEventListener('click',()=>openDetail(b.closest('.pane').id.slice(2),0)));
@@ -335,12 +336,13 @@ function renderReadings(){
   const note=!hasTr()&&L.ui.readNote?`<p class="readnote">${L.ui.readNote}</p>`:'';
   const put=(id,tab,f)=>{let r;try{r=f();}catch(e){console.error(e);r={basic:'<p class="err">—</p>',adv:''};}$(id+' .body').innerHTML=note+r.basic;ADV[tab]=r.adv;};
   put('#w-read','west',()=>RD().west(W,Engine));put('#z-read','zw',()=>RD().zw(Z,readingCtx()));put('#h-read','hd',()=>RD().hd(HD,HDL()));
-  renderMix();renderHL();renderPair();
+  renderMix();renderHL();renderPair();if(typeof bRender==='function')bRender();
   document.querySelectorAll('.reading .rhead .copyread:not(#ai-copy)').forEach(b=>b.textContent=L.ui.copy);
 }
 function renderHL(){
   const el=$('#hl-body');if(!el)return;const P=window.Highlights&&(Highlights[LG]||Highlights.zh);
-  try{const ans=intentCard();el.innerHTML=shareBar()+(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans);
+  try{const ans=intentCard();let mon='',cal='';try{if(window.Calendar){mon=Calendar.zh.nowCard(W,Z,HD,Engine);cal=Calendar.zh.render(W,Z,HD,Engine);}}catch(e){console.error(e);}
+    el.innerHTML=shareBar()+(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans+mon)+(cal?`<details class="calwrap"><summary>${L.ui.calOpen||'年度運勢行事曆'}</summary>${cal}</details>`:'');
     shareBind();el.querySelectorAll('.ans-more').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.tab,+b.dataset.i)));}catch(e){console.error(e);el.innerHTML='';}
 }
 function renderMix(){
