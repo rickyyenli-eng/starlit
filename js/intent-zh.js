@@ -12,20 +12,27 @@ const RULE={
  love:{pal:'夫妻',jupGood:[5,7],satTest:[5,7]},
  work:{pal:'官祿',jupGood:[10,6],satTest:[10,6]},
  money:{pal:'財帛',jupGood:[2,8],satTest:[2,8]}};
-function yearScore(x,r){
+/* 結構化的理由（語言無關），各語版自行組字 */
+function yearScoreR(x,r){
   let s=0;const why=[],warn=[];
-  if(x.yp===r.pal){s+=2;why.push(`流年命宮走到${PN(r.pal)}`);}
+  if(x.yp===r.pal){s+=2;why.push({k:'yp',pal:r.pal});}
   x.muts.forEach(m=>{if(m.pal!==r.pal)return;
-    if(m.k==='祿'){s+=2;why.push(`${m.star}化祿進${PN(r.pal)}`);}
-    if(m.k==='權'){s+=1;why.push(`${m.star}化權進${PN(r.pal)}`);}
-    if(m.k==='忌'){s-=2;warn.push(`${m.star}化忌進${PN(r.pal)}`);}});
+    if(m.k==='祿'){s+=2;why.push({k:'lu',star:m.star,pal:r.pal});}
+    if(m.k==='權'){s+=1;why.push({k:'quan',star:m.star,pal:r.pal});}
+    if(m.k==='忌'){s-=2;warn.push({k:'ji',star:m.star,pal:r.pal});}});
   x.muts.forEach(m=>{if(m.ypal!==r.pal||m.pal===r.pal)return;
-    if(m.k==='祿'){s+=1;why.push(`${m.star}化祿進流年${PN(r.pal)}`);}
-    if(m.k==='忌'){s-=1.5;warn.push(`${m.star}化忌進流年${PN(r.pal)}`);}});
-  if(r.jupGood.includes(x.jup)){s+=1;why.push(`木星走你的${H[x.jup]}`);}
-  if(r.satTest.includes(x.sat)){s-=0.5;warn.push(`土星在你的${H[x.sat]}`);}
+    if(m.k==='祿'){s+=1;why.push({k:'ylu',star:m.star,pal:r.pal});}
+    if(m.k==='忌'){s-=1.5;warn.push({k:'yji',star:m.star,pal:r.pal});}});
+  if(r.jupGood.includes(x.jup)){s+=1;why.push({k:'jup',h:x.jup});}
+  if(r.satTest.includes(x.sat)){s-=0.5;warn.push({k:'sat',h:x.sat});}
   return{s,why,warn};
 }
+const RZH={yp:w=>`流年命宮走到${PN(w.pal)}`,lu:w=>`${w.star}化祿進${PN(w.pal)}`,quan:w=>`${w.star}化權進${PN(w.pal)}`,ji:w=>`${w.star}化忌進${PN(w.pal)}`,ylu:w=>`${w.star}化祿進流年${PN(w.pal)}`,yji:w=>`${w.star}化忌進流年${PN(w.pal)}`,jup:w=>`木星走你的${H[w.h]}`,sat:w=>`土星在你的${H[w.h]}`};
+function yearScore(x,r){const o=yearScoreR(x,r);return{s:o.s,why:o.why.map(w=>RZH[w.k](w)),warn:o.warn.map(w=>RZH[w.k](w))};}
+/* 挑出順的年份（最多 3 個）與要守的年份（最多 2 個）；score 依語言傳入 */
+function pickYears(ys,rule,score){const sc=ys.map(x=>({x,...(score||yearScoreR)(x,rule)}));
+  let good=sc.filter(a=>a.s>=1.5),weak=false;if(!good.length){good=sc.filter(a=>a.s>=1);weak=true;}good=good.sort((a,b)=>b.s-a.s).slice(0,3).sort((a,b)=>a.x.y-b.x.y);
+  const bad=sc.filter(a=>a.s<=-1.5).slice(0,2);return{good,bad,weak};}
 const STATUS={
  single:{ask:'什麼時候會遇到對的人？',good:'感情機會比較多的年份',tip:'這幾年多出門、多參加朋友的聚會，或答應別人介紹，比自己埋頭等更有用。'},
  crush:{ask:'這段曖昧能不能往前走？',good:'適合把關係說清楚、往前推一步的年份',tip:'如果你已經等很久了，挑一個輕鬆的場合把心意講清楚，比繼續猜更好。'},
@@ -41,18 +48,21 @@ const JOB={
  change:{ask:'什麼時候適合轉換跑道？',good:'適合轉換跑道、開始新方向的年份',tip:'轉換前先用副業或進修小規模試水溫，確定有回應再全力投入。'},
  none:{ask:'事業會怎麼走？',good:'工作機會比較多的年份',tip:''}};
 
+/* 給 AI 用：網站判斷的感情／工作／金錢順與要守的年份，讓 AI 回答時與網頁一致 */
+function goodYears(W,Z,HD,E){const now=Highlights.zh.curYear(Z);let ys=[];try{ys=Highlights.zh.years(W,Z,HD,E,now,now+8);}catch(e){}if(!ys.length||ys[0].age<15)return null;
+  const o={};for(const k of ['love','work','money']){const sc=ys.map(x=>({y:x.y,...yearScore(x,RULE[k])}));let g=sc.filter(a=>a.s>=1.5);if(!g.length)g=sc.filter(a=>a.s>=1);
+    o[k]={good:g.sort((a,b)=>b.s-a.s).slice(0,3).map(a=>a.y).sort(),bad:sc.filter(a=>a.s<=-1.5).slice(0,2).map(a=>a.y)};}return o;}
 function render(ctx,W,Z,HD,E){
   if(!ctx||!ctx.intent||ctx.intent==='all')return '';
   const now=Highlights.zh.curYear(Z);
   const ys=Highlights.zh.years(W,Z,HD,E,now,now+8);if(!ys.length)return '';
   let R=null;try{R=Themes.core.build(W,Z,HD,E);}catch(e){}
   {const ag=ys[0].age;if(ag<15&&['love','work','money'].includes(ctx.intent))return `<div class="hl-card ans"><div class="hl-k">你想知道的</div><h3>現在還在成長階段</h3><p>這張盤目前虛歲 ${ag}，感情、工作和收入的時機，要等長大一點再看才有意義。現在更值得看的是上面的核心特質，以及下面「人生走向」裡學業、家庭與興趣的部分。</p></div>`;}
+  const sen=ys[0].age>=65;
   const T=Themes.zh.TAGS,fit=root.Readings&&Readings.zh.fit?Readings.zh.fit:(t=>t);
   const palStory=(name,pick)=>{const i=Z.palaces.findIndex(p=>p.name===name),p=Z.palaces[i],src=p.majorStars.length?p:Z.palaces[(i+6)%12];const e=pick(comboOf(src));return e?{e,p,opp:Z.palaces[(i+6)%12]}:null;};
   const tags=th=>R?R[th].ranked.filter(x=>x.sys.size>=2).slice(0,2).map(x=>`「${T[th][x.tag][0]}」`).join('和'):'';
-  const yearList=(rule)=>{const sc=ys.map(x=>({x,...yearScore(x,rule)}));
-    let good=sc.filter(a=>a.s>=1.5),weak=false;if(!good.length){good=sc.filter(a=>a.s>=1);weak=true;}good=good.sort((a,b)=>b.s-a.s).slice(0,3).sort((a,b)=>a.x.y-b.x.y);
-    const bad=sc.filter(a=>a.s<=-1.5).slice(0,2);return{good,bad,weak};};
+  const yearList=rule=>pickYears(ys,rule,yearScore);
   const chips=(list,cls)=>list.map(a=>`<div class="ans-y ${cls}"><b>${a.x.y}</b><span>${(cls==='bad'?a.warn:a.why).join('、')}${cls==='good'&&a.warn.length?`<em class="ans-warn">；但同年${a.warn.join('、')}，好壞並存</em>`:''}</span></div>`).join('');
   let h='',title='',more=null;
   if(ctx.intent==='love'){
@@ -62,7 +72,7 @@ function render(ctx,W,Z,HD,E){
     const {good,bad}=yearList(RULE.love);
     const {weak:wl}=yearList(RULE.love);h+=`<h4>${st.good}${wl&&good.length?'（相對）':''}</h4>${good.length?chips(good,'good'):'<p class="muted">接下來幾年沒有特別集中的感情年，緣分比較平均地分散，重點在你自己主動。</p>'}`;
     if(bad.length)h+=`<h4>需要多一點耐心的年份</h4>${chips(bad,'bad')}`;
-    if(st.tip)h+=`<p class="ans-tip">${st.tip}</p>`;
+    if(sen)h+=`<p class="ans-tip">這個階段的感情，看的是和老伴或身邊重要的人怎麼相處、彼此照應。順的年份適合一起出遊、安排共同的生活；卡的年份多一點體諒。</p>`;else if(st.tip)h+=`<p class="ans-tip">${st.tip}</p>`;
     more=['mix',2];
   }else if(ctx.intent==='work'||ctx.intent==='money'){
     const isW=ctx.intent==='work',jb=JOB[ctx.job]||JOB.none;
@@ -73,7 +83,7 @@ function render(ctx,W,Z,HD,E){
     const {good,bad}=yearList(isW?RULE.work:RULE.money);
     const {weak:ww}=yearList(isW?RULE.work:RULE.money);h+=`<h4>${isW?jb.good:'收入與機會比較順的年份'}${ww&&good.length?'（相對）':''}</h4>${good.length?chips(good,'good'):'<p class="muted">接下來幾年沒有特別集中的年份，穩穩累積比等時機更重要。</p>'}`;
     if(bad.length)h+=`<h4>${isW?'要先守、先累積的年份':'收支要保守的年份'}</h4>${chips(bad,'bad')}`;
-    const tip=isW?jb.tip:'順的年份把多出來的收入先存一部分；保守的年份不碰高風險投資，先準備好半年的預備金。';
+    const tip=sen?(isW?'這個階段看的不是升遷，而是生活重心：順的年份適合投入志工、社團、教學或一直想學的事；卡的年份量力而為。':'順的年份可以寬裕一點享受生活；保守的年份以退休金和保險為主，不碰高風險投資，也小心各種詐騙。'):isW?jb.tip:'順的年份把多出來的收入先存一部分；保守的年份不碰高風險投資，先準備好半年的預備金。';
     if(tip)h+=`<p class="ans-tip">${tip}</p>`;
     more=['mix',isW?0:1];
   }else if(ctx.intent==='year'){
@@ -87,5 +97,5 @@ function render(ctx,W,Z,HD,E){
   if(!h)return '';
   return `<div class="hl-card ans"><div class="hl-k">你想知道的</div><h3>${title}</h3>${h}${more?`<button type="button" class="ans-more" data-tab="${more[0]}" data-i="${more[1]}">看完整的主題報告 →</button>`:''}</div>`;
 }
-root.Intent=root.Intent||{};root.Intent.zh={render};
+root.Intent=root.Intent||{};root.Intent.zh={render,goodYears,RULE,yearScoreR,pickYears};
 })(typeof globalThis!=='undefined'?globalThis:this);

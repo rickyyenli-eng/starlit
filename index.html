@@ -216,7 +216,7 @@ html:lang(en),html:lang(fr){--f-display:"Source Serif 4",Georgia,"Times New Roma
 .reading .body table{min-width:640px;font-size:13.5px}
 .reading td.warn{color:var(--seal);font-weight:700}
 .reading small.br{color:var(--muted);font-size:.78em;margin:0 1px}
-.primerbox summary{cursor:pointer;font-size:14px;color:var(--accent);font-weight:700;width:max-content;max-width:100%}
+.primerbox summary{cursor:pointer;font-size:14px;min-height:40px;display:flex;align-items:center;color:var(--accent);font-weight:700;width:max-content;max-width:100%}
 .primerbox[open] summary{margin-bottom:10px}
 .hdstage{grid-template-columns:1fr!important}
 .tabrow{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
@@ -352,11 +352,15 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
   --hd-yellow:#F2D27A; --hd-green:#9CCB8E; --hd-brown:#C9A27A; --hd-red:#E58F7E; --hd-p:#1B2136; --hd-d:#C23B2B;
   color-scheme:light}
   body.printing #print{display:block}
-  #print{color:#111;font-size:12pt}
+  #print{color:#111;font-size:10.5pt;line-height:1.5}
+  #print .pr-sec .calwrap{display:none}
+  #print .pr-chart{max-width:420px!important}
+  #print h4{margin:10px 0 4px}#print p{margin:4px 0}#print li{margin:2px 0}
+  #print .tl-y{break-inside:auto}
   #print .pr-head h1{font-size:22pt;margin:0 0 4px}
   #print .pr-sec{break-before:page}
   #print .pr-sec:first-of-type{break-before:auto}
-  #print h2{font-size:18pt;border-bottom:2px solid #333;padding-bottom:4px}
+  #print h2{font-size:16pt;border-bottom:2px solid #333;padding-bottom:4px}
   #print .pr-cat{font-size:15pt;margin-top:18px;color:#2C47A3}
   #print .pr-chart{max-width:520px;margin:10px auto;break-inside:avoid}
   #print .zw{break-inside:avoid}
@@ -366,6 +370,8 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
   #print .reading{border:0;padding:0;background:none}
   @page{margin:14mm}
 }
+.vsum,.vmemo{display:block;font-size:12.5px}.vmemo{color:var(--ink);opacity:.8}.vq{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);margin:6px 0 10px}.vnote2{margin-top:6px}
+.cell .gods{display:none;font-size:10.5px;color:var(--muted);line-height:1.35}.zw.gods-on .cell .gods{display:block}.zwopt{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px;cursor:pointer}
 .chat-mrow{justify-content:space-between;align-items:center;margin-top:8px}.chat-mem{font-size:12px}
 .linkbtn{background:none;border:0;padding:2px 0;font:inherit;font-size:12.5px;color:var(--seal);cursor:pointer;text-decoration:underline}
 .chat{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
@@ -379,7 +385,7 @@ dialog.wiz::backdrop{background:rgba(8,10,20,.6);backdrop-filter:blur(3px)}
 .chat-a{margin:0;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
 .chat-q,.ai-out{overflow-wrap:anywhere}
 .chat-foot{font-size:12px;margin:6px 0 0}
-@media (max-width:640px){.tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs button{white-space:nowrap;flex:0 0 auto}}
+@media (max-width:640px){.tabs{flex-wrap:wrap;gap:2px 0}.tabs button{white-space:nowrap;flex:1 1 30%;font-size:15.5px;padding:9px 6px;text-align:center}}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .topbook{font:inherit;font-size:13.5px;font-weight:700;border:1px solid var(--line);background:var(--panel);color:var(--accent);border-radius:999px;padding:5px 14px;cursor:pointer}
 .vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
@@ -515,7 +521,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
     </div>
     <div class="field"><label for="f-city" data-t="city"></label><select id="f-city"></select></div>
     <div class="field"><button class="go" type="submit" data-t="go"></button></div>
-    <label class="check"><input type="checkbox" id="f-dst"><span data-t="dst"></span></label>
+    <label class="check"><input type="checkbox" id="f-dst"><span data-t="dst"></span><span id="f-tznote" style="color:var(--ink)" aria-live="polite" hidden></span></label>
     <details class="adv"><summary data-t="adv"></summary>
       <div class="adv-grid">
         <div class="field"><label for="f-lat" data-t="lat"></label><input id="f-lat" type="number" step="0.01"></div>
@@ -554,7 +560,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
     <details class="primerbox"><summary data-t="howto"></summary><div class="primer" id="z-primer"></div></details>
     <div class="sum" id="z-sum"></div>
     <div class="split">
-      <div class="stage"><div class="zw" id="zw"></div></div>
+      <div class="stage"><div class="zw" id="zw"></div><label class="zwopt"><input type="checkbox" id="zw-gods"> <span data-t="zwGods"></span></label></div>
       <aside class="detail" id="z-detail" aria-live="polite"></aside>
     </div>
   
@@ -592,7 +598,7 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
         <label><input type="radio" name="pg" value="男"><span data-t="male"></span></label></div></div>
       <div class="field"><label for="p-city" data-t="city"></label><select id="p-city"></select></div>
       <div class="field"><button class="go" type="submit" data-t="pairGo"></button></div>
-      <label class="check"><input type="checkbox" id="p-dst"><span data-t="dst"></span></label>
+      <label class="check"><input type="checkbox" id="p-dst"><span data-t="dst"></span><span id="p-tznote" style="color:var(--ink)" aria-live="polite" hidden></span></label>
     </form>
     <div class="err" id="p-err" hidden></div>
     <div id="pair-out" hidden>
@@ -642,6 +648,10 @@ svg.body{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
 <script src="js/intent-zh.js"></script>
 <script src="js/calendar-zh.js"></script>
 <script src="js/pair-zh.js"></script>
+<script src="js/hl-i18n.js"></script>
+<script src="js/hl-en.js"></script>
+<script src="js/hl-ja.js"></script>
+<script src="js/hl-fr.js"></script>
 <script src="js/hd-en.js"></script>
 <script src="js/hd-ja.js"></script>
 <script src="js/hd-fr.js"></script>

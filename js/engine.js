@@ -42,7 +42,11 @@ function meeusNode(t){
 }
 
 function houseOf(l,h){for(let i=0;i<12;i++){const a=h[i],b=h[(i+1)%12];if(norm(l-a)<norm(b-a))return i+1;}return 1;}
-const ASPECTS=[{a:0,orb:8,tone:'conj'},{a:60,orb:5,tone:'good'},{a:90,orb:7,tone:'bad'},{a:120,orb:7,tone:'good'},{a:180,orb:8,tone:'bad'}];
+/* t=5 補十二分相（150°）為次要相位：容許度 2.5°、不加發光體加成、不用於行運 */
+const ASPECTS=[{a:0,orb:8,tone:'conj'},{a:60,orb:5,tone:'good'},{a:90,orb:7,tone:'bad'},{a:120,orb:7,tone:'good'},{a:180,orb:8,tone:'bad'},{a:150,orb:2.5,tone:'adj',minor:true}];
+const MAJOR_N=5;
+/* 跨星座相位：兩星所在星座的距離與相位應有的星座數不符（例如 29° 牡羊與 1° 獅子的拱相） */
+function outOfSign(l1,l2,deg){let k=Math.abs(Math.floor(norm(l1)/30)-Math.floor(norm(l2)/30));if(k>6)k=12-k;return k!==Math.round(deg/30);}
 
 function westChart(utc,lat,lon){
   const t=A.MakeTime(utc);
@@ -77,7 +81,7 @@ function aspectsBetween(pos,keys){
   for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++){
     const a=keys[i],b=keys[j],d=sep(pos[a].lon,pos[b].lon);
     const lum=(a==='Sun'||a==='Moon'||b==='Sun'||b==='Moon')?2:0;
-    for(let s=0;s<ASPECTS.length;s++){const o=Math.abs(d-ASPECTS[s].a);if(o<=ASPECTS[s].orb+lum){asp.push({a,b,t:s,tone:ASPECTS[s].tone,deg:ASPECTS[s].a,orb:o});break;}}
+    for(let s=0;s<ASPECTS.length;s++){const o=Math.abs(d-ASPECTS[s].a);if(o<=ASPECTS[s].orb+(ASPECTS[s].minor?0:lum)){asp.push({a,b,t:s,tone:ASPECTS[s].tone,deg:ASPECTS[s].a,orb:o,oos:outOfSign(pos[a].lon,pos[b].lon,ASPECTS[s].a)});break;}}
   }
   return asp.sort((x,y)=>x.orb-y.orb);
 }
@@ -88,7 +92,7 @@ function transits(natal,when){
     const l=lonOf(k,t);const house=houseOf(l,natal.houses);const hits=[];
     for(const n of ['Sun','Moon','Mercury','Venus','Mars','ASC','MC']){
       const nl=n==='ASC'?natal.asc:n==='MC'?natal.mc:natal.pos[n].lon;const d=sep(l,nl);
-      for(let s=0;s<ASPECTS.length;s++){const o=Math.abs(d-ASPECTS[s].a);if(o<=(k==='Jupiter'||k==='Saturn'?3:2)){hits.push({n,t:s,tone:ASPECTS[s].tone,orb:o});break;}}
+      for(let s=0;s<MAJOR_N;s++){const o=Math.abs(d-ASPECTS[s].a);if(o<=(k==='Jupiter'||k==='Saturn'?3:2)){hits.push({n,t:s,tone:ASPECTS[s].tone,orb:o});break;}}
     }
     out.push({k,lon:l,house,hits});
   }
@@ -153,8 +157,31 @@ function humanDesign(utc){
   return {P,D,designUtc:dt.date,gates,channels,defined:[...defined],comps,type,authority,definition:def,profile,cross};
 }
 
+/* ===================== 歷史時區 =====================
+   依 IANA 時區（Intl 內建 tzdata）把「出生當地鐘錶時間」換成 UTC，含歷史夏令時間與標準時區變更（如台灣日治 UTC+9）。
+   重複的當地時間（撥回）取較早的一刻（夏令時間那一側）；不存在的當地時間（撥快的空檔）用撥快前的偏移，等同往後順延。
+   dst：當時偏移比前後數月都高（季節性）才算夏令時間；整段改用另一個標準時區（例如 1937 年起的 UTC+9）不算。 */
+const TZF={};
+function tzOffset(tz,ms){
+  const f=TZF[tz]||(TZF[tz]=new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'}));
+  const p={};for(const x of f.formatToParts(new Date(ms)))p[x.type]=x.value;
+  return Date.UTC(+p.year,+p.month-1,+p.day,(+p.hour)%24,+p.minute,+p.second)-Math.floor(ms/1000)*1000;
+}
+function localToUtc(y,mo,d,hh,mi,tz){
+  const H=3600e3,L=Date.UTC(y,mo-1,d,hh,mi);
+  const oA=tzOffset(tz,L-36*H),oB=tzOffset(tz,L+36*H);
+  const cand=[...new Set([oA,oB,tzOffset(tz,L-oA),tzOffset(tz,L-oB)])];
+  const ok=cand.filter(o=>tzOffset(tz,L-o)===o);
+  const gap=!ok.length,fold=ok.length>1;
+  const ms=L-(gap?Math.min(...cand):Math.max(...ok));
+  const off=tzOffset(tz,ms),MON=30.44*86400e3;let lb=Infinity,la=Infinity;
+  for(let k=1;k<=8;k++){lb=Math.min(lb,tzOffset(tz,ms-k*MON));la=Math.min(la,tzOffset(tz,ms+k*MON));}
+  const dst=lb<off&&la<off?off-Math.max(lb,la):0;
+  return{utc:new Date(ms),off:off/H,dst:dst/H,std:(off-dst)/H,gap,fold};
+}
+
 function setSwiss(s){SW=s;}
 function usingSwiss(){return !!SW;}
-const api={setSwiss,usingSwiss,norm,PK,westChart,transits,aspectsBetween,trueNode,lonOf,houseOf,ASPECTS,gateOf,humanDesign,CENTER_GATES,GATE_CENTER,CHANNELS,HD_BODIES,sep};
+const api={setSwiss,usingSwiss,norm,PK,westChart,localToUtc,tzOffset,outOfSign,transits,aspectsBetween,trueNode,lonOf,houseOf,ASPECTS,gateOf,humanDesign,CENTER_GATES,GATE_CENTER,CHANNELS,HD_BODIES,sep};
 if(typeof module!=='undefined')module.exports=api;else root.Engine=api;
 })(typeof window!=='undefined'?window:globalThis);

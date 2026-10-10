@@ -229,7 +229,7 @@ Venus:[
 `Par exemple, quand quelqu’un vous plaît, vous lui envoyez directement un message pour l’inviter au cinéma ce week-end ; si c’est non, vous souriez simplement et vous dites « une autre fois, alors ».`,
 `Par exemple, pour un rendez-vous, vous choisissez un restaurant fiable avec des sièges confortables ; pour vous, un dîner savouré lentement est le comble du romantisme.`,
 `Par exemple, au premier rendez-vous, vous passez du cinéma aux voyages puis à l’enfance, et en rentrant ce qui compte le plus pour vous, c’est : « est-ce qu’on s’entend bien quand on parle ? ».`,
-`Par exemple, une fois en couple, vous vous rappelez le cycle de l’autre et sa boisson préférée, et les jours de pluie vous apportez un parapluie de plus pour venir le chercher à la gare.`,
+`Par exemple, une fois en couple, vous retenez ce que l’autre ne mange pas et sa boisson préférée, et les jours de pluie vous apportez un parapluie de plus pour venir le chercher à la gare.`,
 `Par exemple, pour l’anniversaire de l’autre, vous organisez avec soin une journée entière de surprises, et vous espérez aussi qu’il réponde à cette attention avec le même enthousiasme.`,
 `Par exemple, au début d’une relation, vous observez discrètement si l’autre est ponctuel ou s’il jette ses déchets n’importe où ; une fois les détails validés, vous osez vous attacher.`,
 `Par exemple, avant un rendez-vous, vous passez beaucoup de temps à choisir votre tenue et un restaurant qui a du charme ; pour vous, les belles images font partie de l’amour.`,

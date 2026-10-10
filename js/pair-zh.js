@@ -32,10 +32,15 @@ const LU_P={'命宮':'對方讓你整個人更有自信、更好運，你們在�
 const JI_P={'命宮':'你會很在意對方的一舉一動，也最容易因對方而情緒起伏。','兄弟':'容易因為朋友、手足或金錢往來產生心結。','夫妻':'你對這段感情很執著，越在乎越容易卡在溝通。','子女':'在子女、投資或合作上容易有不同意見。','財帛':'錢的觀念容易不同，共同財務要先講清楚。','疾厄':'和對方在一起時壓力容易累積在身上，記得各自保留休息空間。','遷移':'在外的場合、搬家或遠距容易有摩擦。','僕役':'容易因為對方的朋友圈或第三者產生誤會。','官祿':'對方容易影響你的工作決定，也可能在事業上意見不合。','田宅':'在家庭、住處或房產上容易有分歧。','福德':'對方容易讓你想很多，精神上需要調適。','父母':'和對方家人長輩的相處需要多用心。'};
 const BR=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'],ANI=['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
 const LIUHE=[[0,1],[2,11],[3,10],[4,9],[5,8],[6,7]],SANHE=[[8,0,4],[2,6,10],[5,9,1],[11,3,7]];
+/* 六害：子未、丑午、寅巳、卯辰、申亥、酉戌；六破：子酉、午卯、巳申、寅亥、辰丑、戌未（巳申、寅亥同時是六合，以合為主） */
+const LIUHAI=[[0,7],[1,6],[2,5],[3,4],[8,11],[9,10]],LIUPO=[[0,9],[6,3],[5,8],[2,11],[4,1],[10,7]];
+const pairIn=(L,a,b)=>L.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));
 function zodiacRel(a,b){if(a===b)return['same','同生肖：個性相近、價值觀接近，相處像老朋友。'];
   if(LIUHE.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a)))return['he','生肖六合：傳統上是互補、彼此扶持的組合。'];
   if(SANHE.some(g=>g.includes(a)&&g.includes(b)))return['san','生肖三合：傳統上是志同道合、容易合作的組合。'];
   if((a+6)%12===b)return['chong','生肖相沖：傳統上個性和步調差異大，需要多包容；也常是互相吸引的開始。'];
+  if(pairIn(LIUHAI,a,b))return['hai',`生肖相害（${BR[a]}${BR[b]}相害）：傳統上容易因小事產生誤會或心結。這只是小提醒，多把話說清楚、別讓情緒累積就好。`];
+  if(pairIn(LIUPO,a,b))return['po',`生肖相破（${BR[a]}${BR[b]}相破）：傳統上代表做事的節奏或習慣不太一樣，偶爾會打亂彼此的計畫。影響不大，事先多溝通、互相留點彈性即可。`];
   return['none','生肖之間沒有特別的合或沖，關係好壞主要看其他因素。'];}
 const ZO=['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
 
@@ -75,39 +80,61 @@ function hdCombo(A,B,E){
   return out;
 }
 
-function render(P,E){
-  /* P={A:{W,Z,HD,name},B:{W,Z,HD,name}} */
-  const A=P.A,B=P.B,esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),nb=esc((B.name||'').trim().slice(0,20))||'TA',na='你';
-  const chN=k=>{const Hz=(typeof HDZ!=='undefined'?HDZ:root.HDZ);return Hz&&Hz.channels[k]?Hz.channels[k][0]:k;};
+/* 計算（語言無關，各語版共用）：M 的每一項是結構化資料，由各語言自行組字 */
+/* 門檻依 400 組隨機配對的分布校正（約四分位） */
+const TH={attract:[4,6,8],sync:[1,2,4],stable:[2,3,4],friction:[4,6,8]};
+const animalOf=Z=>BR.indexOf(Z.rawDates.chineseDate.yearly[1]);
+function compute(P,E){
+  const A=P.A,B=P.B;
   const syn=synastry(A.W,B.W,E),syn2=synastry(B.W,A.W,E);
   const ov=overlays(A.W,B.W,E),ov2=overlays(B.W,A.W,E);
-  const zAB=zwCross(A.Z,B.Z,nb),zBA=zwCross(B.Z,A.Z,na);
+  const zAB=zwCross(A.Z,B.Z),zBA=zwCross(B.Z,A.Z);
   const hd=hdCombo(A.HD,B.HD,E);
-  const animal=Z=>{const b=Z.rawDates.chineseDate.yearly[1];return BR.indexOf(b);};
-  const zr=zodiacRel(animal(A.Z),animal(B.Z));
+  const aA=animalOf(A.Z),aB=animalOf(B.Z),zr=zodiacRel(aA,aB)[0];
   /* 四個面向：吸引、默契、穩定、摩擦 */
   const M={attract:[],sync:[],stable:[],friction:[]};
-  const pn=(who,k)=>`${who}的${PL[k]}`;
-  syn.forEach(s=>{const t=`${pn(na,s.a)}${s.n}${pn(nb,s.b)}`;
+  syn.forEach(s=>{const t={t:'syn',s};
     if(s.c==='hard'){if(s.key==='Mars-Venus')M.attract.push(t);else M.friction.push(t);return;}
     if(['Mars-Sun','Mars-Moon','Mars-Mars'].includes(s.key)&&s.c!=='hard'){M.attract.push(t);return;}
     if(['Mars-Venus','Sun-Venus','ASC-Venus'].includes(s.key))M.attract.push(t);
     if(['Moon-Sun','Moon-Moon','Mercury-Mercury','Moon-Venus','ASC-Moon','ASC-Sun','Sun-Sun'].includes(s.key))M.sync.push(t);
     if(['Saturn-Sun','Moon-Saturn','Saturn-Venus','Venus-Venus'].includes(s.key))M.stable.push(t);});
   /* 人類圖通道數量多時不讓它主導分數：每類最多計 2 項 */
-  hd.em.slice(0,2).forEach(k=>M.attract.push(`人類圖電磁通道 ${k}`));hd.comp.slice(0,2).forEach(k=>M.sync.push(`人類圖共同通道 ${k}`));hd.cmp.slice(0,2).forEach(x=>M.friction.push(`人類圖妥協通道 ${x.k}`));hd.dom.slice(0,1).forEach(x=>M.stable.push(`人類圖主導通道 ${x.k}`));
-  if(zAB.lu&&['命宮','夫妻','福德'].includes(zAB.lu.pal))M.attract.push(`${nb}的生年化祿進你的${zAB.lu.pal==='命宮'?'命宮':zAB.lu.pal+'宮'}`);
-  if(zBA.lu&&['命宮','夫妻','福德'].includes(zBA.lu.pal))M.attract.push(`你的生年化祿進${nb}的${zBA.lu.pal==='命宮'?'命宮':zBA.lu.pal+'宮'}`);
-  if(zAB.ji&&['命宮','夫妻'].includes(zAB.ji.pal))M.friction.push(`${nb}的生年化忌進你的${zAB.ji.pal==='命宮'?'命宮':zAB.ji.pal+'宮'}`);
-  if(zBA.ji&&['命宮','夫妻'].includes(zBA.ji.pal))M.friction.push(`你的生年化忌進${nb}的${zBA.ji.pal==='命宮'?'命宮':zBA.ji.pal+'宮'}`);
-  if(zAB.match.length)M.attract.push(`${nb}的命宮主星（${zAB.match.join('、')}）正是你夫妻宮的星`);
-  if(zBA.match.length)M.attract.push(`你的命宮主星（${zBA.match.join('、')}）正是${nb}夫妻宮的星`);
-  if(zr[0]==='he'||zr[0]==='san')M.stable.push(zr[0]==='he'?'生肖六合':'生肖三合');if(zr[0]==='chong')M.friction.push('生肖相沖');
-  ov.forEach(o=>{if(o.k==='Venus'&&[1,5,7,8].includes(o.h))M.attract.push(`${pn(nb,'Venus')}落在你的${H[o.h]}`);if(o.k==='Moon'&&[4,7].includes(o.h))M.stable.push(`${pn(nb,'Moon')}落在你的${H[o.h]}`);});
-  ov2.forEach(o=>{if(o.k==='Venus'&&[1,5,7,8].includes(o.h))M.attract.push(`${pn(na,'Venus')}落在${nb}的${H[o.h]}`);if(o.k==='Moon'&&[4,7].includes(o.h))M.stable.push(`${pn(na,'Moon')}落在${nb}的${H[o.h]}`);});
-  /* 門檻依 400 組隨機配對的分布校正（約四分位） */
-  const TH={attract:[4,6,8],sync:[1,2,4],stable:[2,3,4],friction:[4,6,8]};
-  const lvk=(k)=>{const n=M[k].length,t=TH[k];return n>=t[2]?3:n>=t[1]?2:n>=t[0]?1:0;};
+  hd.em.slice(0,2).forEach(k=>M.attract.push({t:'hdem',k}));hd.comp.slice(0,2).forEach(k=>M.sync.push({t:'hdcomp',k}));hd.cmp.slice(0,2).forEach(x=>M.friction.push({t:'hdcmp',k:x.k}));hd.dom.slice(0,1).forEach(x=>M.stable.push({t:'hddom',k:x.k}));
+  if(zAB.lu&&['命宮','夫妻','福德'].includes(zAB.lu.pal))M.attract.push({t:'zlu',dir:'AB',pal:zAB.lu.pal});
+  if(zBA.lu&&['命宮','夫妻','福德'].includes(zBA.lu.pal))M.attract.push({t:'zlu',dir:'BA',pal:zBA.lu.pal});
+  if(zAB.ji&&['命宮','夫妻'].includes(zAB.ji.pal))M.friction.push({t:'zji',dir:'AB',pal:zAB.ji.pal});
+  if(zBA.ji&&['命宮','夫妻'].includes(zBA.ji.pal))M.friction.push({t:'zji',dir:'BA',pal:zBA.ji.pal});
+  if(zAB.match.length)M.attract.push({t:'match',dir:'AB',stars:zAB.match});
+  if(zBA.match.length)M.attract.push({t:'match',dir:'BA',stars:zBA.match});
+  if(zr==='he'||zr==='san')M.stable.push({t:'zod',rel:zr});if(zr==='chong')M.friction.push({t:'zod',rel:zr});
+  ov.forEach(o=>{if(o.k==='Venus'&&[1,5,7,8].includes(o.h))M.attract.push({t:'ov',dir:'AB',k:o.k,h:o.h});if(o.k==='Moon'&&[4,7].includes(o.h))M.stable.push({t:'ov',dir:'AB',k:o.k,h:o.h});});
+  ov2.forEach(o=>{if(o.k==='Venus'&&[1,5,7,8].includes(o.h))M.attract.push({t:'ov',dir:'BA',k:o.k,h:o.h});if(o.k==='Moon'&&[4,7].includes(o.h))M.stable.push({t:'ov',dir:'BA',k:o.k,h:o.h});});
+  const lv={};for(const k in M){const n=M[k].length,t=TH[k];lv[k]=n>=t[2]?3:n>=t[1]?2:n>=t[0]?1:0;}
+  const strong=['attract','sync','stable'].map(k=>[k,lv[k]]).sort((a,b)=>b[1]-a[1]);
+  const tips=[];if(lv.friction>=2)tips.push('friction');if(lv.attract>=2)tips.push('attract');if(lv.sync<=1)tips.push('sync');if(lv.stable<=1)tips.push('stable');
+  return{syn,syn2,ov,ov2,zAB,zBA,hd,aA,aB,zr,M,lv,strong,tips};
+}
+
+function render(P,E){
+  /* P={A:{W,Z,HD,name},B:{W,Z,HD,name}} */
+  const A=P.A,B=P.B,esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),nb=esc((B.name||'').trim().slice(0,20))||'TA',na='你';
+  const chN=k=>{const Hz=(typeof HDZ!=='undefined'?HDZ:root.HDZ);return Hz&&Hz.channels[k]?Hz.channels[k][0]:k;};
+  const C=compute(P,E),{syn,ov,ov2,zAB,zBA,hd}=C;
+  const animal=animalOf;
+  const zr=zodiacRel(C.aA,C.aB);
+  const pn=(who,k)=>`${who}的${PL[k]}`,pz=p=>p==='命宮'?'命宮':p+'宮';
+  const ZOD={he:'生肖六合',san:'生肖三合',chong:'生肖相沖'};
+  const itemTxt=it=>{switch(it.t){
+    case 'syn':return `${pn(na,it.s.a)}${it.s.n}${pn(nb,it.s.b)}`;
+    case 'hdem':return `人類圖電磁通道 ${it.k}`;case 'hdcomp':return `人類圖共同通道 ${it.k}`;case 'hdcmp':return `人類圖妥協通道 ${it.k}`;case 'hddom':return `人類圖主導通道 ${it.k}`;
+    case 'zlu':return it.dir==='AB'?`${nb}的生年化祿進你的${pz(it.pal)}`:`你的生年化祿進${nb}的${pz(it.pal)}`;
+    case 'zji':return it.dir==='AB'?`${nb}的生年化忌進你的${pz(it.pal)}`:`你的生年化忌進${nb}的${pz(it.pal)}`;
+    case 'match':return it.dir==='AB'?`${nb}的命宮主星（${it.stars.join('、')}）正是你夫妻宮的星`:`你的命宮主星（${it.stars.join('、')}）正是${nb}夫妻宮的星`;
+    case 'zod':return ZOD[it.rel];
+    case 'ov':return it.dir==='AB'?`${pn(nb,it.k)}落在你的${H[it.h]}`:`${pn(na,it.k)}落在${nb}的${H[it.h]}`;}return '';};
+  const M={};for(const k in C.M)M[k]=C.M[k].map(itemTxt);
+  const lvk=k=>C.lv[k];
   const LV=['不明顯','有一些','明顯','很強'],LVF=['不多','有一些','不少','很多'];
   const MN={attract:['吸引力','彼此的火花與化學反應'],sync:['默契','聊不聊得來、懂不懂對方'],stable:['穩定度','能不能走得長久、給彼此安全感'],friction:['摩擦點','容易卡住、需要磨合的地方']};
   const cards=Object.entries(MN).map(([k,[t,d]])=>{const n=M[k].length,l=lvk(k);return `<div class="card pair-m ${k}"><span class="q">${t}</span><span class="big">${(k==='friction'?LVF:LV)[l]}</span><span class="agree">${[0,1,2].map(i=>`<i class="${i<l?'on':''}"></i>`).join('')} ${n} 項依據</span><p>${d}</p></div>`;}).join('');
@@ -123,7 +150,7 @@ function render(P,E){
   adv+=`<h3 data-k="p-west">西洋比較盤</h3><h4>兩人之間的重要相位</h4>${syn.length?`<ul>${syn.slice(0,8).map(s=>`<li><b>${pn(na,s.a)}${s.n}${pn(nb,s.b)}</b>（容許度 ${s.orb.toFixed(1)}°）：${SYN[s.key][s.c]}</li>`).join('')}</ul>`:'<p class="muted">兩人的個人行星之間沒有緊密的相位，關係的重點更多在其他系統。</p>'}`;
   adv+=`<h4>${nb}的行星落在你的哪裡</h4><ul>${ov.map(o=>`<li><b>${pn(nb,o.k)}落在你的${H[o.h]}</b>（${HT[o.h]}）：${nb}${OVERLAY[o.k]}。</li>`).join('')}</ul>`;
   adv+=`<h4>你的行星落在${nb}的哪裡</h4><ul>${ov2.map(o=>`<li><b>${pn(na,o.k)}落在${nb}的${H[o.h]}</b>（${HT[o.h]}）：${OVERLAY[o.k].replace(/你/g,nb)}。</li>`).join('')}</ul>`;
-  const pnz=p=>p==='命宮'?'命宮':p+'宮';
+  const pnz=pz;
   adv+=`<h3 data-k="p-zw">紫微合盤</h3><h4>生年四化互飛</h4><p class="muted">把一個人出生年的四化，放到另一個人的命盤上，看他帶給對方什麼、讓對方在意什麼。</p><ul>`;
   if(zAB.lu&&zAB.lu.pal)adv+=`<li><b>${nb}（${zAB.stemB}年）的化祿 ${zAB.lu.star} 進你的${pnz(zAB.lu.pal)}</b>：${LU_P[zAB.lu.pal].replace(/對方/g,nb)}</li>`;
   if(zAB.ji&&zAB.ji.pal)adv+=`<li><b>${nb}的化忌 ${zAB.ji.star} 進你的${pnz(zAB.ji.pal)}</b>：${JI_P[zAB.ji.pal]}</li>`;
@@ -145,5 +172,5 @@ function render(P,E){
   adv+=tips.map(t=>`<li>${t}</li>`).join('')+'</ul>';
   return{cards,basic:sum,adv,M};
 }
-root.Pair=root.Pair||{};root.Pair.zh={render,synastry,hdCombo,zwCross};
+root.Pair=root.Pair||{};root.Pair.zh={render,compute,synastry,hdCombo,zwCross,zodiacRel,STEM_MUT,BR};
 })(typeof globalThis!=='undefined'?globalThis:this);

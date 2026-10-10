@@ -106,7 +106,7 @@ const NODE_TXT=['自立し、自分の直感と勇気を信じることを学び
 const HOUSE=['自己イメージと第一印象','お金・持ち物・自己価値','コミュニケーション・学び・兄弟姉妹','家庭・ルーツ・心の拠りどころ','恋愛・遊び・創作・子ども','日々の仕事・生活リズム・健康','パートナー・協力・一対一の関係','共有する資源・親密さ・深い変化','遠い旅・信念・学問','仕事・社会的地位・世間からの評価','友人・仲間・未来の願い','無意識・ひとりの時間・見えないもの'];
 const PN={Sun:'太陽',Moon:'月',Mercury:'水星',Venus:'金星',Mars:'火星',Jupiter:'木星',Saturn:'土星',Uranus:'天王星',Neptune:'海王星',Pluto:'冥王星',Node:'ノースノード',ASC:'アセンダント',MC:'MC'};
 const THEME={Sun:'自分らしさ',Moon:'感情',Mercury:'思考',Venus:'愛情',Mars:'行動力',Jupiter:'成長',Saturn:'責任',Uranus:'変革',Neptune:'夢',Pluto:'変容',ASC:'第一印象',MC:'仕事の方向性'};
-const ASP=[['コンジャンクション','二つの力が結びつき、互いを強め合う'],['セクスタイル','小さな助け合い。自分から動けば支え合える'],['スクエア','引っぱり合って行き詰まるが、成長のきっかけにもなる'],['トライン','自然とスムーズ。無理なく協力できる'],['オポジション','二つの間で揺れ動き、バランスを学ぶ']];
+const ASP=[['コンジャンクション','二つの力が結びつき、互いを強め合う'],['セクスタイル','小さな助け合い。自分から動けば支え合える'],['スクエア','引っぱり合って行き詰まるが、成長のきっかけにもなる'],['トライン','自然とスムーズ。無理なく協力できる'],['オポジション','二つの間で揺れ動き、バランスを学ぶ'],['クインカンクス','かみ合いにくく、少しずつ調整し続けることを求められる']];
 const DIG={Sun:{d:[4],e:[0],x:[10],f:[6]},Moon:{d:[3],e:[1],x:[9],f:[7]},Mercury:{d:[2,5],e:[5],x:[8,11],f:[11]},Venus:{d:[1,6],e:[11],x:[7,0],f:[5]},Mars:{d:[0,7],e:[9],x:[6,1],f:[3]},Jupiter:{d:[8,11],e:[3],x:[2,5],f:[9]},Saturn:{d:[9,10],e:[6],x:[3,4],f:[0]},Uranus:{d:[10],e:[],x:[4],f:[]},Neptune:{d:[11],e:[],x:[5],f:[]},Pluto:{d:[7],e:[],x:[1],f:[]}};
 const DIG_TXT={d:['ドミサイル（本来の座）','自分のホームにいて、エネルギーが純粋で、自然に発揮されます。'],e:['エグザルテーション（高揚）','貴賓のようにもてなされ、長所が大きく引き出されます。'],x:['デトリメント（障害）','なじみのない環境にいるため、手間のかかるやり方や、一風変わったやり方で表現する必要があります。'],f:['フォール（失墜）','エネルギーが抑えられがちで、経験と練習を重ねてこそ発揮できます。']};
 const RULER=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
@@ -231,6 +231,26 @@ const JI={'命宮':'自分に厳しく、考え込みやすく、気苦労が多
 const JI_ADV={'命宮':'考え込みすぎず、自分に余裕を残しましょう。','兄弟':'親しい人とのお金のやり取りや保証人は避けましょう。','夫妻':'言葉に気をつけ、よく聞き、昔のことを蒸し返さないこと。','子女':'投資は控えめに、勢いで共同事業を始めないこと。','財帛':'収支は堅実に、リスクの高い投機はしないこと。','疾厄':'規則正しい生活と定期的な健康診断を。働きすぎに注意。','遷移':'外出時は交通安全に気をつけ、外では目立たないように。','僕役':'組む相手は慎重に選び、保証人にはならないこと。','官祿':'仕事は一歩ずつ着実に。大きな決断は人に相談を。','田宅':'不動産の売買やリフォームはよく考え、契約をしっかり確認しましょう。','福德':'くつろぐ時間をつくり、感情をすり減らさないように。','父母':'書類や契約をよく確認し、上司とのやり取りは記録を残しましょう。'};
 const STAR_JI={'太陽':'年上の男性や上司との付き合いに気を配り、記録を残して評判を守りましょう。生活リズムを整え、無理をしすぎないこと。','武曲':'資金繰りに注意。大きな出費やお金の決断の前には一度立ち止まって考えましょう。','太陰':'女性との関係、お金の計画、気分の落ち込みと睡眠に注意。','天同':'気分の浮き沈み、怠け心、楽しみすぎに注意。福が目減りします。','貪狼':'欲の出しすぎ、恋愛のもつれ、付き合いの飲み会のしすぎに注意。','巨門':'口論やうわさ、誤解や疑い深さに注意。話すより聞くことを多めに。','天機':'考えすぎ、計画の二転三転、決断の迷いに注意。','廉貞':'書類やもめごとには少し慎重に。恋愛では境界をはっきりと。ストレスがたまったら休み、外出時は安全に気をつけて。','文昌':'書類・契約・試験のミスに注意。署名の前に一字一句確かめ、保証人にはならないこと。','文曲':'言い間違い、書類の誤りや漏れ、恋愛での口約束に注意。'};
 const STAR_LU={'廉貞':'人付き合いや広報活動がチャンスを運び、恋愛にも追い風です。','破軍':'新しいことや変化の中から財が生まれます。変える勇気が実りにつながります。','天機':'アイデアや企画が収入になります。頭を使う仕事に向いています。','天同':'福や楽しみが増え、人に好かれ、気分も明るくなります。','太陰':'貯蓄、不動産、女性の助け手に恵まれ、金運は細く長く続きます。','貪狼':'社交、芸事、恋愛がチャンスを運んできます。','武曲':'本業の収入が好調で、資産運用や実務の仕事に向いています。','太陽':'評判と援助運がよく、努力が人の目に留まります。','巨門':'話す力がお金になります。話術や専門性で身を立てるのに向いています。','天梁':'目上の引き立てがあり、災いが転じて福となります。公務員・保険・医療に有利です。'};
+/* 年齢段階ごとの言い回し：子ども・学生（young）とシニア（senior）。大人は上の表をそのまま使う */
+const STG={
+ young:{DOM:{'命宮':'成長と個性','兄弟':'きょうだいや遊び仲間','夫妻':'友情と人付き合い','子女':'趣味・習い事・創作','財帛':'おこづかいと欲しいもの','遷移':'お出かけ・旅行・新しい環境','僕役':'クラスメートや友だち','官祿':'勉強と学び','田宅':'家庭と住まい','父母':'両親や先生'},
+  LU:{'命宮':'人に好かれてかわいがられ、大人や友だちから大切にされやすいです。','兄弟':'きょうだいや遊び仲間と仲良く過ごし、一緒に遊んだり助け合ったりできます。','夫妻':'人気があり、気の合う友だちができやすいです。','子女':'趣味や習い事が伸びやすく、絵や音楽、スポーツなどいろいろ試すのに向いています。','財帛':'物に困ることは少なく、おこづかいのやりくりを覚えるのにいい時期です。','疾厄':'体調がよく食欲もあります。食事のバランスだけ気をつけましょう。','遷移':'お出かけや旅行、新しい環境で、面倒を見てくれる人に出会いやすいです。','僕役':'クラスメートや友だちが力になってくれ、グループ活動が楽しくなります。','官祿':'勉強が順調で成果を出しやすく、コンテストや得意分野づくりに向いています。','田宅':'家の雰囲気が和やかで、落ち着いて心地よく暮らせます。','福德':'明るく楽しく過ごせて、よく眠れます。','父母':'両親や先生との縁がよく、かわいがられて導いてもらえます。試験にも追い風です。'},
+  JI:{'命宮':'自分にプレッシャーをかけたり考え込んだりしやすいので、そばで励ましてもらえると安心です。','兄弟':'きょうだいや遊び仲間とけんかしやすく、分け合うことや話し合うことを学ぶ時期です。','夫妻':'友だちとの間に小さな誤解やすれ違いが起きやすいので、気持ちを言葉にする練習を。','子女':'興味が長続きしなかったり、習い事の練習で壁にぶつかったりしやすいです。','財帛':'あれもこれも欲しくなりがちで、「必要なもの」と「欲しいもの」を見分けることを学ぶ時期です。','疾厄':'ちょっとした体調不良や生活リズムの乱れが出やすいので、食事・睡眠・運動に気を配りましょう。','遷移':'外出先で小さなトラブルが起きやすいので、交通や安全に注意しましょう。','僕役':'クラスメートや友だちの間でもめごとが起きやすく、自分を守ることや友だち選びを学ぶ時期です。','官祿':'勉強のプレッシャーが大きく、つまずいたり成績を気にしすぎたりしやすいです。','田宅':'家庭の変化や家族の忙しさから、落ち着かない気持ちになりやすいです。','福德':'考えすぎてリラックスしにくく、気分の波が出やすいです。','父母':'両親や先生との間に行き違いが起きやすいので、自分の考えを伝えましょう。'},
+  ADV:{'命宮':'自分にやさしく、困ったときは家族や先生に話しましょう。','兄弟':'分け合うことや順番を守ることを練習し、けんかのときはまず落ち着いてから話しましょう。','夫妻':'友だちと誤解が生まれたら、素直にきちんと話しましょう。','子女':'趣味はいろいろ試しつつ、決めたものはしばらく続けてみましょう。','財帛':'おこづかいを貯める練習をし、買う前にひと呼吸おきましょう。','疾厄':'早寝早起きを心がけ、おやつを控えて外で体を動かしましょう。','遷移':'交通安全に気をつけ、新しい場所ではまずルールを知りましょう。','僕役':'友だちはよく選び、いじめや嫌なことがあれば大人に話しましょう。','官祿':'一歩ずつ学び、わからないことは質問して、ストレスをため込まないこと。','田宅':'家族と過ごす時間をつくり、自分の部屋や机を整えましょう。','福德':'遊ぶ時間と休む時間をつくり、気分が沈んだら言葉にしましょう。','父母':'両親や先生とよく話し、自分の考えを伝えましょう。'},
+  dec:(pal,dom)=>({title:`子ども時代：${dom}`,story:`子ども時代と学びはじめの十年です。大限は${pal}にあり、テーマは「${dom}」。この時期に大切なのは、健やかに育つこと、家庭で見守られること、学ぶ習慣と友だちづくりです。命盤の持ち味は、まず家庭や学校の中で少しずつ表れてきます。`,chance:'好奇心とよい習慣を育て、いろいろな興味にふれてみましょう。',pitfall:'生活リズムの乱れ、スマホやゲームのやりすぎ、悩みを胸にしまい込むこと。'})},
+ senior:{DOM:{'命宮':'心身の調子と暮らしのペース','兄弟':'きょうだいや古い友人','夫妻':'パートナーとの暮らし','子女':'子や孫、若い世代','財帛':'年金と日々のやりくり','遷移':'お出かけと旅行','僕役':'友人づきあいと交流の場','官祿':'生きがいと経験の継承','田宅':'住まいと家での暮らし','父母':'書類手続きと周りからの支え'},
+  LU:{'命宮':'気力があり人に好かれ、家族や友人からよく気にかけてもらえます。','兄弟':'きょうだいや古い友人との行き来が多く、互いに支え合えます。','夫妻':'パートナーと仲良く、寄り添いながら穏やかに暮らせます。','子女':'子や孫とのふれあいが多く、家がにぎやかで温かくなります。','財帛':'日々のやりくりにゆとりがあり、気持ちにも余裕が持てます。','疾厄':'体力も気力も安定しています。適度な運動を続ければよい状態を保てます。','遷移':'お出かけや旅行に向いていて、出先で親切な人に出会いやすいです。','僕役':'友人やサークルから温かさをもらい、交流が豊かになります。','官祿':'経験を若い世代に伝えるのに向いていて、ボランティアや趣味の活動にやりがいを感じます。','田宅':'住まいが落ち着いて心地よく、家族の雰囲気も和やかです。','福德':'明るい気持ちで暮らしを楽しめ、心が満たされます。','父母':'書類手続きがスムーズに進み、周りから敬われ、気づかってもらえます。'},
+  JI:{'命宮':'心配ごとや考えすぎが増えやすいので、気持ちをゆるめましょう。','兄弟':'きょうだいや古い友人との間にわだかまりができやすく、お金の貸し借りには注意が必要です。','夫妻':'パートナーとささいなことで摩擦が起きやすいので、少し多めの忍耐と思いやりを。','子女':'子や孫のことが気がかりになったり、彼らの決断を手放せなかったりしがちです。','財帛':'出費の波が大きくなりやすく、詐欺やよく知らない投資話に注意が必要です。','疾厄':'健康と体力にとくに気を配り、体の小さなサインを見逃さないこと。','遷移':'外出先で小さなトラブルが起きやすく、交通や転倒に注意が必要です。','僕役':'人付き合いは慎重に。人からの頼まれごとで負担を抱えやすいです。','官祿':'のんびりするのが苦手だったり、自分の役割が減ったことに寂しさを感じたりしがちです。','田宅':'住まいや不動産の悩みが出やすく、修繕や安全面に気を配りたい時期です。','福德':'考えごとが多くリラックスしにくいので、睡眠の質を大切に。','父母':'書類手続きでミスが起きやすいので、署名の前によく確認しましょう。'},
+  ADV:{'命宮':'気持ちをゆったり持ち、家族や友人とよく話しましょう。','兄弟':'親しい人とのお金のやり取りや保証人は避けましょう。','夫妻':'やわらかい言葉を心がけ、一緒に過ごす時間を大切にしましょう。','子女':'若い世代の選択を尊重し、気にかけても心配しすぎないこと。','財帛':'詐欺に注意し、よく知らない投資には手を出さず、大きな出費は家族と相談を。','疾厄':'定期健診と規則正しい生活を。体調に違和感があれば早めに受診しましょう。','遷移':'交通と転倒に気をつけ、遠出は付き添いや行程を整えてから。','僕役':'保証人にはならず、よく知らない人の頼みごとは一度考えてから。','官祿':'決まった趣味やボランティアを持ち、毎日に張りをつくりましょう。','田宅':'家の中の転倒や電気まわりの安全に気をつけ、修繕は信頼できる人に。','福德':'くつろぐ時間をつくり、よい睡眠を守りましょう。','父母':'大切な書類は家族と一緒に確認し、署名の前に一字一句チェックを。'},
+  dec:(pal,dom)=>({title:`実りの年代：${dom}`,story:`人生の実りを味わう十年です。大限は${pal}にあり、テーマは「${dom}」。この時期の中心は、健康、家族との時間、友人との行き来、そして心地よい暮らしのペースです。新しい成果を追うよりも、経験や知恵を若い世代に伝えることが大切になります。`,chance:'体を動かし人との交流を続け、人生の経験を家族や若い世代に伝えましょう。',pitfall:'無理をすること、体の小さなサインを見過ごすこと、悩みを胸にしまい込むこと。'})}};
+const LOVE_STG={
+ child:{lab:'友だち・人付き合い',both:'友だちに恵まれる一方で小さな誤解も。友だちはできやすいので、気持ちをはっきり伝える練習を。',ji:'友だちとの間に小さな誤解が起きやすい年。いやなことがあったら言葉にしましょう。',lu:'友だちに恵まれる年。新しい友だちができやすいです。',fl:'遊びや友だちが増える年。楽しみつつ生活リズムも大切に。',calm:'人付き合いは穏やか。家族や友だちと自然体で過ごせます。'},
+ student:{lab:'友情と恋愛',both:'人気が出る一方で誤解も起きやすい年。友だちとよく話し、恋愛は急がず、勉強と友情のバランスを。',ji:'友だちや気になる人との間で誤解が起きやすい年。よく話し合い、気持ちの波を勉強に持ち込まないこと。',lu:'人気があり気の合う人に出会いやすい年。急いで決めず、勉強と友情を両立させましょう。',fl:'人気が高まり交流も増えますが、本当の気持ちと一時的なときめきを見分けましょう。',calm:'友情も恋愛も穏やか。勉強や趣味に集中できる年です。'},
+ senior:{lab:'家族と人付き合い',both:'家族の縁に恵まれる一方で小さな摩擦も。集まる機会を増やし、言葉はやわらかく。',ji:'パートナーや家族との間に誤解が起きやすい年。気長に、はっきり言葉で伝えましょう。',lu:'家族や古い友人との温かい縁に恵まれる年。集まりに顔を出すのにぴったりです。',fl:'誘いが多く人に恵まれる年。楽しみつつ体力に気をつけましょう。',calm:'家庭も人付き合いも穏やか。自然な流れに任せましょう。'}};
+/* 数え年 → 段階。tbl() はその段階で使う宮の言い回しを返す */
+const ageStage=a=>a<13?'child':a<23?'student':a<65?'adult':'senior';
+const decStage=a=>a<13?'young':a>=65?'senior':'adult';
+function tbl(st){if(st==='child'||st==='student')st='young';if(!STG[st])return{DOM,LU,JI,ADV:JI_ADV,SLU:STAR_LU,SJI:STAR_JI};const t=STG[st];return{DOM:{...DOM,...t.DOM},LU:t.LU,JI:t.JI,ADV:t.ADV,SLU:{},SJI:{}};}
 const SUN_POS={'寅':'東から日が昇り、光が次第に強まっていく位置です','卯':'朝日が昇る位置（日照雷門）で、生き生きとした活力があります','辰':'日が中天に近づき、光が盛んな位置です','巳':'日が中天に輝き、熱気があふれる位置です','午':'真昼の太陽（金燦光輝）で、光がもっとも強い位置です','未':'午後に日が西へ傾き、まだぬくもりが残る位置です','申':'日が西に傾き、光が弱まりはじめる位置です','酉':'夕日が西に沈み、光が弱まっていく位置です。人に親切にしても、尽くした分の感謝が返ってこないことがあり、孤独感や無力感を抱きやすいでしょう','戌':'日が西の山に沈み、光が収まる位置で、親切が人の目に留まりにくいです','亥':'夜の太陽で、光が内にこもる位置です。尽くすことは多いのに見返りは少なめです','子':'真夜中の太陽で、後天的な努力によってこそ輝ける位置です','丑':'夜明け前で、光がまだ現れていない位置です'};
 const MOON_POS={'寅':'明け方に沈む月で、光はかすかです','卯':'日の出とともに隠れる月で、光が目立ちません','辰':'昼の月で、力は弱めです','巳':'昼の月で、光が覆い隠されています','午':'真昼の月で、力がもっとも弱い位置です','未':'午後の月で、光が少しずつ現れはじめます','申':'東から昇る月で、光が明るくなっていきます','酉':'東に昇った月で、清らかな光が現れはじめます','戌':'中天にかかる月で、明るく輝いています','亥':'月朗天門の位置で、光がもっとも盛んです','子':'真夜中の明るい月で、清らかな光に満ちています','丑':'西に沈みかけた月で、まだ光が残っています'};
 /* 雑曜：キーは iztro の繁体字、値は［日本語表記, 意味］ */
@@ -265,6 +285,12 @@ function readZW(Z,ctx){
   const birthMut={};pal.forEach((p,i)=>[...p.majorStars,...p.minorStars].forEach(s=>{if(s.mutagen)birthMut[s.mutagen]={star:s.name,i};}));
   const sd=Z._std,rd=Z.rawDates.lunarDate,yb=Z.rawDates.chineseDate.yearly;
   const yinyang=('甲丙戊庚壬'.includes(yb[0])?'陽':'陰')+Z.gender;
+  const by=+rd.lunarYear||sd.getUTCFullYear(),ageAt=yr=>yr-by+1;
+  const borrowTxt=i=>{if(pal[i].majorStars.length)return '';const os=oppM(i).map(s=>S(s.name));return os.length?`（空宮。向かいの宮の${os.join('・')}を借りる）`:'（空宮）';};
+  const stLineB=i=>pal[i].majorStars.length?stLine(i):borrowTxt(i).replace(/^（|）$/g,'');
+  const seenSt={};
+  const decOf=(x,i,again)=>{const st=decStage(x.decadal.range[0]);if(again&&st!=='adult'){const T=tbl(st),d=T.DOM[x.name];return{title:`${st==='young'?'子ども時代':'実りの年代'}：${d}`,story:`${st==='young'?'子ども時代・学生時代':'実りの年代'}の次の十年です。大限は${pn(x.name)}にあり、重心は「${d}」。この章がうまく流れるときは、${T.LU[x.name]}`,chance:'',st,generic:true};}if(st==='adult'){const de=SZM()&&SZM().decade[comboOf(x.majorStars.length?x:pal[(i+6)%12])];return de?{...de,story:fitP(de.story,i),chance:StoryFit.strip(de.chance),pitfall:StoryFit.strip(de.pitfall),st}:null;}
+    const T=tbl(st),g=STG[st].dec(pn(x.name),T.DOM[x.name]);return{...g,story:`${g.story}この章がうまく流れるときは、${T.LU[x.name]}`,st,generic:true};};
   const timeJa=Z._late?'夜子の刻（翌日の早子の刻として作盤）':String(Z.time||'').replace('晚','晩').replace(/時$/,'の刻');
 
   /* 一、基本 */
@@ -272,7 +298,7 @@ function readZW(Z,ctx){
   o.push(p(`${sd.getUTCFullYear()}年${sd.getUTCMonth()+1}月${sd.getUTCDate()}日 ${timeJa}生まれ（旧暦 ${yb.join('')}年${rd.isLeap?'閏':''}${rd.lunarMonth}月${rd.lunarDay}日）、${yinyang}、${Z.fiveElementsClass}、${yb[1]}年（${ZOD[yb[1]]||Z.zodiac}）生まれです。命宮は${pal[ming].earthlyBranch}宮、身宮は${pal[body].earthlyBranch}宮（${pn(pal[body].name)}）にあり、命主は${S(Z.soul)}、身主は${S(Z.body)}です。`));
 
   /* 二、格局 */
-  const pats=zwPatterns(Z,{ming,has,hasIn,sfz,findStar,birthMut,pal,pn,S,ml});
+  const pats=zwPatterns(Z,{ming,has,hasIn,sfz,findStar,birthMut,pal,pn,S,ml,BL:bl_});
   o.push(h3('命盤の格局','z-patterns'));
   o.push(pats.length?ul(pats):p('典型的な大きな格局はありません。命宮の主星と四化の関わりを中心に読みます。'));
 
@@ -299,7 +325,7 @@ function readZW(Z,ctx){
     items.push(pt(`${S(s.name)}（${m[1]}）`,t));}
   for(const s of mp.minorStars)if(MINOR[s.name])items.push(pt(S(s.name),MINOR[s.name]+(s.mutagen?`${ml(s.mutagen)}が命宮にあり、${s.mutagen==='忌'?'関連することには特に注意が必要です。':'関連する力が大きく引き出されます。'}`:'')));
   for(const s of mp.adjectiveStars)if(ADJ[s.name])items.push(pt(ADJ[s.name][0],ADJ[s.name][1]));
-  o.push(p(`命宮は${mp.earthlyBranch}（${stLine(ming)}${minorLine(ming)?'、'+minorLine(ming):''}）：`));
+  o.push(p(`命宮は${mp.earthlyBranch}（${stLineB(ming)}${minorLine(ming)?'、'+minorLine(ming):''}）：`));
   o.push(ul(items));
   const sf=sfz(ming);
   o.push(p(`三方四正から会照する星：${pn('財帛')}は${stLine(sf[2])}、${pn('官祿')}は${stLine(sf[1])}、${pn('遷移')}は${stLine(sf[3])}。命宮は生まれ持った性格を、三方四正はお金の稼ぎ方・仕事の進め方・外での振る舞いを表し、四つを合わせて見ることで全体像がつかめます。`));
@@ -346,7 +372,7 @@ function readZW(Z,ctx){
   const order=[ming,...[1,2,3,4,5,6,7,8,9,10,11].map(k=>(ming-k+12)%12)];
   o.push(`<div class="tablewrap"><table><thead><tr><th>宮</th><th>干支</th><th>主星</th><th>補星</th><th>大限</th><th>表すもの</th></tr></thead><tbody>${order.map(i=>`<tr><td class="p">${pn(pal[i].name)}${pal[i].isBodyPalace?'（身）':''}</td><td>${pal[i].heavenlyStem}${pal[i].earthlyBranch}</td><td>${stLine(i)}</td><td>${minorLine(i)||'—'}</td><td class="mono">${pal[i].decadal.range.join('–')}</td><td>${PAL(pal[i].name)}</td></tr>`).join('')}</tbody></table></div>`);
 
-  let decInfo=null,yearInfo=null,loveNow='',decTitle='',decStory='';
+  let decInfo=null,yearInfo=null,loveNow='',loveLab='',decTitle='',decStory='';
   /* 七、大限 */
   const H0=ctx.horoscope(new Date());
   const H=H0&&H0.decadal.name!=='童限'&&pal[H0.decadal.index]?H0:null;
@@ -354,17 +380,18 @@ function readZW(Z,ctx){
   if(H){
     const d=H.decadal,di=d.index,dp=pal[di];
     o.push(h3(`現在の大限（${dp.decadal.range.join('–')}歳、${d.heavenlyStem}${d.earthlyBranch}大限）`,'z-decade'));
-    o.push(p(`あなたはいま${dp.decadal.range[0]}〜${dp.decadal.range[1]}歳の「${pn(dp.name)}」の大限（${dp.earthlyBranch}宮）を歩んでいます。大限の主星は${stLine(di)}${minorLine(di)?`で、同じ宮に${minorLine(di)}があります`:'です'}。`));
-    {const dc=comboOf(dp.majorStars.length?dp:pal[(di+6)%12]);const de=SZM()&&SZM().decade[dc];
-     if(de){decTitle=de.title;decStory=fitP(de.story,di);o.push(h4(`この章：「${de.title}」`));o.push(p(decStory));o.push(ul([pt('いちばんのチャンス',StoryFit.strip(de.chance)),pt('いちばん陥りやすい落とし穴',StoryFit.strip(de.pitfall))]));}}
+    o.push(p(`あなたはいま${dp.decadal.range[0]}〜${dp.decadal.range[1]}歳の「${pn(dp.name)}」の大限（${dp.earthlyBranch}宮）を歩んでいます。大限の主星は${stLineB(di)}${minorLine(di)?`で、同じ宮に${minorLine(di)}があります`:'です'}。`));
+    const dT=tbl(decStage(dp.decadal.range[0]));
+    {const de=SZM()?decOf(dp,di):null;
+     if(de){decTitle=de.title;decStory=de.story;o.push(h4(`この章：「${de.title}」`));o.push(p(decStory));o.push(ul([pt('いちばんのチャンス',de.chance),pt('いちばん陥りやすい落とし穴',de.pitfall)]));}}
     const dl=[];
     for(const s of (dp.majorStars.length?dp.majorStars:pal[(di+6)%12].majorStars)){const m=M[s.name];if(m)dl.push(pt(`${S(s.name)}が主導する十年`,`${m[2]}この十年はこうした性質が強まります。長所：${m[3]}。注意点：${m[4]}。`));}
     if(has(di,'祿存'))dl.push(pt(`${S('祿存')}が入る`,`大限に${S('祿存')}があり、この十年は収入が比較的安定し、金運の土台があります。`));
     if(has(di,'天馬'))dl.push(pt(`${S('天馬')}が入る`,'この十年は変化や奔走が多く、外に出ることや他の土地でのチャンスも意味します。'));
     if(has(di,'擎羊')||has(di,'陀羅'))dl.push(pt(`${S('擎羊')}・${S('陀羅')}が同宮`,'この十年は物事に抵抗や遅れが出やすいので、焦らず堅実に進めましょう。'));
-    dl.push(...mutLayer(d.mutagen,'大限',d.palaceNames,{pal,findStar,pn,birthMut,ming:di,ctxName:'この十年',S,ml}));
-    {const jt=findStar(d.mutagen[3]);decInfo={range:dp.decadal.range.join('–'),pal:pn(dp.name),star:(dp.majorStars.length?dp.majorStars:pal[(di+6)%12].majorStars).map(x=>S(x.name)).join('、')||'—',dom:DOM[dp.name],jiStar:d.mutagen[3],
-      ji:jt>=0?`${S(d.mutagen[3])}${ml('忌')}は${pn(pal[jt].name)}（大限の${pn(d.palaceNames[jt])}）に入っています：${JI_ADV[d.palaceNames[jt]]}`:''};}
+    dl.push(...mutLayer(d.mutagen,'大限',d.palaceNames,{pal,findStar,pn,birthMut,ming:di,ctxName:'この十年',S,ml,T:dT}));
+    {const jt=findStar(d.mutagen[3]);decInfo={range:dp.decadal.range.join('–'),pal:pn(dp.name),star:dp.majorStars.length?dp.majorStars.map(x=>S(x.name)).join('、'):borrowTxt(di).replace(/^（|）$/g,''),dom:dT.DOM[dp.name],jiStar:d.mutagen[3],
+      ji:jt>=0?`${S(d.mutagen[3])}${ml('忌')}は${pn(pal[jt].name)}（大限の${pn(d.palaceNames[jt])}）に入っています：${dT.ADV[d.palaceNames[jt]]}`:''};}
     o.push(ul(dl));
   }
 
@@ -375,9 +402,9 @@ function readZW(Z,ctx){
     const rel=(t,i)=>PAL_ORDER[(i-t+12)%12];
     o.push(h3('人生地図：十年ごとの章','z-map'));
     o.push(p('大限の一つひとつが、人生の一章です。章のタイトルはその十年の大限命宮にある主星から、「注意」はその大限の天干で化忌が入る宮から読み取っています。'));
-    o.push(`<ol class="lifemap">${order.map(i=>{const x=pal[i];const c=comboOf(x.majorStars.length?x:pal[(i+6)%12]);const de=SZM().decade[c];
+    o.push(`<ol class="lifemap">${order.map(i=>{const x=pal[i];const st0=decStage(x.decadal.range[0]),de=decOf(x,i,seenSt[st0]);seenSt[st0]=1;const xT=tbl(decStage(x.decadal.range[0]));
       const mm=STEM_MUT[x.heavenlyStem],jt=findStar(mm[3]);const r=jt>=0?rel(jt,i):'';
-      return `<li class="${i===cur?'now':''}"><div class="age mono">${x.decadal.range.join('–')}</div><div class="ch"><b>${de?de.title:pn(x.name)}</b> <span class="muted">${pn(x.name)}・${comboTxt(x.majorStars.length?comboOf(x):'空')}</span>${i===cur?' <span class="chip hold">いま</span>':''}<p>${de?(x.decadal.range[0]<15?'子ども時代から学生時代にあたる章なので、こうした性質はまず家庭や学校の中で表れます。':x.decadal.range[0]>=75?'晩年にあたる章なので、こうした性質は暮らしのペースや家族、体のことに表れます。':'')+fitP(de.story,i):''}</p>${de?`<p class="mini"><b>チャンス</b> ${StoryFit.strip(de.chance)}</p>`:''}${r?`<p class="mini"><b>注意</b> ${S(mm[3])}${ml('忌')}が大限の${pn(r)}に入ります。${JI_ADV[r]}</p>`:''}</div></li>`;}).join('')}</ol>`);
+      return `<li class="${i===cur?'now':''}"><div class="age mono">${x.decadal.range.join('–')}${x.decadal.range[1]>120?'<br><small>（一般的な寿命を超えるため参考程度に）</small>':''}</div><div class="ch"><b>${de?de.title:pn(x.name)}</b> <span class="muted">${pn(x.name)}・${comboTxt(x.majorStars.length?comboOf(x):'空')}${borrowTxt(i)}</span>${i===cur?' <span class="chip hold">いま</span>':''}<p>${de?(!de.generic&&x.decadal.range[0]<15?'子ども時代から学生時代にあたる章なので、こうした性質はまず家庭や学校の中で表れます。':'')+de.story:''}</p>${de&&de.chance?`<p class="mini"><b>チャンス</b> ${de.chance}</p>`:''}${r?`<p class="mini"><b>注意</b> ${S(mm[3])}${ml('忌')}が大限の${pn(r)}に入ります。${xT.ADV[r]}</p>`:''}</div></li>`;}).join('')}</ol>`);
   }
 
   /* 八、流年 */
@@ -388,12 +415,12 @@ function readZW(Z,ctx){
     const y=Hy.yearly,yi=y.index,yp=pal[yi],dec=Hy.decadal;
     const range=ctx.yearRange(yr);
     o.push(h3(`${full?'今年の運勢の要点':'来年の予告'}：${yr}年（${y.heavenlyStem}${y.earthlyBranch}）`,full?'z-year':'z-next'));
-    o.push(p(`${range?`（新暦 ${range}）`:''}流年命宮は「${yp.earthlyBranch}宮」（本命の${pn(yp.name)}）にあり、流年の主星は${stLine(yi)}です。流年の天干「${y.heavenlyStem}」が引き起こす四化：${y.mutagen.map((s,j)=>`${S(s)}${ml(MK[j])}`).join('、')}。`));
+    o.push(p(`${range?`（新暦 ${range}）`:''}流年命宮は「${yp.earthlyBranch}宮」（本命の${pn(yp.name)}）にあり、流年の主星は${stLineB(yi)}です。流年の天干「${y.heavenlyStem}」が引き起こす四化：${y.mutagen.map((s,j)=>`${S(s)}${ml(MK[j])}`).join('、')}。`));
     const yl=[];
     if(dec.name!=='童限'&&pal[dec.index]&&yi===dec.index)yl.push(pt('歳限重逢',`流年命宮が現在の大限命宮（${dp0(pal,dec.index,pn)}）と重なっています。今年起きることは、良いことも悪いことも力が倍になります。`));
-    yl.push(...mutLayer(y.mutagen,'流年',y.palaceNames,{pal,findStar,pn,birthMut,ming:yi,ctxName:full?'今年':'来年',decMut:dec.name!=='童限'?dec.mutagen:null,S,ml}));
+    yl.push(...mutLayer(y.mutagen,'流年',y.palaceNames,{pal,findStar,pn,birthMut,ming:yi,T:tbl(ageStage(ageAt(yr))),ctxName:full?'今年':'来年',decMut:dec.name!=='童限'?dec.mutagen:null,S,ml}));
     o.push(ul(yl));
-    if(full)yearInfo={yr,ji:(y.mutagen||[])[3],gz:y.heavenlyStem+y.earthlyBranch,pal:pn(yp.name),star:stLine(yi),meet:dec.name!=='童限'&&pal[dec.index]&&yi===dec.index};
+    if(full)yearInfo={yr,ji:(y.mutagen||[])[3],gz:y.heavenlyStem+y.earthlyBranch,pal:pn(yp.name),star:stLineB(yi),meet:dec.name!=='童限'&&pal[dec.index]&&yi===dec.index};
     if(full){
       o.push(h4('重要な宮'));
       const keys=['命宮','財帛','官祿','夫妻','疾厄'];
@@ -442,7 +469,9 @@ function readZW(Z,ctx){
     let verdict;
     const ji=luck.find(x=>x.j===3),lu=luck.find(x=>x.j===0);
     const jiHit=ji&&(ji.t===fi2||ji.t===fi),luHit=lu&&(lu.t===fi2||lu.t===fi);
-    if(jiHit&&luHit)verdict=`禄と忌が交わる年：${S(lu.s)}${ml('祿')}${lu.t===fi2?'（流年の夫妻宮に入る）':''}が良い縁を運んでくる一方、${S(ji.s)}${ml('忌')}${ji.t===fi?'（本命の夫妻宮に入る）':''}はコミュニケーションの誤解を招きやすいでしょう。相手を大切にし、言葉には気をつけて。`;
+    const LS=LOVE_STG[ageStage(ageAt(yr))];if(LS&&!loveNow)loveLab=LS.lab;
+    if(LS)verdict=jiHit&&luHit?LS.both:jiHit?LS.ji:luHit?LS.lu:flowerInMing?LS.fl:LS.calm;
+    else if(jiHit&&luHit)verdict=`禄と忌が交わる年：${S(lu.s)}${ml('祿')}${lu.t===fi2?'（流年の夫妻宮に入る）':''}が良い縁を運んでくる一方、${S(ji.s)}${ml('忌')}${ji.t===fi?'（本命の夫妻宮に入る）':''}はコミュニケーションの誤解を招きやすいでしょう。相手を大切にし、言葉には気をつけて。`;
     else if(jiHit)verdict='恋愛で誤解やトラブルが起きやすい年です。ペースを落として話し合いを増やし、急いで決めないこと。';
     else if(luHit)verdict='良い縁に恵まれる年。関係を安定させたり、運命の相手と出会ったりするのに向いています。';
     else if(flowerInMing)verdict='異性からの人気が高まり人付き合いも増えますが、本気か遊びかを見極めましょう。';
@@ -456,10 +485,11 @@ function readZW(Z,ctx){
   if(H){
     const y=H.yearly,d=H.decadal;
     const yj=findStar(y.mutagen[3]),dj=findStar(d.mutagen[3]);
-    if(yj>=0)adv.push(pt(`今年は${S(y.mutagen[3])}${ml('忌')}が本命の${pn(pal[yj].name)}に（流年の${pn(y.palaceNames[yj])}）`,`${JI_ADV[y.palaceNames[yj]]}${STAR_JI[y.mutagen[3]]||''}`));
-    if(dj>=0&&dj!==yj)adv.push(pt(`大限の${S(d.mutagen[3])}${ml('忌')}が本命の${pn(pal[dj].name)}に（大限の${pn(d.palaceNames[dj])}）`,`${JI_ADV[d.palaceNames[dj]]}${STAR_JI[d.mutagen[3]]||''}`));
+    const yT=tbl(ageStage(ageAt(yNow))),dT=tbl(decStage(pal[d.index].decadal.range[0]));
+    if(yj>=0)adv.push(pt(`今年は${S(y.mutagen[3])}${ml('忌')}が本命の${pn(pal[yj].name)}に（流年の${pn(y.palaceNames[yj])}）`,`${yT.ADV[y.palaceNames[yj]]}${yT.SJI[y.mutagen[3]]||''}`));
+    if(dj>=0&&dj!==yj)adv.push(pt(`大限の${S(d.mutagen[3])}${ml('忌')}が本命の${pn(pal[dj].name)}に（大限の${pn(d.palaceNames[dj])}）`,`${yj>=0&&dT.ADV[d.palaceNames[dj]]===yT.ADV[y.palaceNames[yj]]?dT.JI[d.palaceNames[dj]]:dT.ADV[d.palaceNames[dj]]}${dT.SJI[d.mutagen[3]]||''}`));
     if(birthMut['忌']&&(birthMut['忌'].i===yj||birthMut['忌'].i===dj))adv.push(pt('忌が重なる',`${pn(pal[birthMut['忌'].i].name)}は生年の忌と${birthMut['忌'].i===yj?'流年':'大限'}の忌の両方の影響を受けていて、この時期いちばん注意が必要なところです。`));
-    const yl=findStar(y.mutagen[0]);if(yl>=0)adv.push(pt(`今年のチャンスは本命の${pn(pal[yl].name)}に（流年の${pn(y.palaceNames[yl])}）`,STAR_LU[y.mutagen[0]]||'この分野は今年わりと順調です。'));
+    const yl=findStar(y.mutagen[0]);if(yl>=0)adv.push(pt(`今年のチャンスは本命の${pn(pal[yl].name)}に（流年の${pn(y.palaceNames[yl])}）`,yT.SLU[y.mutagen[0]]||(yT.LU===LU?'この分野は今年わりと順調です。':yT.LU[y.palaceNames[yl]])));
   }
   if(adv.length){o.push(h3('リスクを避けるためのアドバイス','z-advice'));o.push(ul(adv));}
   /* あなたの物語（ルールでつなぐ） */
@@ -497,7 +527,7 @@ function readZW(Z,ctx){
   b.push(ul(bItems));
   if(decInfo){b.push(h4(`いまの十年（${decInfo.range}歳）：${decInfo.pal}の大限`));const dup=!!(decInfo.jiStar&&yearInfo&&yearInfo.ji===decInfo.jiStar);b.push(p(`主星は${decInfo.star}。この十年の重心は「${decInfo.dom}」です。${decInfo.ji&&!dup?decInfo.ji:''}${dup?`大限と流年の${ml('忌')}がどちらも${S(decInfo.jiStar)}なので、今年は下の注意点に特に気をつけましょう。`:''}`));}
   if(yearInfo){b.push(h4(`${yearInfo.yr}年（${yearInfo.gz}）`));b.push(p(`流年命宮は本命の${yearInfo.pal}（${yearInfo.star}）にあります。${yearInfo.meet?'今年は歳限重逢で、良いことも悪いことも倍になって表れます。':''}`));if(adv.length)b.push(ul(adv));}
-  if(loveNow){b.push(h4('恋愛'));b.push(p(loveNow));}
+  if(loveNow){b.push(h4(loveLab||'恋愛'));b.push(p(loveNow));}
   return{basic:b.join(''),adv:o.join('')};
 }
 function dp0(pal,i,pn){return `${pal[i].earthlyBranch}宮`;}
@@ -508,14 +538,14 @@ function layerMarks(i,{pal,dec,y,findStar,S,ml}){
   y.mutagen.forEach((s,j)=>{if(findStar(s)===i)out.push(`${S(s)}（流年${ml(MK[j])}）`);});
   return out.join('、');
 }
-function mutLayer(muts,layer,names,{pal,findStar,pn,birthMut,ming,ctxName,decMut,S,ml}){
-  const out=[];
+function mutLayer(muts,layer,names,{pal,findStar,pn,birthMut,ming,ctxName,decMut,S,ml,T}){
+  const out=[];T=T||tbl('adult');const D=T.DOM,adult=T.LU===LU;
   muts.forEach((star,j)=>{const t=findStar(star);if(t<0)return;const rel=names[t];const k=MK[j];
     let txt;
-    if(k==='祿')txt=`${ctxName}は${DOM[rel]}の面が順調です：${LU[rel]}${STAR_LU[star]||''}`;
-    else if(k==='忌')txt=`${ctxName}は${DOM[rel]}の面がいちばんつまずきやすいところです：${JI[rel]}${STAR_JI[star]||''}`;
-    else if(k==='權')txt=`${ctxName}は${DOM[rel]}の面で意欲が高まり、主導権を握りたくなります。`;
-    else txt=`${ctxName}は${DOM[rel]}の面で評判や助けてくれる人を得やすくなります。`;
+    if(k==='祿')txt=`${ctxName}は${D[rel]}の面が順調です：${T.LU[rel]}${T.SLU[star]||''}`;
+    else if(k==='忌')txt=`${ctxName}は${D[rel]}の面がいちばんつまずきやすいところです：${T.JI[rel]}${T.SJI[star]||''}`;
+    else if(k==='權')txt=adult?`${ctxName}は${D[rel]}の面で意欲が高まり、主導権を握りたくなります。`:`${ctxName}は${D[rel]}の面で自分の考えがはっきりし、自分で決めたくなります。`;
+    else txt=adult?`${ctxName}は${D[rel]}の面で評判や助けてくれる人を得やすくなります。`:`${ctxName}は${D[rel]}の面でほめられたり助けてもらえたりしやすいです。`;
     const flags=[];
     if(k==='忌'&&birthMut['忌']&&birthMut['忌'].i===t)flags.push('生年の忌と同じ宮（忌が重なる）で、プレッシャーは倍増');
     if(k==='忌'&&decMut&&findStar(decMut[3])===t)flags.push('大限の忌と同じ宮（双忌）なので、今年はこの分野に少し多めに気を配って');
@@ -527,7 +557,7 @@ function mutLayer(muts,layer,names,{pal,findStar,pn,birthMut,ming,ctxName,decMut
   });
   return out;
 }
-function zwPatterns(Z,{ming,has,hasIn,sfz,findStar,birthMut,pal,pn,S,ml}){
+function zwPatterns(Z,{ming,has,hasIn,sfz,findStar,birthMut,pal,pn,S,ml,BL}){
   const out=[],SS=sfz(ming),mp=pal[ming],br=mp.earthlyBranch;
   const majorIn=(i,n)=>pal[i].majorStars.some(s=>s.name===n);
   const luIn=set=>set.some(i=>has(i,'祿存')||[...pal[i].majorStars,...pal[i].minorStars].some(s=>s.mutagen==='祿'));
@@ -558,7 +588,10 @@ function zwPatterns(Z,{ming,has,hasIn,sfz,findStar,birthMut,pal,pn,S,ml}){
   const sun=pal.find(p=>p.majorStars.some(s=>s.name==='太陽')),moon=pal.find(p=>p.majorStars.some(s=>s.name==='太陰'));
   if(sun&&moon){const sbr=sun.earthlyBranch,mbr=moon.earthlyBranch;
     if('卯辰巳午'.includes(sbr)&&'酉戌亥子'.includes(mbr))add('日月並明',`${S('太陽')}は${sbr}（昼）、${S('太陰')}は${mbr}（夜）にあり、日と月がそれぞれふさわしい位置を得ています。内も外もバランスよく、助けてくれる人にも金運にも恵まれます。`);
-    else if('酉戌亥子丑'.includes(sbr)&&'卯辰巳午未'.includes(mbr))add('日月反背',`${S('太陽')}は${sbr}（${pn(sun.name)}、日没後）、${S('太陰')}は${mbr}（${pn(moon.name)}、昼の月）にあり、日も月も輝きを失っています。尽くしたことが人の目に留まりにくいので、早めに努力を始め、専門性を積み重ねていくのが吉です。`);}
+    else{const br_=(p,n)=>(p.majorStars.find(x=>x.name===n)||{}).brightness,sb=br_(sun,'太陽'),mb=br_(moon,'太陰');const dim=b=>['陷','不'].includes(b);const BLx=b=>b?(BL?BL(b):b):'—';
+      if(dim(sb)&&dim(mb))add('日月反背',`${S('太陽')}は${sbr}（${pn(sun.name)}、明るさ「${BLx(sb)}」）、${S('太陰')}は${mbr}（${pn(moon.name)}、明るさ「${BLx(mb)}」）にあり、日も月も輝きを失っています。尽くしたことが人の目に留まりにくいので、早めに努力を始め、専門性を積み重ねていくのが吉です。`);
+      else if(dim(sb)&&'酉戌亥子丑'.includes(sbr)&&'卯辰巳午未'.includes(mbr))add(`${S('太陽')}の光が弱め`,`${S('太陽')}は${sbr}（${pn(sun.name)}）で明るさ「${BLx(sb)}」。親切に尽くしても気づかれにくいことがあります。ただ${S('太陰')}は明るさ「${BLx(mb)}」で光があり、日月がそろって輝きを失っているわけではありません。成果を見える形にし、専門性を積み重ねれば十分に補えます。`);
+      else if(dim(mb)&&'卯辰巳午未'.includes(mbr)&&'酉戌亥子丑'.includes(sbr))add(`${S('太陰')}の光が弱め`,`${S('太陰')}は${mbr}（${pn(moon.name)}）で明るさ「${BLx(mb)}」。細やかな心配りや蓄えは、育つまでに少し時間がかかります。ただ${S('太陽')}は明るさ「${BLx(sb)}」で光があり、日月がそろって輝きを失っているわけではありません。こつこつ貯めることと、気持ちや睡眠のケアで十分です。`);}}
   if(majorIn(ming,'巨門')&&['子','午'].includes(br)&&mp.majorStars.some(s=>s.name==='巨門'&&s.mutagen&&s.mutagen!=='忌'))add('石中隠玉',`${S('巨門')}が子か午で命宮に座り、吉の四化を得ています。才能を内に秘め、磨くほど輝きます。`);
   if(majorIn(ming,'七殺')&&['寅','申'].includes(br))add('七殺朝斗',`${S('七殺')}が寅か申に座り、向かいに${S('紫微')}・${S('天府')}があります。迫力があり、大きなことを成し遂げられます。`);
   if(majorIn(ming,'七殺')&&['子','午'].includes(br))add('七殺仰斗',`${S('七殺')}が子か午に座り、向かいに${S('紫微')}・${S('天府')}があります。自立心と決断力があり、逆境の中でも道を切り開けます。`);

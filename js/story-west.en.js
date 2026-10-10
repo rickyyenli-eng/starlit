@@ -229,7 +229,7 @@ Venus:[
 `When you like someone, you just message them to ask if they want to see a movie this weekend. If they say no, you smile and say, "Next time, then."`,
 `On a date you pick a restaurant with reliable food and comfortable seats. For you, a dinner you can take your time over is the best romance there is.`,
 `On a first date you go from movies to travel to childhood stories, and when you get home, what matters most is "Did we click?"`,
-`Once you're together, you remember your partner's cycle and favorite drinks, and on rainy days you bring an extra umbrella to meet them at the station.`,
+`Once you're together, you remember what your partner won't eat and their favorite drinks, and on rainy days you bring an extra umbrella to meet them at the station.`,
 `For your partner's birthday you plan a whole day of surprises, and you really hope they'll answer your effort with the same enthusiasm.`,
 `Early in a relationship, you quietly watch whether the other person is on time and whether they litter. Only once the details check out do you let yourself fall.`,
 `Before a date you spend a long time choosing an outfit and a restaurant with atmosphere. For you, a beautiful scene is part of being in love.`,

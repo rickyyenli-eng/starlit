@@ -6,7 +6,7 @@ const PK=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Nep
 const pl=k=>I().planets[PK.indexOf(k)][0];
 const sign=i=>I().signs[i][0];
 const EL=['fire','earth','air','water'],ELN={fire:'火象',earth:'土象',air:'風象',water:'水象'};
-const ASPN=['合相','六分相','四分相','三分相','對分相'];
+const ASPN=['合相','六分相','四分相','三分相','對分相','補十二分相'];
 const HN=['','第一宮','第二宮','第三宮','第四宮','第五宮','第六宮','第七宮','第八宮','第九宮','第十宮','第十一宮','第十二宮'];
 const TYPE={generator:'生產者',mg:'顯示生產者',manifestor:'顯示者',projector:'投射者',reflector:'反映者'};
 const LINE={1:'研究者',2:'隱士',3:'實驗者',4:'機會主義者',5:'異端者',6:'角色楷模'};

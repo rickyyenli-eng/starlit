@@ -15,11 +15,13 @@ function aiChartData(focus){
     return '# A（讀者本人）\n'+aiChartFor(W,Z,HD,ZH,true)+'\n\n# B（對方）\n'+aiChartFor(PB.W,PB.Z,PB.HD,zb,false)+m;}
   return aiChartFor(W,Z,HD,ZH,true);
 }
+function root_gy(){return typeof Intent!=='undefined'&&Intent.zh&&Intent.zh.goodYears;}
 function aiChartFor(W,Z,HD,ZH,withCtx){
   const facts=[];try{const ly=Z.rawDates.lunarDate.lunarYear,now=Highlights.zh.curYear(Z);facts.push(`今年 ${now} 年，虛歲 ${now-ly+1}`);
     if(ZH&&ZH.decadal&&ZH.decadal.index>=0){const dp=Z.palaces[ZH.decadal.index];facts.push(`目前大限：虛歲 ${dp.decadal.range.join('-')}，大限命宮在本命${dp.name}`);}else facts.push(zwStage(Z));
     if(ZH)facts.push(`今年流年命宮在本命${Z.palaces[ZH.yearly.index].name}，流年四化 ${(ZH.yearly.mutagen||[]).map((x,j)=>x+'化'+'祿權科忌'[j]).join(' ')}`);
     try{const ny=Z.horoscope(new Date(Date.UTC(now+1,6,1)));facts.push(`明年 ${now+1} 年流年命宮在本命${Z.palaces[ny.yearly.index].name}，流年四化 ${(ny.yearly.mutagen||[]).map((x,j)=>x+'化'+'祿權科忌'[j]).join(' ')}`);}catch(e){}
+    try{if(withCtx&&root_gy()){const g=Intent.zh.goodYears(W,Z,HD,Engine);if(g){const f=a=>a.length?a.join('、'):'無特別集中';facts.push(`網站判斷的年份（回答時機問題時請與此一致）：感情較順 ${f(g.love.good)}；感情要耐心 ${f(g.love.bad)}；工作較順 ${f(g.work.good)}；工作要守 ${f(g.work.bad)}；收入較順 ${f(g.money.good)}；收支要保守 ${f(g.money.bad)}`);}}}catch(e){}
     facts.push(`人類圖類型：${I18N.zh.hd.types[HD.type]}（${I18N.en.hd.types[HD.type]}），權威：${I18N.zh.hd.auth[HD.authority]}`);}catch(e){}
   const head=facts.length?'# KEY FACTS (authoritative; do not infer these from other lines)\n'+facts.join('\n')+'\n\n':'';
   return head+aiChartBody(W,Z,HD,ZH,withCtx);
@@ -33,9 +35,9 @@ function aiChartBody(W,Z,HD,ZH,withCtx){
   PK.forEach(k=>{const q=W.pos[k];o.push(`${k}: ${sgn(q.lon)} ${deg(q.lon)}, house ${q.house}${q.retro?', retrograde':''}`);});
   if(W.pos.Node)o.push(`North Node: ${sgn(W.pos.Node.lon)} ${deg(W.pos.Node.lon)}, house ${W.pos.Node.house}`);
   o.push(`Ascendant: ${sgn(W.asc)} ${deg(W.asc)}; Midheaven: ${sgn(W.mc)} ${deg(W.mc)}`);
-  o.push('House cusps: '+W.houses.map((h,i)=>`${i+1} ${sgn(h)}`).join(', '));
-  const AN=['conjunction','sextile','square','trine','opposition'];
-  o.push('Aspects: '+W.asp.map(a=>`${a.a} ${AN[a.t]} ${a.b} (orb ${a.orb.toFixed(1)}°)`).join('; '));
+  o.push('House cusps: '+W.houses.map((h,i)=>`${i+1} ${sgn(h)} ${deg(h)}`).join(', '));
+  const AN=['conjunction','sextile','square','trine','opposition','quincunx'];
+  o.push('Aspects: '+W.asp.map(a=>`${a.a} ${AN[a.t]} ${a.b} (orb ${a.orb.toFixed(1)}°${a.oos?', out-of-sign':''})`).join('; '));
   o.push('','# 紫微斗數 (iztro, 全書派四化)');
   o.push(`性別 ${Z.gender}；五行局 ${Z.fiveElementsClass}；命主 ${Z.soul}；身主 ${Z.body}；生年 ${Z.rawDates.chineseDate.yearly.join('')}`);
   Z.palaces.forEach(p=>{
@@ -125,10 +127,10 @@ function aiInit(){
 
 /* ---------- G：一句話＋小問答（便宜的小互動，用 Haiku） ---------- */
 const CHAT_TXT={
- zh:{mem:'會記得你們前面聊過的內容（只存在這台裝置）',clr:'清除對話',cfm:'再按一次清除',title:'和星星聊兩句',sub:'抽一句今天給你的話，或問一個小問題。每次回答都會根據你的盤。',note:'給我一句話',ask:'問',ph:'例如：今年適合換工作嗎？（120 字以內）',persona:{gentle:'溫柔一點',direct:'直球一點'},busy:'想一下…',foot:'AI 依你的盤回答，僅供參考。'},
- en:{mem:'Remembers what you talked about before (stored on this device only)',clr:'Clear chat',cfm:'Click again to clear',title:'A word from the stars',sub:'Draw a short message for today, or ask one small question. Every answer is based on your charts.',note:'Give me a message',ask:'Ask',ph:'e.g. Is this a good year to change jobs? (max 120 characters)',persona:{gentle:'Gentle',direct:'Straight talk'},busy:'Thinking…',foot:'AI answers from your charts. For reflection only.'},
- ja:{mem:'前に話した内容を覚えています（この端末にだけ保存）',clr:'会話を消す',cfm:'もう一度押すと消えます',title:'星とひとこと',sub:'今日のあなたへのひとことを引くか、小さな質問をひとつどうぞ。答えはすべてあなたのチャートにもとづきます。',note:'ひとことください',ask:'聞く',ph:'例：今年は転職に向いていますか？（120字以内）',persona:{gentle:'やさしく',direct:'はっきり'},busy:'考え中…',foot:'AI がチャートをもとに答えます。参考程度にどうぞ。'},
- fr:{mem:'Se souvient de vos échanges précédents (enregistrés sur cet appareil uniquement)',clr:'Effacer la conversation',cfm:'Cliquez encore pour effacer',title:'Un mot des étoiles',sub:'Tirez un petit message pour aujourd’hui, ou posez une petite question. Chaque réponse s’appuie sur vos thèmes.',note:'Un mot pour moi',ask:'Demander',ph:'ex. : Est-ce une bonne année pour changer de travail ? (120 caractères max)',persona:{gentle:'Avec douceur',direct:'Sans détour'},busy:'Je réfléchis…',foot:'Réponse de l’IA d’après vos thèmes, à titre indicatif.'}};
+ zh:{mem:'會記得你們前面聊過的內容（只存在這台裝置）',clr:'清除對話',cfm:'再按一次清除',title:'和星星聊兩句',sub:'抽一句今天給你的話，或問一個小問題。每次回答都會根據你的盤。',note:'給我一句話',ask:'問',ph:'例如：今年適合換工作嗎？',persona:{gentle:'溫柔一點',direct:'直球一點'},busy:'想一下…',foot:'AI 依你的盤回答，僅供參考。'},
+ en:{mem:'Remembers what you talked about before (stored on this device only)',clr:'Clear chat',cfm:'Click again to clear',title:'A word from the stars',sub:'Draw a short message for today, or ask one small question. Every answer is based on your charts.',note:'Give me a message',ask:'Ask',ph:'e.g. Is this a good year to change jobs?',persona:{gentle:'Gentle',direct:'Straight talk'},busy:'Thinking…',foot:'AI answers from your charts. For reflection only.'},
+ ja:{mem:'前に話した内容を覚えています（この端末にだけ保存）',clr:'会話を消す',cfm:'もう一度押すと消えます',title:'星とひとこと',sub:'今日のあなたへのひとことを引くか、小さな質問をひとつどうぞ。答えはすべてあなたのチャートにもとづきます。',note:'ひとことください',ask:'聞く',ph:'例：今年は転職に向いていますか？',persona:{gentle:'やさしく',direct:'はっきり'},busy:'考え中…',foot:'AI がチャートをもとに答えます。参考程度にどうぞ。'},
+ fr:{mem:'Se souvient de vos échanges précédents (enregistrés sur cet appareil uniquement)',clr:'Effacer la conversation',cfm:'Cliquez encore pour effacer',title:'Un mot des étoiles',sub:'Tirez un petit message pour aujourd’hui, ou posez une petite question. Chaque réponse s’appuie sur vos thèmes.',note:'Un mot pour moi',ask:'Demander',ph:'ex. : Bonne année pour changer de travail ?',persona:{gentle:'Avec douceur',direct:'Sans détour'},busy:'Je réfléchis…',foot:'Réponse de l’IA d’après vos thèmes, à titre indicatif.'}};
 let chatPersona='gentle',chatBusy=false,chatGen=0,chatCtl=null;
 /* 對話記憶：依出生資料存在這台裝置，最多 20 則；送給 AI 的是最近 6 則問答 */
 function chatKey(v){v=v||LASTV;if(!v)return null;return 'starlit-chat-'+[v.date,v.time,v.g,v.lat,v.lon,v.tz,v.dst?1:0].join('|');}
@@ -138,7 +140,7 @@ const chatEsc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 function chatItemHTML(x){return (x.q?`<p class="chat-q">${chatEsc(x.q)}</p>`:'')+`<p class="chat-a">${chatEsc(x.a)}</p>`;}
 /* 換盤或第一次載入時：把這張盤的舊對話放回畫面 */
 function chatRestore(){const log=document.querySelector('#chat .chat-log');if(!log)return;
-  const a=chatLoad();log.innerHTML=a.slice().reverse().map(x=>`<div class="chat-item">${chatItemHTML(x)}</div>`).join('');
+  const a=chatLoad();log.innerHTML=a.map(x=>`<div class="chat-item">${chatItemHTML(x)}</div>`).join('');
   const b=document.querySelector('#chat-clr');if(b){b.hidden=!a.length;b.dataset.c='';b.textContent=(CHAT_TXT[LG]||CHAT_TXT.zh).clr;}}
 function chatRender(){
   const el=document.querySelector('#chat');if(!el)return;if(!AI_URL){el.hidden=true;return;}el.hidden=false;
@@ -167,7 +169,7 @@ async function chatSend(mode,q){
   if(chatBusy)return;chatBusy=true;const T=CHAT_TXT[LG]||CHAT_TXT.zh,A=AI_TXT[LG]||AI_TXT.zh,log=document.querySelector('#chat .chat-log');
   const item=document.createElement('div');item.className='chat-item';
   item.innerHTML=(q?`<p class="chat-q">${chatEsc(q)}</p>`:'')+`<p class="chat-a">${T.busy}</p>`;
-  const key=chatKey(),hist=mode==='ask'?chatLoad().filter(x=>x.m==='ask'&&x.q).slice(-6).map(x=>({q:x.q,a:x.a.slice(0,700)})):[];log.prepend(item);const a=item.querySelector('.chat-a');
+  const key=chatKey(),hist=mode==='ask'?chatLoad().filter(x=>x.m==='ask'&&x.q).slice(-6).map(x=>({q:x.q,a:x.a.slice(0,700)})):[];log.append(item);const a=item.querySelector('.chat-a');
   const gen=chatGen;chatCtl=new AbortController();
   try{const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:chatCtl.signal,body:JSON.stringify({mode,q,hist,persona:chatPersona,lang:LG,chart:aiChartData('all')})});
     if(gen!==chatGen)return;

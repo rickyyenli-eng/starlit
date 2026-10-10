@@ -42,7 +42,7 @@ Rules:
 - Every chapter opens with a vivid image or metaphor, then concrete everyday scenes, then what the charts say (cite the specific placements, e.g. "官祿宮 天同巨門", "Venus in Pisces", "channel 19-49", in plain language), where the three systems agree and where they pull apart, and ends with 2–4 specific things to try.
 - Use only the chart data. Take current age, current ten-year cycle and this year's palace only from KEY FACTS. Never invent placements, dates or events.
 - Warm, honest, never fatalistic or frightening. Health: lifestyle reminders only, no diagnosis. Money: no investment advice.
-- No fake classical quotations, no filler. Short paragraphs. Total length about 5,000–7,000 words (Chinese/Japanese about 9,000–12,000 characters).`;
+- No fake classical quotations, no filler. Short paragraphs. Total length about 4,500–6,000 words (Chinese/Japanese about 8,000–10,000 characters). Budget it: keep the month-by-month chapter to 1–2 sentences per month, and always finish with the closing letter — never stop mid-chapter.`;
 }
 function systemSmall(lang, mode, persona) {
   const base = DATA_RULE + `\n\nYou are Starlit's reader of Zi Wei Dou Shu, Western astrology and Human Design. You get one person's computed chart notes. Write entirely in ${LANG_NAME[lang] || LANG_NAME.zh} (in English/French never output Chinese characters; in Chinese write 宮 not "house"). Use only the chart data. Never fatalistic, never frightening. No medical, legal or investment specifics. Take the current age, current ten-year cycle (大限) and this year's palace ONLY from the KEY FACTS block; never confuse a future decade with the current one. In Chinese use Chinese terms for Human Design too (生產者, not Generator). ${PERSONA[persona] || PERSONA.gentle}`;
@@ -153,7 +153,7 @@ export default {
           headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
           body: JSON.stringify({
             model: small ? MODEL_SMALL : MODEL,
-            max_tokens: small ? 450 : book ? 16000 : 8000,
+            max_tokens: small ? 450 : book ? 32000 : 8000,
             stream: true,
             system: small ? systemSmall(lang, mode, persona) : book ? systemBook(lang, mode === 'pairbook') : system(lang, FOCUS[focusKey][lang] || FOCUS[focusKey].en),
             messages: buildMessages(chart, mode, question, hist),

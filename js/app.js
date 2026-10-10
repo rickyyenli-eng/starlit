@@ -33,7 +33,7 @@ let W=null,Z=null,ZH=null,HD=null,selW='Sun',selZ=null,selH=null,zMode='yr',zYea
 function fillCities(){fillCity($('#f-city'));fillCity($('#p-city'));}
 function fillCity(s){if(!s)return;const cur=s.value;s.innerHTML=`<option value="">${L.ui.pick}</option>`;const li={zh:0,en:1,ja:2,fr:3}[LG];
   CITIES.forEach(c=>{const o=document.createElement('option');o.value=c[0];o.textContent=c[li];s.appendChild(o);});if(cur)s.value=cur;}
-function onCity(){const v=$('#f-city').value;const c=CITIES.find(x=>x[0]===v);if(c&&c[4]!=null){$('#f-lat').value=c[4];$('#f-lon').value=c[5];$('#f-tz').value=c[6];}else if(!v){$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';}else{$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';$('.adv').open=true;}}
+function onCity(){const v=$('#f-city').value;const c=CITIES.find(x=>x[0]===v);if(c&&c[4]!=null){$('#f-lat').value=c[4];$('#f-lon').value=c[5];$('#f-tz').value=c[6];}else if(!v){$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';}else{$('#f-lat').value='';$('#f-lon').value='';$('#f-tz').value='';$('.adv').open=true;}tzNote('f');}
 function readForm(){return{date:$('#f-date').value,time:$('#f-time').value,g:(document.querySelector('input[name=g]:checked')||{}).value,city:$('#f-city').value,dst:$('#f-dst').checked,lat:parseFloat($('#f-lat').value),lon:parseFloat($('#f-lon').value),tz:parseFloat($('#f-tz').value)};}
 let errKey=null;
 function showErr(k){errKey=k;const e=$('#err');if(k){e.textContent=L.ui[k];e.hidden=false;}else e.hidden=true;}
@@ -45,11 +45,9 @@ function compute(v){
   if(!v.g){showErr('errGender');return false;}
   if([v.lat,v.lon,v.tz].some(isNaN)){showErr('errPlace');return false;}
   if(Math.abs(v.lat)>90||Math.abs(v.lon)>180||v.tz<-12||v.tz>14){showErr('errCoord');return false;}
-  const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
-  const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0);
-  const utc=new Date(stdMs-v.tz*3600e3);
+  const bt=birthTime(v,CITIES.find(x=>x[0]===v.city)),stdMs=bt.stdMs,utc=bt.utc;
   if(!isFinite(utc.getTime())){showErr('errTime');return false;}
-  LASTV={...v};
+  LASTV={...v};tzNote('f');
   W=westChart(utc,v.lat,v.lon);
   HD=Engine.humanDesign(utc);selH=null;
   const sd=new Date(stdMs);
@@ -59,6 +57,25 @@ function compute(v){
   return true;
 }
 
+/* 出生時刻換算：城市有 IANA 時區 → 依出生當時的歷史時區與夏令時間自動判斷（v.dst、v.tz 僅供舊資料相容，不採用）；
+   否則（手動經緯度）沿用 v.tz＋手動夏令勾選。stdMs＝紫微用的「當地標準時間」（鐘錶時間扣掉夏令時間，標準時區本身不同時仍用當地鐘錶時間） */
+function birthTime(v,c){
+  const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
+  if(c&&c[4]!=null&&c[7]){try{const r=Engine.localToUtc(y,m,d,hh,mm,c[7]);if(isFinite(r.off))return{utc:r.utc,stdMs:r.utc.getTime()+r.std*3600e3,auto:r};}catch(e){}}
+  const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0);
+  return{utc:new Date(stdMs-v.tz*3600e3),stdMs,auto:null};
+}
+const fmtUtcOff=h=>{const s=h<0?'−':'+',a=Math.round(Math.abs(h)*60),hh=Math.floor(a/60),mm=a%60;return `UTC${s}${hh}${mm?':'+String(mm).padStart(2,'0'):''}`;};
+/* 表單上的夏令時間提示：選了有 IANA 的城市就停用手動勾選，改顯示自動判斷的結果（px＝'f' 本人／'p' 合盤對象） */
+function tzNote(px){
+  const cb=$('#'+px+'-dst'),nt=$('#'+px+'-tznote'),cs=$('#'+px+'-city');if(!cb||!cs)return null;
+  const c=CITIES.find(x=>x[0]===cs.value),auto=!!(c&&c[4]!=null&&c[7]);let r=null;
+  const date=($('#'+px+'-date')||{}).value||'',time=($('#'+px+'-time')||{}).value||'12:00';
+  if(auto&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&/^\d{1,2}:\d{2}/.test(time)){try{const[y,m,d]=date.split('-').map(Number),[hh,mm]=time.split(':').map(Number);r=Engine.localToUtc(y,m,d,hh,mm,c[7]);if(!isFinite(r.off))r=null;}catch(e){r=null;}}
+  cb.disabled=auto;if(r)cb.checked=r.dst>0;
+  if(nt){const U=L.ui;nt.hidden=!auto;nt.textContent=!auto?'':!r?U.tzAuto:(r.dst>0?U.tzDst:Math.abs(r.std-c[6])>1e-6?U.tzHist:U.tzStd).replace('{o}',fmtUtcOff(r.off));}
+  return r;
+}
 /* 紫微排盤：晚子時（23:00–24:00）依專家採用的派別「算隔天」，以隔天日期＋早子時排盤 */
 function zwBySolar(sd,g){
   const sh=sd.getUTCHours(),late=sh===23,d=late?new Date(sd.getTime()+86400000):sd;
@@ -68,13 +85,12 @@ function zwBySolar(sd,g){
 /* 任一人的三張盤（合盤用） */
 function computeChart(v){
   const c=CITIES.find(x=>x[0]===v.city);if(!c||c[4]==null)return null;
-  const [y,m,d]=v.date.split('-').map(Number),[hh,mm]=v.time.split(':').map(Number);
-  const stdMs=Date.UTC(y,m-1,d,hh,mm)-(v.dst?3600e3:0),utc=new Date(stdMs-c[6]*3600e3);
+  const bt=birthTime({...v,tz:c[6]},c),stdMs=bt.stdMs,utc=bt.utc;
   const sd=new Date(stdMs),Zb=zwBySolar(sd,v.g);
   return{W:westChart(utc,c[4],c[5]),Z:Zb,HD:Engine.humanDesign(utc),name:v.name};
 }
 let PB=null,PBV=null,LASTV=null;
-function pairSubmit(e){e.preventDefault();const v={name:$('#p-name').value,date:$('#p-date').value,time:$('#p-time').value,g:(document.querySelector('input[name=pg]:checked')||{}).value,city:$('#p-city').value,dst:$('#p-dst')?$('#p-dst').checked:false};
+function pairSubmit(e){e.preventDefault();tzNote('p');const v={name:$('#p-name').value,date:$('#p-date').value,time:$('#p-time').value,g:(document.querySelector('input[name=pg]:checked')||{}).value,city:$('#p-city').value,dst:$('#p-dst')?$('#p-dst').checked:false};
   const er=$('#p-err');er.hidden=true;
   const yy=+String(v.date).slice(0,4);const bad=!v.date||!v.time?'errTime':!(yy>=1900&&yy<=2100)?'errRange':!v.g?'errGender':!v.city?'errPlace':null;
   if(bad){er.textContent=L.ui[bad];er.hidden=false;return;}
@@ -82,6 +98,7 @@ function pairSubmit(e){e.preventDefault();const v={name:$('#p-name').value,date:
   if(!PB){er.textContent=L.ui.errPlace;er.hidden=false;}
   renderPair();aiRender();if(typeof bBox==='function')bBox(true);if(PB){const sf=$('#ai-focus');if(sf)sf.value='pair';}if(PB)$('#pair-out').scrollIntoView({behavior:'smooth',block:'start'});}
 function renderPair(){
+  {const sp=document.querySelector('.sh-priv');if(sp&&typeof ST==='function')sp.textContent=PBV&&PB?ST().privPair:ST().privacy;}
   const out=$('#pair-out');if(!PB||!W){out.hidden=true;ADV.pair='';return;}
   const P=window.Pair&&(Pair[LG]||Pair.zh);let r;
   try{r=P.render({A:{W,Z,HD},B:PB},Engine);}catch(e){console.error(e);out.hidden=true;return;}
@@ -129,13 +146,14 @@ function showPlanet(){
 }
 function westSummary(){
   const U=L.ui,F=L.fn,sun=sg(signOf(W.pos.Sun.lon)),moon=sg(signOf(W.pos.Moon.lon)),asc=sg(signOf(W.asc));
-  const cnt={fire:0,earth:0,air:0,water:0};['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'].forEach(k=>cnt[sg(signOf(W.pos[k].lon)).el]++);cnt[asc.el]++;
+  /* 與完整解讀（readWest）同一套算法：十大行星，不含上升 */
+  const cnt={fire:0,earth:0,air:0,water:0};PK.forEach(k=>cnt[sg(signOf(W.pos[k].lon)).el]++);
   const mx=Math.max(...Object.values(cnt));const tops=EL.filter(k=>cnt[k]===mx);
   $('#w-sum').innerHTML=`
   <div class="card"><span class="q">${U.cardWho}</span><span class="big">${F.big(pl('Sun').name,sun.name)}</span><p>${F.sunCard(sun.style)}</p></div>
   <div class="card"><span class="q">${U.cardNeed}</span><span class="big">${F.big(pl('Moon').name,moon.name)}</span><p>${F.moonCard(moon.style)}</p></div>
   <div class="card"><span class="q">${U.cardAsc}</span><span class="big">${F.big(U.ascShort,asc.name)}</span><p>${F.ascCard(asc.style)}</p></div>
-  <div class="card"><span class="q">${U.cardEl}</span><div class="elem">${EL.map(k=>`<div class="erow"><span>${L.elems[k][0]}</span><div class="ebar"><span style="width:${cnt[k]/8*100}%;background:var(--${k})"></span></div><span class="mono">${cnt[k]}</span></div>`).join('')}</div><p>${F.elTop(F.list(tops.map(k=>L.elems[k][0])),F.list(tops.map(k=>L.elems[k][1])))}</p></div>`;
+  <div class="card"><span class="q">${U.cardEl}</span><div class="elem">${EL.map(k=>`<div class="erow"><span>${L.elems[k][0]}</span><div class="ebar"><span style="width:${cnt[k]/PK.length*100}%;background:var(--${k})"></span></div><span class="mono">${cnt[k]}</span></div>`).join('')}</div><p>${F.elTop(F.list(tops.map(k=>L.elems[k][0])),F.list(tops.map(k=>L.elems[k][1])))}</p></div>`;
 }
 function westTable(){
   const U=L.ui,F=L.fn;const out={};
@@ -159,11 +177,17 @@ function drawZW(g=$('#zw'),mode='natal'){
       <div class="stars">${p.majorStars.length?p.majorStars.map(starHTML).join(''):`<span class="muted" style="font-weight:400;font-size:12px">${U.empty}</span>`}</div>
       ${minor.length?`<div class="minor">${minor.map(s=>starName(s.name)+(s.mutagen?mutBadge(s.mutagen):'')).join(' ')}</div>`:''}
       ${ly?`<div class="layer">${ly.muts.map(m=>`<span>${starName(m.s)}<span class="mut ${m.k} lay">${lay.pre}${mutOf(m.k)[0]}</span></span>`).join(' ')}</div><div class="lname${ly.name==='命宮'?' on':''}">${lay.pre}${palName(ly.name)}</div>`:''}
+      ${LG==='zh'||LG==='ja'?`<div class="gods">${[p.changsheng12,p.boshi12,p.suiqian12,p.jiangqian12].filter(Boolean).join('・')}</div>`:''}
       <div class="foot"><div><div class="tags">${p.isBodyPalace?`<span class="tag body">${U.tagBody}</span>`:''}${i===dec?`<span class="tag dc">${U.tagDec}</span>`:''}${i===yr?`<span class="tag yr">${U.tagYr}</span>`:''}</div><div class="pname">${palName(p.name)}</div></div><div style="text-align:right"><div class="gz">${p.heavenlyStem}${p.earthlyBranch}</div><div class="age">${p.decadal.range.join('–')}</div></div></div></button>`;});
   const sd=Z._std,ti=Z._ti,rd=Z.rawDates.lunarDate,cd=Z.rawDates.chineseDate;
   const rng=ti===0?'00:00–01:00':ti===12?'23:00–24:00':`${String(ti*2-1).padStart(2,'0')}:00–${String(ti*2+1).padStart(2,'0')}:00`;
   const fe=Z.fiveElementsClass,feTxt=L.fiveElNames?F.fiveEl(L.fiveElNames[fe[0]],NUM[fe[1]],fe):F.fiveEl(null,null,fe);
-  const pillars=[cd.yearly,cd.monthly,cd.daily,cd.hourly].map(x=>x.join('')).join(' ');
+  /* 四柱：年柱以立春、月柱以節氣（太陽黃經）切換，日柱、時柱沿用排盤結果 */
+  let yp=cd.yearly.join(''),mp=cd.monthly.join('');
+  try{const GAN='甲乙丙丁戊己庚辛壬癸',ZHI='子丑寅卯辰巳午未申酉戌亥',lon=Engine.norm(W.pos.Sun.lon),sd0=Z._std;let y=sd0.getUTCFullYear();
+    if(sd0.getUTCMonth()<=1&&lon>=270&&lon<315)y--;const ys=((y-4)%10+10)%10,yb=((y-4)%12+12)%12,mi=Math.floor(((lon-315)%360+360)%360/30);
+    yp=GAN[ys]+ZHI[yb];mp=GAN[(((ys%5)*2+2)+mi)%10]+ZHI[(2+mi)%12];}catch(e){}
+  const pillars=[yp,mp,cd.daily.join(''),cd.hourly.join('')].join(' ');
   h+=`<div class="center"><div class="nm">${U.zwTitle}</div>
    <div>${U.solar} ${sd.getUTCFullYear()}/${sd.getUTCMonth()+1}/${sd.getUTCDate()}・${Z._late&&U.lateZi?`${U.lateZi} ${rng}`:F.timeLbl(Z.time,BRANCH[ti],rng)}</div>
    <div>${U.lunar} ${F.lunarLbl(Z.lunarDate.replace(/腊/g,'臘').replace(/闰/g,'閏'),rd.lunarYear,rd.lunarMonth,rd.lunarDay,rd.isLeap)}</div>
@@ -171,6 +195,7 @@ function drawZW(g=$('#zw'),mode='natal'){
    <div class="kl"><span>${feTxt}</span><span>${U.soul} ${starName(Z.soul)}</span><span>${U.body} ${starName(Z.body)}</span></div>
    <div class="kl">${MUT_KEYS.map((m,j)=>`<span>${mutBadge(m)}${LG==='zh'||LG==='ja'?L.mut[j][3]:''}</span>`).join('')}</div></div>`;
   g.innerHTML=h;
+  if(main){let on=false;try{on=localStorage.getItem('starlit-gods')==='1';}catch(e){}g.classList.toggle('gods-on',on);const cb=$('#zw-gods');if(cb){cb.checked=on;cb.parentElement.hidden=!(LG==='zh'||LG==='ja');}}
   if(main)g.querySelectorAll('.cell').forEach(b=>b.addEventListener('click',()=>{selZ=+b.dataset.i;drawZW();showPalace();}));
 }
 function zHoro(mode){if(mode==='natal')return null;try{return Z.horoscope(new Date(Date.UTC(zYear,6,1)));}catch(e){return null;}}
@@ -238,7 +263,7 @@ function applyLang(lg){
   LG=LANGS.includes(lg)?lg:'zh';L=I18N[LG];
   document.documentElement.lang=L.htmlLang;document.title=L.title;
   document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=L.ui[el.dataset.t];});
-  const cur=$('#f-city').value;fillCities();if(cur)$('#f-city').value=cur;
+  const cur=$('#f-city').value;fillCities();if(cur)$('#f-city').value=cur;tzNote('f');tzNote('p');
   primer('#w-primer',L.ui.wPrimer);primer('#z-primer',L.ui.zPrimer);primer('#h-primer',L.ui.hPrimer);
   $('#langs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LG));
   if(errKey)showErr(errKey);
@@ -264,7 +289,9 @@ function boot(){
   LG=LANGS.includes(lg)?lg:'zh';L=I18N[LG];
   fillCities();
   $('#f-city').addEventListener('change',onCity);
+  ['f','p'].forEach(px=>['city','date','time'].forEach(k=>{const el=$('#'+px+'-'+k);if(el){el.addEventListener('change',()=>tzNote(px));if(k!=='city')el.addEventListener('input',()=>tzNote(px));}}));
   if(typeof Astronomy==='undefined'||typeof iztro==='undefined'){applyLang(LG);showErr('errLib');return;}
+  {const cb=$('#zw-gods');if(cb)cb.addEventListener('change',()=>{try{localStorage.setItem('starlit-gods',cb.checked?'1':'0');}catch(e){}$('#zw').classList.toggle('gods-on',cb.checked);});}
   applyLang(LG);aiInit();wizInit();vInit();bInit();
   $('#pairf').addEventListener('submit',pairSubmit);
   $('#birth').addEventListener('submit',async e=>{e.preventDefault();const btn=$('button.go');btn.disabled=true;
@@ -341,7 +368,7 @@ function renderReadings(){
 }
 function renderHL(){
   const el=$('#hl-body');if(!el)return;const P=window.Highlights&&(Highlights[LG]||Highlights.zh);
-  try{const ans=intentCard();let mon='',cal='';try{if(window.Calendar){mon=Calendar.zh.nowCard(W,Z,HD,Engine);cal=Calendar.zh.render(W,Z,HD,Engine);}}catch(e){console.error(e);}
+  try{const ans=intentCard();let mon='',cal='';try{if(window.Calendar){const CL=Calendar[LG]||Calendar.zh;mon=CL.nowCard(W,Z,HD,Engine);cal=CL.render(W,Z,HD,Engine);}}catch(e){console.error(e);}
     el.innerHTML=shareBar()+(P!==Highlights[LG]&&L.ui.hlNote?`<p class="readnote">${L.ui.hlNote}</p>`:'')+P.render(W,Z,HD,Engine).replace('<div class="hl-cards">','<div class="hl-cards">'+ans+mon)+(cal?`<details class="calwrap"><summary>${L.ui.calOpen||'年度運勢行事曆'}</summary>${cal}</details>`:'');
     shareBind();el.querySelectorAll('.ans-more').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.tab,+b.dataset.i)));}catch(e){console.error(e);el.innerHTML='';}
 }

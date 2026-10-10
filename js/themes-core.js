@@ -71,7 +71,7 @@ function build(W,Z,HD,E){
     if(th==='career'){const ms=signOf(W.mc);MC_SIGN[ms].forEach(t=>add('west',t,'mc',ms));inH(10).forEach(k=>add('west',H10[k],'inHouse',k,10));}
     if(th==='wealth'){const s2=signOf(W.houses[1]);add('west',H2_SIGN[s2],'cusp',2,s2);inH(2).forEach(k=>add('west',H2[k],'inHouse',k,2));inH(8).forEach(k=>add('west',H8[k],'inHouse',k,8));}
     if(th==='love'){const vs=signOf(W.pos.Venus.lon);add('west',VENUS_EL[EL[vs%4]],'planetSign','Venus',vs);const s7=signOf(W.houses[6]);add('west',H7_SIGN[s7],'cusp',7,s7);
-      W.asp.forEach(a=>{const o=a.a==='Venus'?a.b:a.b==='Venus'?a.a:null;if(o&&VENUS_ASP[o]&&a.t!==1&&a.t!==3)add('west',VENUS_ASP[o],'asp','Venus',o,a.t);});}
+      W.asp.forEach(a=>{const o=a.a==='Venus'?a.b:a.b==='Venus'?a.a:null;if(o&&VENUS_ASP[o]&&a.t!==1&&a.t!==3&&a.t!==5)add('west',VENUS_ASP[o],'asp','Venus',o,a.t);});}
     if(th==='health'){const ms=signOf(W.pos.Moon.lon);add('west',MOON_EL[EL[ms%4]],'planetSign','Moon',ms);inH(6).forEach(k=>add('west',H6[k],'inHouse',k,6));
       W.asp.forEach(a=>{const pr=[a.a,a.b];if(pr.includes('Saturn')&&(pr.includes('Sun')||pr.includes('Moon'))&&[0,2,4].includes(a.t))add('west','stress','asp','Saturn',pr.find(x=>x!=='Saturn'),a.t);
         if(pr.includes('Mars')&&pr.includes('Sun')&&[0,2,4].includes(a.t))add('west','overwork','asp','Sun','Mars',a.t);});}

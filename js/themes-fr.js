@@ -7,7 +7,7 @@ const pl=k=>I().planets[PK.indexOf(k)][0];
 const sign=i=>I().signs[i][0];
 const EL=['fire','earth','air','water'];
 const elName=s=>{const e=I().elems&&I().elems[EL[s%4]];return e?e[0]:{fire:'Feu',earth:'Terre',air:'Air',water:'Eau'}[EL[s%4]];};
-const aspName=t=>{const a=I().aspects&&I().aspects[t];return (a?a[0]:['Conjonction','Sextile','Carré','Trigone','Opposition'][t]).toLowerCase();};
+const aspName=t=>{const a=I().aspects&&I().aspects[t];return (a?a[0]:['Conjonction','Sextile','Carré','Trigone','Opposition','Quinconce'][t]).toLowerCase();};
 const HN=h=>`la maison ${h}`;
 /* Zi Wei : palais, étoiles, éclat, transformations */
 const PALACE_KEYS=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母'];

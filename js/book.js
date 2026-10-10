@@ -4,22 +4,22 @@ const BK_TXT={
  zh:{title:'完整人生報告書',ptitle:'深度合盤報告書',sub:'AI 依你的紫微、星盤、人類圖寫成一本約一萬字、分章節的個人報告書：天賦、工作、金錢、感情、人際、身心、未來幾年逐年走向，最後是一封寫給你的信。可以下載成 PDF 保存。',
   psub:'AI 依你們兩人的三張盤寫成分章節的合盤報告書：吸引、默契、摩擦、承諾、金錢與生活、未來幾年，最後是一封寫給你們的信。',
   name:'報告書上的名字（選填）',go:'產生報告書',again:'重新產生',read:'閱讀報告書',pdf:'下載 PDF',close:'關閉',busy:'AI 正在寫，大約需要 2–4 分鐘，請不要關閉頁面…',chars:n=>`已寫 ${n} 字`,
-  done:'完成！',saved:at=>`已保存在這台裝置（${at}）`,err:'暫時連不上，請稍後再試。',limit:n=>`今天產生報告書的次數用完了（每天 ${n} 次），明天再來。`,stop:'停止',
+  cut:'這次的內容沒有寫完（AI 中途停止）。已先保存讀得到的部分，可以按「重新產生」再試一次。',done:'完成！',saved:at=>`已保存在這台裝置（${at}）`,err:'暫時連不上，請稍後再試。',limit:n=>`今天產生報告書的次數用完了（每天 ${n} 次），明天再來。`,stop:'停止',
   cover:'人生報告書',pcover:'合盤報告書',born:'出生',made:'製作日期',figs:'你的三張盤',fW:'西洋星盤',fZ:'紫微命盤',fH:'人類圖',sum:'重點摘要',tl:'人生走向',ai:'本報告由 AI 依命盤資料撰寫，僅供參考與自我探索。',needPair:'先在上面完成合盤，才能產生合盤報告書。'},
  en:{title:'Complete life report',ptitle:'In-depth compatibility report',sub:'AI turns your Zi Wei, astrology and Human Design charts into a chaptered personal report of about 6,000 words: gifts, work, money, love, people, wellbeing, the years ahead, and a closing letter to you. Download it as a PDF to keep.',
   psub:'AI turns both of your charts into a chaptered compatibility report: attraction, rapport, friction, commitment, money and life plans, the years ahead, and a letter to you both.',
   name:'Name on the report (optional)',go:'Create my report',again:'Create again',read:'Read the report',pdf:'Download PDF',close:'Close',busy:'AI is writing. This takes about 2–4 minutes; please keep this page open…',chars:n=>`${n} characters so far`,
-  done:'Done!',saved:at=>`Saved on this device (${at})`,err:'Can’t connect right now. Please try again later.',limit:n=>`You’ve used today’s ${n} reports. Come back tomorrow.`,stop:'Stop',
+  cut:'This report was not finished (the AI stopped early). The part we got is saved; tap “Create again” to try again.',done:'Done!',saved:at=>`Saved on this device (${at})`,err:'Can’t connect right now. Please try again later.',limit:n=>`You’ve used today’s ${n} reports. Come back tomorrow.`,stop:'Stop',
   cover:'Life report',pcover:'Compatibility report',born:'Born',made:'Created',figs:'Your three charts',fW:'Astrology chart',fZ:'Zi Wei chart',fH:'Human Design',sum:'Key points',tl:'The road ahead',ai:'Written by AI from your chart data, for reflection and self-discovery only.',needPair:'Complete a compatibility reading above first.'},
  ja:{title:'人生レポートブック',ptitle:'相性レポートブック',sub:'紫微斗数・西洋占星術・ヒューマンデザインをもとに、AI が章立ての個人レポート（約1万字）を書きます。才能、仕事、お金、恋愛、人間関係、心身、これから数年の流れ、そして最後にあなたへの手紙。PDF で保存できます。',
   psub:'二人のチャートをもとに、AI が章立ての相性レポートを書きます。惹かれ合う点、相性、摩擦、約束、お金と暮らし、これから数年、そして二人への手紙。',
   name:'レポートに入れる名前（任意）',go:'レポートを作る',again:'作り直す',read:'レポートを読む',pdf:'PDF をダウンロード',close:'閉じる',busy:'AI が執筆中です。2〜4 分ほどかかります。ページを閉じないでください…',chars:n=>`${n} 字まで書きました`,
-  done:'完成しました！',saved:at=>`この端末に保存済み（${at}）`,err:'接続できませんでした。時間をおいてお試しください。',limit:n=>`本日の作成回数（${n} 回）を使い切りました。また明日どうぞ。`,stop:'停止',
+  cut:'今回は最後まで書き終わりませんでした（AI が途中で止まりました）。読める部分は保存済みです。「作り直す」でもう一度お試しください。',done:'完成しました！',saved:at=>`この端末に保存済み（${at}）`,err:'接続できませんでした。時間をおいてお試しください。',limit:n=>`本日の作成回数（${n} 回）を使い切りました。また明日どうぞ。`,stop:'停止',
   cover:'人生レポートブック',pcover:'相性レポートブック',born:'生まれ',made:'作成日',figs:'あなたの三つのチャート',fW:'西洋占星術',fZ:'紫微斗数',fH:'ヒューマンデザイン',sum:'要点',tl:'これからの流れ',ai:'このレポートは AI がチャートのデータをもとに書いたもので、参考と自己理解のためのものです。',needPair:'先に上で相性を出してください。'},
  fr:{title:'Rapport de vie complet',ptitle:'Rapport de compatibilité approfondi',sub:'L’IA transforme vos thèmes Zi Wei, astrologique et Human Design en un rapport personnel d’environ 6 000 mots, en chapitres : talents, travail, argent, amour, entourage, bien-être, les années à venir et une lettre pour vous. À télécharger en PDF.',
   psub:'L’IA transforme vos deux thèmes en un rapport de compatibilité en chapitres : attirance, complicité, frictions, engagement, argent et projets, les années à venir et une lettre pour vous deux.',
   name:'Nom sur le rapport (facultatif)',go:'Créer mon rapport',again:'Recréer',read:'Lire le rapport',pdf:'Télécharger en PDF',close:'Fermer',busy:'L’IA écrit. Comptez 2 à 4 minutes ; gardez cette page ouverte…',chars:n=>`${n} caractères écrits`,
-  done:'Terminé !',saved:at=>`Enregistré sur cet appareil (${at})`,err:'Connexion impossible pour le moment. Réessayez plus tard.',limit:n=>`Vous avez utilisé vos ${n} rapports du jour. Revenez demain.`,stop:'Arrêter',
+  cut:'Ce rapport n’a pas été terminé (l’IA s’est arrêtée en route). La partie reçue est enregistrée ; touchez « Recréer » pour réessayer.',done:'Terminé !',saved:at=>`Enregistré sur cet appareil (${at})`,err:'Connexion impossible pour le moment. Réessayez plus tard.',limit:n=>`Vous avez utilisé vos ${n} rapports du jour. Revenez demain.`,stop:'Arrêter',
   cover:'Rapport de vie',pcover:'Rapport de compatibilité',born:'Né(e) le',made:'Créé le',figs:'Vos trois thèmes',fW:'Thème astral',fZ:'Thème Zi Wei',fH:'Human Design',sum:'L’essentiel',tl:'Les années à venir',ai:'Rédigé par l’IA à partir de vos données de thème, à titre de réflexion personnelle.',needPair:'Faites d’abord une lecture de compatibilité ci-dessus.'}};
 const BT=()=>BK_TXT[LG]||BK_TXT.zh;
 const BK={ctl:{},gen:{}};
@@ -47,7 +47,7 @@ function bBox(pair){
   const nm=pair?'':`<input class="bk-name" maxlength="20" placeholder="${T.name}" value="${bEsc(BK.name||(typeof vLoad==='function'&&LASTV?((vLoad().find(x=>vSameBirth(x,LASTV))||{}).name||''):''))}">`;
   el.innerHTML=`<div class="bk-h"><span class="bk-ico">📖</span><div><h3>${pair?T.ptitle:T.title}</h3><p class="muted">${pair?T.psub:T.sub}</p></div></div>
    <div class="bk-row">${nm}<button type="button" class="go2btn bk-go">${busy?T.stop:saved?T.again:T.go}</button>${saved&&!busy?`<button type="button" class="bk-read">${T.read}</button><button type="button" class="bk-pdf">${T.pdf}</button>`:''}</div>
-   <p class="muted bk-st" aria-live="polite">${busy?T.busy:saved?T.saved(new Date(saved.at).toLocaleString()):''}</p>`;
+   <p class="muted bk-st" aria-live="polite">${busy?T.busy:saved?(saved.cut?T.cut:T.saved(new Date(saved.at).toLocaleString())):''}</p>`;
   el.querySelector('.bk-go').addEventListener('click',()=>bRun(pair));
   const r=el.querySelector('.bk-read');if(r)r.addEventListener('click',()=>bShow(pair));
   const p=el.querySelector('.bk-pdf');if(p)p.addEventListener('click',()=>bPrint(pair));
@@ -58,7 +58,7 @@ async function bRun(pair){
   if(pair&&!PB)return;
   const T=BT(),el=document.querySelector(pair?'#pbook-box':'#book-box');
   const gen=BK.gen[i]=(BK.gen[i]||0)+1,ctl=BK.ctl[i]=new AbortController();bBox(pair);
-  const st=()=>el.querySelector('.bk-st');let md='';
+  const st=()=>el.querySelector('.bk-st');let md='',stop='';
   try{
     const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,body:JSON.stringify({mode:pair?'pairbook':'book',lang:LG,chart:aiChartData(pair?'pair':'all')+(pair?'':bMonths())})});
     if(gen!==BK.gen[i])return;
@@ -66,10 +66,12 @@ async function bRun(pair){
     const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
     for(;;){const {value,done}=await rd.read();if(done||gen!==BK.gen[i])break;buf+=dec.decode(value,{stream:true});let k;
       while((k=buf.indexOf('\n'))>=0){const line=buf.slice(0,k).trim();buf=buf.slice(k+1);if(!line.startsWith('data:'))continue;let ev;try{ev=JSON.parse(line.slice(5));}catch(e){continue;}
+        if(ev.type==='message_delta'&&ev.delta&&ev.delta.stop_reason)stop=ev.delta.stop_reason;
         if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.text){md+=ev.delta.text;const s=st();if(s)s.textContent=`${T.busy} ${T.chars(md.length)}`;}}}
     if(gen!==BK.gen[i])return;
     BK.ctl[i]=null;
-    if(md.length>500){bPut(pair,{md,at:Date.now(),name:pair?'':(BK.name||'')});bBox(pair);st().textContent=T.done+' '+T.saved(new Date().toLocaleString());bShow(pair);}
+    const cut=stop!=='end_turn';
+    if(md.length>500){bPut(pair,{md,at:Date.now(),name:pair?'':(BK.name||''),cut});bBox(pair);st().textContent=cut?T.cut:T.done+' '+T.saved(new Date().toLocaleString());bShow(pair);}
     else{bBox(pair);st().textContent=T.err;}
   }catch(e){if(gen===BK.gen[i]){BK.ctl[i]=null;bBox(pair);if(e.name!=='AbortError')st().textContent=T.err;}}
 }
