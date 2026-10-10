@@ -70,9 +70,10 @@ function wizShow(){
   let ctl='';
   if(s==='intent')ctl=opt(T.intents,'intent');
   if(s==='date')ctl=`<input class="wz-in" id="wz-date" type="date" min="1900-01-01" max="2100-12-31" value="${v.date||''}">`;
-  if(s==='time')ctl=`<input class="wz-in" id="wz-time" type="time" value="${v.time||''}"${v.unsure?' hidden':''}>
+  if(s==='time'){const [h0,m0]=(v.time||'').split(':'),HL={zh:['時','分'],ja:['時','分'],en:['Hour','Min'],fr:['Heure','Min']}[LG]||['時','分'],pad=n=>String(n).padStart(2,'0');
+    ctl=`<div class="wz-hm" id="wz-hm"${v.unsure?' hidden':''}><select class="wz-in" id="wz-hh" aria-label="${HL[0]}"><option value="">${HL[0]}</option>${[...Array(24)].map((_,i)=>`<option value="${pad(i)}"${h0===pad(i)?' selected':''}>${pad(i)}</option>`).join('')}</select><span>:</span><select class="wz-in" id="wz-mm" aria-label="${HL[1]}"><option value="">${HL[1]}</option>${[...Array(60)].map((_,i)=>`<option value="${pad(i)}"${m0===pad(i)?' selected':''}>${pad(i)}</option>`).join('')}</select></div><input type="hidden" id="wz-time" value="${v.time||''}">
     <label class="wz-check"><input type="checkbox" id="wz-unsure"${v.unsure?' checked':''}> ${T.unsure}</label>
-    <div id="wz-scw"${v.unsure?'':' hidden'}><select class="wz-in" id="wz-sc">${T.shichen.map((t,i)=>`<option value="${i}"${v.sc===i?' selected':''}>${t}</option>`).join('')}</select><p class="wz-note">${T.unsureNote}</p></div>`;
+    <div id="wz-scw"${v.unsure?'':' hidden'}><select class="wz-in" id="wz-sc">${T.shichen.map((t,i)=>`<option value="${i}"${v.sc===i?' selected':''}>${t}</option>`).join('')}</select><p class="wz-note">${T.unsureNote}</p></div>`;}
   if(s==='gender')ctl=opt({'女':L.ui.female,'男':L.ui.male},'g');
   if(s==='city'){const li={zh:0,en:1,ja:2,fr:3}[LG];ctl=`<select class="wz-in" id="wz-city"><option value="">${L.ui.pick}</option>${CITIES.filter(c=>c[4]!=null).map(c=>`<option value="${c[0]}"${v.city===c[0]?' selected':''}>${c[li]}</option>`).join('')}<option value="__other">${T.otherCity}</option></select>`;}
   if(s==='status')ctl=opt(T.status,'status');
@@ -87,7 +88,8 @@ function wizShow(){
   B.querySelectorAll('.wz-opt').forEach(b=>b.addEventListener('click',()=>{const t=Date.now();if(t-(WZ.lastTap||0)<400)return;WZ.lastTap=t;v[b.dataset.k]=b.dataset.v;wizNext();}));
   B.querySelector('.wz-back').addEventListener('click',()=>{if(WZ.i>0){WZ.i--;wizShow();}});
   B.querySelector('.wz-next').addEventListener('click',wizNext);
-  const un=B.querySelector('#wz-unsure');if(un)un.addEventListener('change',()=>{v.unsure=un.checked;B.querySelector('#wz-time').hidden=un.checked;B.querySelector('#wz-scw').hidden=!un.checked;wizValid();});
+  const un=B.querySelector('#wz-unsure');if(un)un.addEventListener('change',()=>{v.unsure=un.checked;B.querySelector('#wz-hm').hidden=un.checked;B.querySelector('#wz-scw').hidden=!un.checked;wizValid();});
+  {const hh=B.querySelector('#wz-hh'),mm=B.querySelector('#wz-mm'),tv=B.querySelector('#wz-time');if(hh&&mm){const up=()=>{if(hh.value&&!mm.value)mm.value='00';tv.value=hh.value&&mm.value?hh.value+':'+mm.value:'';wizValid();};hh.addEventListener('change',up);mm.addEventListener('change',up);}}
   B.querySelectorAll('input,select').forEach(x=>x.addEventListener('input',wizValid));
   wizValid();
   const f=B.querySelector('input.wz-in,select.wz-in');if(f&&!('ontouchstart' in window))f.focus();
